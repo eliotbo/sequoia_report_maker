@@ -5,7 +5,7 @@ use iced::time;
 use iced::widget::canvas;
 use iced::widget::canvas::event::{self, Event};
 use iced::widget::canvas::path::{Arc, Builder};
-use iced::widget::canvas::{Cache, Canvas, Cursor, Frame, Geometry, Path, Text};
+use iced::widget::canvas::{Cache, Canvas, Cursor, Frame, Geometry, Path, Stroke, Text};
 use iced::widget::{button, checkbox, column, container, pick_list, row, slider, text};
 use iced::window;
 use iced::{
@@ -13,27 +13,42 @@ use iced::{
     Subscription, Vector,
 };
 
+use crate::config::{CORNER_RADIUS, SPACE};
 use crate::Message;
 
 pub struct Plot {
     data: Vec<f32>,
     max_value: f32,
+    min_value: f32,
     space: f32,
     corner_radius: f32,
     plot_cache: Cache,
 }
 
+impl Default for Plot {
+    fn default() -> Self {
+        let data = vec![];
+        Self {
+            data,
+            max_value: 0.0,
+            min_value: 0.0,
+            space: SPACE,
+            corner_radius: CORNER_RADIUS,
+            plot_cache: Cache::default(),
+        }
+    }
+}
+
 impl Plot {
     pub fn new(data: Vec<f32>) -> Self {
         let max_value = data.iter().cloned().fold(0.0, f32::max);
-        let default_space = 5.0;
-        let default_corner_radius = 15.0;
+        let min_value = data.iter().cloned().fold(0.0, f32::min);
+
         Plot {
             data,
             max_value,
-            space: default_space,
-            corner_radius: default_corner_radius,
-            plot_cache: Cache::default(),
+            min_value,
+            ..Default::default()
         }
     }
 
@@ -79,7 +94,7 @@ impl Plot {
             let y = plot_height - value / self.max_value * plot_height + 10.0;
 
             frame.fill(
-                &canvas::Path::new(|p| {
+                &Path::new(|p| {
                     p.circle(Point::new(x, y), 4.0);
                 }),
                 Color::from_rgb8(200, 0, 0),
@@ -126,16 +141,110 @@ impl canvas::Program<Message> for Plot {
         let size = Size::new(bounds.width - 2. * space, bounds.height - 2. * space);
 
         frame.fill(
-            &canvas::Path::new(|p| {
+            &Path::new(|p| {
                 p.rectangle(upper_left, size);
             }),
             // Color::from_rgb(0.05, 0.3, 0.23),
             Color::TRANSPARENT,
         );
+        // let stroke = Stroke {
+        //     style: canvas::Style::Solid(Color::WHITE),
+        //     width: 2.0,
+        //     ..canvas::Stroke::default()
+        // };
 
-        // draw a perimeter around the plot canvas with curved corners
+        let stroke = canvas::Stroke {
+            style: canvas::Style::Solid(Color::WHITE),
+            width: 2.0,
+            line_cap: canvas::LineCap::Round,
+            line_join: canvas::LineJoin::Round,
+            ..canvas::Stroke::default()
+        };
+
+        let dot_color = Color::from_rgb8(200, 0, 0);
+
+        // draw small square as a data point example
         frame.stroke(
-            &canvas::Path::new(|p| {
+            &Shape::square(Point::new(100.0, 100.0), 10.0),
+            stroke.clone(),
+        );
+        frame.fill(&Shape::circle(Point::new(100.0, 100.0), 5.0), dot_color);
+
+        // draw greater than symbol as a data point example
+        frame.stroke(
+            &Shape::greater_than(Point::new(200.0, 100.0), 10.0),
+            stroke.clone(),
+        );
+        frame.fill(&Shape::circle(Point::new(200.0, 100.0), 5.0), dot_color);
+
+        // draw less than symbol as a data point example
+        frame.stroke(
+            &Shape::less_than(Point::new(250.0, 150.0), 10.0),
+            stroke.clone(),
+        );
+        frame.fill(&Shape::circle(Point::new(250.0, 150.0), 5.0), dot_color);
+
+        // draw small circle as a data point example
+        frame.stroke(
+            &Shape::circle(Point::new(150.0, 150.0), 6.0),
+            stroke.clone(),
+        );
+        frame.fill(&Shape::circle(Point::new(150.0, 150.0), 5.0), dot_color);
+
+        // draw small triangle as a data point example
+        frame.stroke(
+            &Shape::triangle(Point::new(200.0, 200.0), 12.0),
+            stroke.clone(),
+        );
+        frame.fill(&Shape::circle(Point::new(200.0, 200.0), 5.0), dot_color);
+
+        // draw a small arrow as a data point example
+        frame.stroke(
+            &Shape::arrow(Point::new(250.0, 250.0), 10.0),
+            stroke.clone(),
+        );
+        frame.fill(&Shape::circle(Point::new(250.0, 250.0), 5.0), dot_color);
+
+        // draw a small bracket ([) as a data point example
+        frame.stroke(
+            &Shape::left_bracket(Point::new(300.0, 300.0), 10.0),
+            stroke.clone(),
+        );
+        frame.fill(&Shape::circle(Point::new(300.0, 300.0), 5.0), dot_color);
+
+        // draw the corresponding closing bracket (]) as a data point example
+        frame.stroke(
+            &Shape::right_bracket(Point::new(350.0, 350.0), 10.0),
+            stroke.clone(),
+        );
+        frame.fill(&Shape::circle(Point::new(350.0, 350.0), 5.0), dot_color);
+
+        // draw an x as a data point example
+        frame.stroke(&Shape::x(Point::new(400.0, 400.0), 10.0), stroke.clone());
+        frame.fill(&Shape::circle(Point::new(400.0, 400.0), 5.0), dot_color);
+
+        add_contour(&mut frame, bounds, radius, space, 2.0, Color::WHITE);
+
+        self.plot_data(&mut frame);
+
+        vec![frame.into_geometry()]
+    }
+}
+
+pub fn add_contour(
+    frame: &mut canvas::Frame,
+    bounds: Rectangle,
+    radius: f32,
+    space: f32,
+    width: f32,
+    color: Color,
+) {
+    let sr = space + radius;
+
+    // draw a perimeter around the plot canvas with curved corners
+    if radius > 0.0 {
+        frame.stroke(
+            &Path::new(|p| {
                 p.arc(Arc {
                     center: Point::new(sr, sr),
                     radius,
@@ -144,14 +253,14 @@ impl canvas::Program<Message> for Plot {
                 });
             }),
             canvas::Stroke {
-                style: canvas::Style::Solid(Color::WHITE),
-                width: 3.0,
+                style: canvas::Style::Solid(color),
+                width,
                 ..canvas::Stroke::default()
             },
         );
 
         frame.stroke(
-            &canvas::Path::new(|p| {
+            &Path::new(|p| {
                 p.arc(Arc {
                     center: Point::new(bounds.width - sr, sr),
                     radius,
@@ -160,14 +269,14 @@ impl canvas::Program<Message> for Plot {
                 });
             }),
             canvas::Stroke {
-                style: canvas::Style::Solid(Color::WHITE),
-                width: 3.0,
+                style: canvas::Style::Solid(color),
+                width,
                 ..canvas::Stroke::default()
             },
         );
 
         frame.stroke(
-            &canvas::Path::new(|p| {
+            &Path::new(|p| {
                 p.arc(Arc {
                     center: Point::new(bounds.width - sr, bounds.height - sr),
                     radius,
@@ -176,14 +285,14 @@ impl canvas::Program<Message> for Plot {
                 });
             }),
             canvas::Stroke {
-                style: canvas::Style::Solid(Color::WHITE),
-                width: 3.0,
+                style: canvas::Style::Solid(color),
+                width,
                 ..canvas::Stroke::default()
             },
         );
 
         frame.stroke(
-            &canvas::Path::new(|p| {
+            &Path::new(|p| {
                 p.arc(Arc {
                     center: Point::new(sr, bounds.height - sr),
                     radius,
@@ -192,64 +301,60 @@ impl canvas::Program<Message> for Plot {
                 });
             }),
             canvas::Stroke {
-                style: canvas::Style::Solid(Color::WHITE),
-                width: 3.0,
+                style: canvas::Style::Solid(color),
+                width,
                 ..canvas::Stroke::default()
             },
         );
-
-        frame.stroke(
-            &canvas::Path::new(|p| {
-                p.move_to(Point::new(sr, space));
-                p.line_to(Point::new(bounds.width - sr, space));
-            }),
-            canvas::Stroke {
-                style: canvas::Style::Solid(Color::WHITE),
-                width: 3.0,
-                ..canvas::Stroke::default()
-            },
-        );
-
-        frame.stroke(
-            &canvas::Path::new(|p| {
-                p.move_to(Point::new(bounds.width - space, sr));
-                p.line_to(Point::new(bounds.width - space, bounds.height - sr));
-            }),
-            canvas::Stroke {
-                style: canvas::Style::Solid(Color::WHITE),
-                width: 3.0,
-                ..canvas::Stroke::default()
-            },
-        );
-
-        frame.stroke(
-            &canvas::Path::new(|p| {
-                p.move_to(Point::new(bounds.width - sr, bounds.height - space));
-                p.line_to(Point::new(sr, bounds.height - space));
-            }),
-            canvas::Stroke {
-                style: canvas::Style::Solid(Color::WHITE),
-                width: 3.0,
-                ..canvas::Stroke::default()
-            },
-        );
-
-        frame.stroke(
-            &canvas::Path::new(|p| {
-                p.move_to(Point::new(space, bounds.height - sr));
-                p.line_to(Point::new(space, sr));
-            }),
-            canvas::Stroke {
-                style: canvas::Style::Solid(Color::WHITE),
-                width: 3.0,
-                ..canvas::Stroke::default()
-            },
-        );
-
-        self.plot_data(&mut frame);
-
-        vec![frame.into_geometry()]
     }
+
+    frame.stroke(
+        &Path::new(|p| {
+            p.move_to(Point::new(sr, space));
+            p.line_to(Point::new(bounds.width - sr, space));
+        }),
+        canvas::Stroke {
+            style: canvas::Style::Solid(color),
+            width,
+            ..canvas::Stroke::default()
+        },
+    );
+
+    frame.stroke(
+        &Path::new(|p| {
+            p.move_to(Point::new(bounds.width - space, sr));
+            p.line_to(Point::new(bounds.width - space, bounds.height - sr));
+        }),
+        canvas::Stroke {
+            style: canvas::Style::Solid(color),
+            width,
+            ..canvas::Stroke::default()
+        },
+    );
+
+    frame.stroke(
+        &Path::new(|p| {
+            p.move_to(Point::new(bounds.width - sr, bounds.height - space));
+            p.line_to(Point::new(sr, bounds.height - space));
+        }),
+        canvas::Stroke {
+            style: canvas::Style::Solid(color),
+            width,
+            ..canvas::Stroke::default()
+        },
+    );
+
+    frame.stroke(
+        &Path::new(|p| {
+            p.move_to(Point::new(space, bounds.height - sr));
+            p.line_to(Point::new(space, sr));
+        }),
+        canvas::Stroke {
+            style: canvas::Style::Solid(color),
+            width,
+            ..canvas::Stroke::default()
+        },
+    );
 }
 
 pub fn plot<'a>(data: Vec<f32>, width: Length, height: Length) -> Element<'a, Message> {
@@ -259,4 +364,108 @@ pub fn plot<'a>(data: Vec<f32>, width: Length, height: Length) -> Element<'a, Me
 
     let element = Element::new(can);
     element
+}
+
+pub struct Shape;
+
+impl Shape {
+    pub fn square(position: Point, size: f32) -> Path {
+        Path::new(|p| {
+            let s = size / 2.0;
+            p.move_to(position + Vector::new(-s, -s));
+            p.line_to(position + Vector::new(-s, s));
+            p.line_to(position + Vector::new(s, s));
+            p.line_to(position + Vector::new(s, -s));
+            p.close();
+        })
+    }
+
+    pub fn circle(position: Point, size: f32) -> Path {
+        Path::new(|p| {
+            let radius = size / 2.0;
+            p.circle(position, radius);
+        })
+    }
+
+    //triangle
+    pub fn triangle(position: Point, size: f32) -> Path {
+        Path::new(|p| {
+            let s = size * 0.6;
+            p.move_to(position + Vector::new(0., -s * 0.9));
+            p.line_to(position + Vector::new(s, s * 0.9));
+            p.line_to(position + Vector::new(-s, s * 0.9));
+            p.close();
+        })
+    }
+
+    // arrow
+    pub fn arrow(pos: Point, size: f32) -> Path {
+        Path::new(|p| {
+            let arror_len = size;
+            let tail_len = 0.4 * size;
+            p.move_to(pos);
+            p.line_to(pos + Vector::new(0.0, arror_len));
+            p.line_to(pos + Vector::new(tail_len, arror_len - tail_len * 0.9));
+            // p.line_to(pos + Vector::new(0.0, 10.0));
+            p.move_to(pos + Vector::new(0.0, arror_len));
+            p.line_to(pos + Vector::new(-tail_len, arror_len - tail_len));
+        })
+    }
+
+    // left bracket
+    pub fn left_bracket(pos: Point, size: f32) -> Path {
+        Path::new(|p| {
+            let s = size * 0.4;
+            let v = size * 1.2;
+            p.move_to(pos);
+            p.line_to(pos + Vector::new(-s, 0.0));
+            p.line_to(pos + Vector::new(-s, -v));
+            p.line_to(pos + Vector::new(0.0, -v));
+            // p.close();
+        })
+    }
+
+    // right bracket
+    pub fn right_bracket(pos: Point, size: f32) -> Path {
+        Path::new(|p| {
+            let s = size * 0.4;
+            let v = size * 1.2;
+            p.move_to(pos);
+            p.line_to(pos + Vector::new(s, 0.0));
+            p.line_to(pos + Vector::new(s, -v));
+            p.line_to(pos + Vector::new(0.0, -v));
+            // p.close();
+        })
+    }
+
+    // x
+    pub fn x(pos: Point, size: f32) -> Path {
+        Path::new(|p| {
+            let s = size * 0.5;
+            p.move_to(pos + Vector::new(s, -s));
+            p.line_to(pos - Vector::new(s, -s));
+            p.move_to(pos + Vector::new(-s, -s));
+            p.line_to(pos - Vector::new(-s, -s));
+        })
+    }
+
+    // greater_than
+    pub fn greater_than(pos: Point, size: f32) -> Path {
+        Path::new(|p| {
+            let s = size * 0.5;
+            p.move_to(pos + Vector::new(-s, -s));
+            p.line_to(pos + Vector::new(s, 0.0));
+            p.line_to(pos + Vector::new(-s, s));
+        })
+    }
+
+    // less than
+    pub fn less_than(pos: Point, size: f32) -> Path {
+        Path::new(|p| {
+            let s = size * 0.5;
+            p.move_to(pos + Vector::new(s, -s));
+            p.line_to(pos + Vector::new(-s, 0.0));
+            p.line_to(pos + Vector::new(s, s));
+        })
+    }
 }

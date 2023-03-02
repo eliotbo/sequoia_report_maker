@@ -1,9 +1,12 @@
 //! by John Conway. It leverages a `Canvas` together with other widgets.
+mod config;
 mod grid;
+mod legend;
 mod plot;
 mod preset;
 
 use grid::Grid;
+use legend::{draw_legend, Legend};
 use plot::{plot, Plot};
 use preset::Preset;
 
@@ -161,10 +164,29 @@ impl Application for GameOfLife {
 
         let element3 = plot(data3, Length::FillPortion(2), Length::Fill);
 
-        let mid1 = plot(data2.clone(), Length::Fill, Length::FillPortion(2));
-        let mid2 = plot(data2, Length::Fill, Length::FillPortion(1));
+        // let mid1 = plot(data2.clone(), Length::Fill, Length::FillPortion(2));
+        let mid2 = plot(data2, Length::FillPortion(1), Length::FillPortion(1));
 
-        let mid_col = column![mid1, mid2];
+        // let legend = column![
+        //     row![
+        //         text("circle")
+        //             .size(20)
+        //             .horizontal_alignment(Horizontal::Left)
+        //             .width(Length::Fill),
+        //         text("square")
+        //             .size(20)
+        //             .horizontal_alignment(Horizontal::Right)
+        //     ],
+        //     row![
+        //         text("]").size(20).width(Length::Fill),
+        //         text("[").size(20).horizontal_alignment(Horizontal::Right)
+        //     ]
+        // ];
+
+        let legend = draw_legend(Length::Fill, Length::FillPortion(2));
+
+        // let mid_col = column![legend.height(Length::FillPortion(2)), mid2];
+        let mid_col = column![legend, mid2];
 
         let mid_audiograph = container(mid_col).width(Length::FillPortion(1));
 
