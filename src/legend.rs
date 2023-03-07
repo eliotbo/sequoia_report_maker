@@ -1,19 +1,14 @@
 use iced::alignment::{Horizontal, Vertical};
-use iced::executor;
-use iced::theme::{self, Theme};
-use iced::time;
-use iced::widget::canvas;
-use iced::widget::canvas::event::{self, Event};
-use iced::widget::canvas::path::{Arc, Builder};
-use iced::widget::canvas::{Cache, Canvas, Cursor, Frame, Geometry, Path, Stroke, Text};
-use iced::widget::{button, checkbox, column, container, pick_list, row, slider, text};
-use iced::window;
-use iced::{
-    Alignment, Application, Color, Command, Element, Length, Point, Rectangle, Settings, Size,
-    Subscription, Vector,
-};
 
-use crate::config::{CORNER_RADIUS, SPACE};
+use iced::theme::Theme;
+
+use iced::widget::canvas;
+
+use iced::widget::canvas::{Canvas, Cursor, Text};
+
+use iced::{Color, Element, Length, Point, Rectangle, Size};
+
+use crate::config::{CORNER_RADIUS, PLOT_Y_OFFSET_START, SPACE};
 use crate::plot::{add_contour, Shape};
 use crate::Message;
 
@@ -31,13 +26,6 @@ impl Default for Legend {
     }
 }
 
-#[derive(Default)]
-struct LegendShape {
-    theme: Theme,
-}
-
-pub struct LegendState;
-
 impl canvas::Program<Message> for Legend {
     type State = ();
 
@@ -52,26 +40,10 @@ impl canvas::Program<Message> for Legend {
 
         let space = self.space;
         let radius = self.corner_radius;
-        let sr = space + radius;
 
-        let upper_left = Point::new(space, space);
-        let size = Size::new(bounds.width - 2. * space, bounds.height - 2. * space);
-
-        frame.fill(
-            &Path::new(|p| {
-                p.rectangle(upper_left, size);
-            }),
-            // Color::from_rgb(0.05, 0.3, 0.23),
-            Color::TRANSPARENT,
-        );
-        // let stroke = Stroke {
-        //     style: canvas::Style::Solid(Color::WHITE),
-        //     width: 2.0,
-        //     ..canvas::Stroke::default()
-        // };
-
+        let legend_text_color = Color::from_rgb(0.5, 0.5, 0.45);
         let stroke = canvas::Stroke {
-            style: canvas::Style::Solid(Color::WHITE),
+            style: canvas::Style::Solid(legend_text_color),
             width: 2.0,
             line_cap: canvas::LineCap::Round,
             line_join: canvas::LineJoin::Round,
@@ -90,44 +62,106 @@ impl canvas::Program<Message> for Legend {
         // vertical space
         let vs = 2. * ss + 1.0;
 
-        // draw small square as a data point example
+        // vertical offset
+        let offset = 1.0 * vs;
+
+        // let legend_rect = Point::new(0.0, config::PLOT_Y_OFFSET_START + config::SPACE);
+        // let rectangle = Rectangle::new(Point::ORIGIN, bounds.size());
+
+        // let rect_path = canvas::Path::rectangle(Point::ORIGIN, bounds.size());
+
+        // frame.fill(
+        //     &rect_path,
+        //     canvas::Fill {
+        //         style: canvas::Style::Solid(Color::from_rgb(0.05, 0.05, 0.045)),
+        //         rule: canvas::FillRule::NonZero,
+        //     },
+        // );
+        let legend_rect_start = Point::new(0.0, PLOT_Y_OFFSET_START);
+        // let legend_rect_size = Size::new(bounds.width, bounds.height - PLOT_Y_OFFSET_START  );
+        let legend_rect_size = Size::new(bounds.width, 273.0);
+        // let rectangle = Rectangle::new(legend_rect_start, legend_rect_size);
+
+        let rect_path = canvas::Path::rectangle(legend_rect_start, legend_rect_size);
+
+        frame.fill(
+            &rect_path,
+            canvas::Fill {
+                style: canvas::Style::Solid(Color::from_rgb(0.05, 0.05, 0.045)),
+                rule: canvas::FillRule::NonZero,
+            },
+        );
+
+        // add_contour(
+        //     &mut frame,
+        //     rectangle,
+        //     0.0,
+        //     space,
+        //     2.0,
+        //     Color::from_rgb(1.0, 1.0, 1.0),
+        // );
 
         let center_h = bounds.width / 2.0;
-        let audiogram_text = Text {
-            content: "AUDIOGRAMME".to_string(),
-            color: Color::WHITE,
-            size: 30.0,
-            position: Point::new(center_h, space),
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Top,
+
+        let mut v = 1.0 * vs + offset;
+
+        let droit = Text {
+            content: "DROITE".to_string(),
+            color: legend_text_color,
+            size: 16.0,
+            position: Point::new(space + 4.0, v - vs * 0.2),
+            horizontal_alignment: Horizontal::Left,
+            vertical_alignment: Vertical::Center,
+            ..Text::default()
+        };
+        frame.fill_text(droit.clone());
+
+        let gauche = Text {
+            content: "GAUCHE".to_string(),
+            color: legend_text_color,
+            size: 16.0,
+            position: Point::new(bounds.width - space - 4.0, v - vs * 0.2),
+            horizontal_alignment: Horizontal::Right,
+            vertical_alignment: Vertical::Center,
             ..Text::default()
         };
 
-        frame.fill_text(audiogram_text);
+        frame.fill_text(gauche.clone());
 
-        let v = 2.5 * vs;
+        v += vs;
         let seuil_aerien = Text {
-            content: "Seuil aérien".to_string(),
-            color: Color::WHITE,
-            size: 26.0,
+            content: "SEUIL AÉRIEN".to_string(),
+            color: legend_text_color,
+            size: 16.0,
             position: Point::new(center_h, v),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             ..Text::default()
         };
 
+        let rect_path_seuil =
+            canvas::Path::rectangle(Point::new(0.0, v - vs / 2.0), Size::new(bounds.width, vs));
+
+        frame.fill(
+            &rect_path_seuil,
+            canvas::Fill {
+                style: canvas::Style::Solid(Color::from_rgb(0.12, 0.12, 0.085)),
+                rule: canvas::FillRule::NonZero,
+            },
+        );
+
         frame.fill_text(seuil_aerien);
 
         let legend_text = Text {
             content: "".to_string(),
-            color: Color::WHITE,
-            size: 20.0,
+            color: legend_text_color,
+            size: 16.0,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             ..Text::default()
         };
 
-        let v = 4. * vs;
+        v += vs;
         frame.fill_text(Text {
             content: "Non masqué".to_string(),
             position: Point::new(center_h, v),
@@ -136,7 +170,7 @@ impl canvas::Program<Message> for Legend {
         frame.stroke(&Shape::circle(Point::new(lx, v), ss), stroke.clone());
         frame.stroke(&Shape::x(Point::new(rx, v), ss), stroke.clone());
 
-        let v = 5. * vs;
+        v += vs;
         frame.fill_text(Text {
             content: "Masqué".to_string(),
             position: Point::new(center_h, v),
@@ -145,36 +179,44 @@ impl canvas::Program<Message> for Legend {
         frame.stroke(&Shape::square(Point::new(rx, v), ss), stroke.clone());
         frame.stroke(&Shape::triangle(Point::new(lx, v), ss), stroke.clone());
 
-        let v = 6. * vs;
+        v += vs;
         frame.fill_text(Text {
             content: "Inconfort".to_string(),
             position: Point::new(center_h, v),
             ..legend_text
         });
-        frame.fill_text(Text {
-            content: "U".to_string(),
-            position: Point::new(lx + 0., v),
-            ..legend_text
-        });
-        frame.fill_text(Text {
-            content: "U".to_string(),
-            position: Point::new(rx + 0.3, v),
-            ..legend_text
-        });
+        frame.stroke(&Shape::u(Point::new(rx, v), ss), stroke.clone());
+        frame.stroke(&Shape::u(Point::new(lx, v), ss), stroke.clone());
 
-        let v = 7.5 * vs;
+        v += 1.5 * vs;
         let seuil_osseux = Text {
-            content: "Seuil osseux".to_string(),
-            color: Color::WHITE,
-            size: 26.0,
+            content: "SEUIL OSSEUX".to_string(),
+            color: legend_text_color,
+            size: 16.0,
             position: Point::new(center_h, v),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             ..Text::default()
         };
+        let rect_path_seuil =
+            canvas::Path::rectangle(Point::new(0.0, v - vs / 2.0), Size::new(bounds.width, vs));
+
+        frame.fill(
+            &rect_path_seuil,
+            canvas::Fill {
+                style: canvas::Style::Solid(Color::from_rgb(0.12, 0.12, 0.085)),
+                rule: canvas::FillRule::NonZero,
+            },
+        );
         frame.fill_text(seuil_osseux);
 
-        let v = 9.0 * vs;
+        // // v += vs;
+        // droit.position = Point::new(space + 4.0, v);
+        // gauche.position = Point::new(bounds.width - space - 4.0, v);
+        // frame.fill_text(droit.clone());
+        // frame.fill_text(gauche.clone());
+
+        v += vs;
         frame.fill_text(Text {
             content: "Non masqué".to_string(),
             position: Point::new(center_h, v),
@@ -183,31 +225,97 @@ impl canvas::Program<Message> for Legend {
         frame.stroke(&Shape::less_than(Point::new(lx, v), ss), stroke.clone());
         frame.stroke(&Shape::greater_than(Point::new(rx, v), ss), stroke.clone());
 
-        let v = 10.0 * vs;
+        v += vs;
         frame.fill_text(Text {
             content: "Masqué".to_string(),
             position: Point::new(center_h, v),
             ..legend_text
         });
+        frame.stroke(&Shape::left_bracket(Point::new(lx, v), ss), stroke.clone());
+        frame.stroke(&Shape::right_bracket(Point::new(rx, v), ss), stroke.clone());
+
+        v += 1.5 * vs;
+        let seuil_osseux = Text {
+            content: "DIVERS".to_string(),
+            color: legend_text_color,
+            size: 16.0,
+            position: Point::new(center_h, v),
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+            ..Text::default()
+        };
+        let rect_path_seuil =
+            canvas::Path::rectangle(Point::new(0.0, v - vs / 2.0), Size::new(bounds.width, vs));
+
+        frame.fill(
+            &rect_path_seuil,
+            canvas::Fill {
+                style: canvas::Style::Solid(Color::from_rgb(0.12, 0.12, 0.085)),
+                rule: canvas::FillRule::NonZero,
+            },
+        );
+        frame.fill_text(seuil_osseux);
+
+        // // v += vs;
+        // droit.position = Point::new(space + 4.0, v);
+        // gauche.position = Point::new(bounds.width - space - 4.0, v);
+        // frame.fill_text(droit);
+        // frame.fill_text(gauche);
+
+        v += vs;
+        let z = 7.0;
+        frame.fill_text(Text {
+            content: "Pas de réponse".to_string(),
+            position: Point::new(center_h, v),
+            ..legend_text
+        });
         frame.stroke(
-            &Shape::left_bracket(Point::new(lx, v + 0.6 * ss), ss),
+            &Shape::bottom_left_arrow(Point::new(lx + 0.5 * ss, v - 0.4 * ss - z), ss),
             stroke.clone(),
         );
         frame.stroke(
-            &Shape::right_bracket(Point::new(rx, v + 0.6 * ss), ss),
+            &&Shape::bottom_right_arrow(Point::new(rx - 0.5 * ss, v - 0.4 * ss - z), ss),
             stroke.clone(),
         );
-        add_contour(&mut frame, bounds, 0.0, space, 2.0, Color::WHITE);
+
+        v += vs;
+        frame.fill_text(Text {
+            content: "Vibrotactile".to_string(),
+            position: Point::new(center_h, v),
+            ..legend_text
+        });
+        let vt_offset = -0.0;
+        frame.stroke(
+            &Shape::vt(Point::new(lx + 0., v + vt_offset), ss),
+            stroke.clone(),
+        );
+        frame.stroke(
+            &&Shape::vt(Point::new(rx + 0.3, v + vt_offset), ss),
+            stroke.clone(),
+        );
+
+        // frame.fill_text(Text {
+        //     content: "VT".to_string(),
+        //     position: Point::new(lx + 0., v),
+        //     size: 18.0,
+        //     ..legend_text
+        // });
+        // frame.fill_text(Text {
+        //     content: "VT".to_string(),
+        //     position: Point::new(rx + 0.3, v),
+        //     size: 18.0,
+        //     ..legend_text
+        // });
 
         vec![frame.into_geometry()]
     }
 }
 
-pub fn draw_legend(width: Length, height: Length) -> Element<'static, Message> {
+pub fn draw_legend() -> Element<'static, Message> {
     // let plotter = Plot::new(data);
     let legend = Legend::default();
     // Element::new(Plot::new(data))
-    let can = Canvas::new(legend).width(width).height(height);
+    let can = Canvas::new(legend).width(Length::Fill).height(Length::Fill);
 
     let element = Element::new(can);
     element

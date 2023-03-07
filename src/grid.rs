@@ -134,8 +134,8 @@ impl Grid {
 
     pub fn view(&self) -> Element<Message> {
         Canvas::new(self)
-            .width(Length::Units(300))
-            .height(Length::Units(300))
+            .width(Length::Fixed(300.0))
+            .height(Length::Fixed(300.0))
             .into()
     }
 
