@@ -9,7 +9,7 @@ mod preset;
 // use checkboxes::{Transductor, Validity};
 // use grid::Grid;
 use legend::{draw_legend, Legend};
-use plot::{plot, Plot, Shape};
+use plot::{plot, EarSide, Plot, Shape};
 use preset::Preset;
 
 use iced::alignment::Horizontal;
@@ -302,7 +302,7 @@ impl Application for AudioRox {
         .text_size(t_size);
 
         let free = radio(
-            "Circum",
+            "Libre",
             Transductor::Free,
             Some(transductor),
             Message::TransductorChanged,
@@ -427,7 +427,7 @@ impl Application for AudioRox {
         let data2 = data1.iter().map(|x| x + 10.0).collect::<Vec<f32>>();
         // let data2 = vec![1.0, 2.0, 3.0, 4.0, 3.0, 3.0, 1.0];
         // let data3 = vec![1.0, 2.0, 3.0, 4.0, 3.0, 4.0, 2.0, 2.5, 2.0, 1.0];
-        let audiogram_right = plot(data1.clone(), Shape::Less);
+        let audiogram_right = plot(data1.clone(), Shape::Less, EarSide::Right);
         let audio_right_title = text("OREILLE DROITE")
             .size(26)
             .horizontal_alignment(Horizontal::Center);
@@ -436,7 +436,7 @@ impl Application for AudioRox {
             .width(Length::FillPortion(2))
             .align_items(Alignment::Center);
 
-        let audiorgam_left = plot(data2.clone(), Shape::X);
+        let audiorgam_left = plot(data2.clone(), Shape::X, EarSide::Left);
         let audio_left_title = text("OREILLE GAUCHE")
             .size(26)
             .horizontal_alignment(Horizontal::Center);
@@ -502,7 +502,8 @@ impl Application for AudioRox {
 
         let audiograms = column![
             vocal_audiogram_title_container,
-            row![audio_right, mid_audiograph, audio_left]
+            row![audio_right, mid_audiograph, horizontal_space(6), audio_left]
+                .align_items(Alignment::Center)
         ];
 
         let tonal_audiogram_content = column![header, audiograms].height(Length::FillPortion(1));
