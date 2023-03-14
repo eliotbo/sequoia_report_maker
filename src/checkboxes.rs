@@ -250,15 +250,13 @@ impl CheckBex {
             input_table,
             table
         ]
-        .spacing(20)
-        .width(Length::Fill)
-        .height(Length::Fill);
+        .spacing(20);
 
         // all_content
 
         container(all_content)
             .width(Length::Fill)
-            .height(Length::Fill)
+            .height(Length::FillPortion(1))
             .center_x()
             .center_y()
             .into()

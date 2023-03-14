@@ -10,14 +10,21 @@ use iced::widget::canvas::{Cache, Canvas, Cursor, Path, Text};
 use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::config::{
-    self, CORNER_RADIUS, PLOT_DASH_STROKE, PLOT_DOT_SIZE, PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE,
-    PLOT_X_OFFSET, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START, SPACE,
+    self, CACO_Y_SIZE, CORNER_RADIUS, PLOT_DASH, PLOT_DOT_SIZE, PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE,
+    PLOT_TICK_LABEL_SPACE, PLOT_X_OFFSET, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START, SPACE,
 };
 use crate::Message;
 
+const NUM_X_TICKS: usize = 7;
+const NUM_Y_TICKS: usize = 14;
 pub enum EarSide {
     Right,
     Left,
+}
+
+enum Conduction {
+    Bone,
+    Air,
 }
 
 pub struct Plot {
@@ -52,24 +59,40 @@ impl Plot {
         }
     }
 
+    fn get_conduction(&self) -> Conduction {
+        match self.shape {
+            Shape::LeftBracket | Shape::RightBracket | Shape::Greater | Shape::Less => {
+                Conduction::Bone
+            }
+            _ => Conduction::Air,
+        }
+    }
+
     fn plot_data(&self, frame: &mut canvas::Frame, side: &EarSide) {
         let space = self.space;
         let x_offset = PLOT_X_OFFSET + space;
         let y_offset = PLOT_Y_OFFSET_START + space;
 
-        let plot_width = frame.width() - x_offset * 2.0;
+        let plot_width = frame.width() - PLOT_X_OFFSET * 2.0;
         let plot_height = frame.height() - y_offset * 2.0;
-        let x_unit = plot_width / 6.0;
+        let x_unit = plot_width / NUM_X_TICKS as f32;
         let y_unit = plot_height / 12.0;
+
+        // println!("shape is {:?}", self.shape);
+        let line_dash = if let Conduction::Bone = self.get_conduction() {
+            PLOT_DASH
+        } else {
+            canvas::LineDash::default()
+        };
 
         let mut builder = Builder::new();
 
         // Draw lines between the points
         for i in 0..(self.data.len() - 1) {
-            let x1 = (i + 1) as f32 * x_unit + x_offset;
+            let x1 = (i + 1) as f32 * x_unit + PLOT_X_OFFSET;
             let y1 = self.data[i] / 10.0 * y_unit + y_offset;
 
-            let x2 = (i + 2) as f32 * x_unit + x_offset;
+            let x2 = (i + 2) as f32 * x_unit + PLOT_X_OFFSET;
             let y2 = self.data[i + 1] / 10.0 * y_unit + y_offset;
 
             let point1 = Point::new(x1, y1);
@@ -79,8 +102,14 @@ impl Plot {
             builder.line_to(point2);
         }
 
-        // draw dashed line
-        frame.stroke(&builder.build(), PLOT_DASH_STROKE);
+        // draw line (either dashed or not)
+        frame.stroke(
+            &builder.build(),
+            canvas::Stroke {
+                line_dash,
+                ..PLOT_SHAPE_STROKE
+            },
+        );
 
         // Draw points
         for (i, value) in self.data.iter().enumerate() {
@@ -131,22 +160,21 @@ impl canvas::Program<Message> for Plot {
         let plot_height = frame.height() - y_offset0 - y_offset1 - space * 2.0;
 
         let space = self.space;
-        let radius = self.corner_radius;
+        // let radius = self.corner_radius;
         // let sr = space + radius;
 
         let upper_left = Point::new(space, space);
         let size = Size::new(bounds.width - 2. * space, bounds.height - 2. * space);
 
-        let num_y_ticks = 13;
-        let y_unit = plot_height / (num_y_ticks as f32 - 1.0);
-        let x_unit = plot_width / 6.0;
-        frame.fill(
-            &Path::new(|p| {
-                p.rectangle(upper_left, size);
-            }),
-            // Color::from_rgb(0.05, 0.3, 0.23),
-            Color::TRANSPARENT,
-        );
+        let y_unit = plot_height / (NUM_Y_TICKS as f32 - 1.0);
+        let x_unit = plot_width / NUM_X_TICKS as f32;
+        // frame.fill(
+        //     &Path::new(|p| {
+        //         p.rectangle(upper_left, size);
+        //     }),
+        //     Color::from_rgb(0.05, 0.3, 0.23),
+        //     // Color::TRANSPARENT,
+        // );
 
         let legend_text = Text {
             color: config::AXIS_LABEL_COLOR,
@@ -154,8 +182,8 @@ impl canvas::Program<Message> for Plot {
             ..Text::default()
         };
 
-        let y_axis = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120];
-        let x_axis = [0, 250, 500, 1000, 2000, 4000, 8000];
+        let y_axis = [-10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120];
+        let x_axis = [0, 125, 250, 500, 1000, 2000, 4000, 8000];
 
         let mut y = 0.;
         let y_stroke = canvas::Stroke {
@@ -166,7 +194,7 @@ impl canvas::Program<Message> for Plot {
             ..canvas::Stroke::default()
         };
         // add grid to the plot frame
-        for y_usize in 0..num_y_ticks {
+        for y_usize in 0..NUM_Y_TICKS {
             y = y_unit * y_usize as f32 + y_offset0 + space;
 
             frame.stroke(
@@ -183,7 +211,7 @@ impl canvas::Program<Message> for Plot {
                 content: units,
                 horizontal_alignment: Horizontal::Right,
                 vertical_alignment: Vertical::Center,
-                position: Point::new(space + x_offset - 5.0, y),
+                position: Point::new(space + x_offset - PLOT_TICK_LABEL_SPACE, y),
                 ..legend_text
             });
         }
@@ -221,8 +249,8 @@ impl canvas::Program<Message> for Plot {
             ..legend_text
         });
 
-        for x_usize in 0..7 {
-            let x = x_unit * x_usize as f32 + PLOT_X_OFFSET;
+        for x_usize in 0..8 {
+            let x = x_unit * x_usize as f32 + x_offset;
 
             frame.stroke(
                 &Path::new(|p| {
@@ -264,9 +292,8 @@ impl canvas::Program<Message> for Plot {
             x_stroke.clone(),
         );
 
-        for x_usize in 2..6 {
-            // let x = plot_width * (x_usize as f32 + 0.5) / 7.0 + PLOT_X_OFFSET;
-            let x = x_unit * (x_usize as f32 + 0.5) + PLOT_X_OFFSET;
+        for x_usize in 2..NUM_X_TICKS {
+            let x = x_unit * (x_usize as f32 + 0.5) + x_offset;
             let y1 = plot_height + y_offset0 + space;
 
             frame.stroke(
@@ -279,13 +306,107 @@ impl canvas::Program<Message> for Plot {
                     width: 1.0,
                     line_cap: canvas::LineCap::Round,
                     line_join: canvas::LineJoin::Round,
-                    line_dash: canvas::LineDash {
-                        segments: &[3., 3.],
-                        offset: 0,
-                    },
+                    ..Default::default()
                 },
-            );
+            )
         }
+
+        //////////////////////////////// bottom CA CO table //////////////////////////////////////
+        // y = y_unit * NUM_X_TICKS as f32 + y_offset0 + space;
+        let y1 = plot_height + y_offset0 + space + 15.0;
+        let upper_left = Point::new(space + x_offset, y1);
+
+        // let max_x_units = 13;
+        // let max_x = x_unit * 0.5 * (max_x_units as f32 + 1.0) + x_offset;
+
+        let max_x = x_unit * 0.5 * ((2 * NUM_X_TICKS) as f32 + 0.5);
+        let size = Size::new(max_x, CACO_Y_SIZE);
+
+        let caco_stroke = canvas::Stroke {
+            style: canvas::Style::Solid(config::GRID_COLOR),
+            width: 1.0,
+            line_cap: canvas::LineCap::Round,
+            line_join: canvas::LineJoin::Round,
+            ..Default::default()
+        };
+        frame.stroke(
+            &Path::new(|p| {
+                p.rectangle(upper_left, size);
+            }),
+            caco_stroke.clone(),
+        );
+
+        frame.fill(
+            &Path::new(|p| {
+                p.rectangle(upper_left, Size::new(x_unit * 1.75, size.height));
+            }),
+            config::GRID_COLOR,
+        );
+
+        frame.stroke(
+            &Path::new(|p| {
+                p.move_to(upper_left + Vector::new(0.0, size.height / 2.0));
+                p.line_to(upper_left + Vector::new(size.width, size.height / 2.0));
+            }),
+            caco_stroke.clone(),
+        );
+
+        for x in 1..(2 * NUM_X_TICKS + 1) {
+            let x = x_unit * 0.5 * (x as f32 + 0.5) + upper_left.x;
+            // let y1 = plot_height + y_offset0 + space;
+
+            frame.stroke(
+                &Path::new(|p| {
+                    p.move_to(Point::new(x, upper_left.y));
+                    p.line_to(Point::new(x, upper_left.y + size.height));
+                }),
+                canvas::Stroke {
+                    style: canvas::Style::Solid(config::GRID_COLOR),
+                    width: 1.0,
+                    line_cap: canvas::LineCap::Round,
+                    line_join: canvas::LineJoin::Round,
+                    ..Default::default()
+                },
+            )
+        }
+
+        frame.fill(
+            &Path::new(|p| {
+                p.rectangle(
+                    upper_left + Vector::new(x_unit * 2.25, 0.0),
+                    Size::new(x_unit / 2.0, size.height),
+                );
+            }),
+            config::GRID_COLOR,
+        );
+
+        frame.fill(
+            &Path::new(|p| {
+                p.rectangle(
+                    upper_left + Vector::new(x_unit * 6.25, size.height / 2.0),
+                    Size::new(x_unit, size.height / 2.0),
+                );
+            }),
+            config::GRID_COLOR,
+        );
+
+        frame.fill_text(Text {
+            content: "CA".to_string(),
+            horizontal_alignment: Horizontal::Right,
+            vertical_alignment: Vertical::Center,
+            position: upper_left + Vector::new(-PLOT_TICK_LABEL_SPACE, size.height / 4.0),
+            ..legend_text
+        });
+
+        frame.fill_text(Text {
+            content: "CO".to_string(),
+            horizontal_alignment: Horizontal::Right,
+            vertical_alignment: Vertical::Center,
+            position: upper_left + Vector::new(-PLOT_TICK_LABEL_SPACE, 3.0 * size.height / 4.0),
+            ..legend_text
+        });
+
+        //////////////////////////////// bottom CA CO table //////////////////////////////////////
 
         let stroke = PLOT_SHAPE_STROKE;
 
@@ -350,15 +471,16 @@ impl canvas::Program<Message> for Plot {
         x = x + 25.0;
         frame.stroke(&Shape::right_bracket(Point::new(x, y), ss), stroke.clone());
         frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
+        frame.stroke(&Shape::vt(Point::new(x, y), ss), stroke.clone());
         // draw a small bottom right arrow as a data point example
         frame.stroke(
             &Shape::bottom_right_arrow(Point::new(x, y), ss),
             stroke.clone(),
         );
 
-        // draw VT as a data point example
+        // draw asterisk as a data point example
         x = x + 25.0;
-        frame.stroke(&Shape::vt(Point::new(x, y), ss), stroke.clone());
+        frame.stroke(&Shape::asterisk(Point::new(x, y), ss), stroke.clone());
         frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
 
         self.plot_data(&mut frame, &self.ear_side);
@@ -686,20 +808,43 @@ impl Shape {
     // VT
     pub fn vt(pos: Point, size: f32) -> Path {
         Path::new(|p| {
-            let s = size;
-            let oy = Vector::new(0., s / 2.0);
+            let s = size * 0.5;
+            let oy = Vector::new(size * 0.7, -size);
             let pos = pos + oy;
+            let xt = s / 3.0;
 
             p.move_to(pos + Vector::new(-s / 2.0, 0.0));
             p.line_to(pos + Vector::new(0.0, -s));
             p.move_to(pos + Vector::new(-s / 2.0, 0.0));
             p.line_to(pos + Vector::new(-s, -s));
 
-            p.move_to(pos + Vector::new(s / 2.0, 0.0));
+            p.move_to(pos + Vector::new(s / 2.0 + xt, 0.0));
 
-            p.line_to(pos + Vector::new(s / 2.0, -s));
-            p.move_to(pos + Vector::new(0.0, -s));
-            p.line_to(pos + Vector::new(s, -s));
+            p.line_to(pos + Vector::new(s / 2.0 + xt, -s));
+            p.move_to(pos + Vector::new(xt, -s));
+            p.line_to(pos + Vector::new(s + xt, -s));
+        })
+    }
+
+    // asterisk
+    pub fn asterisk(pos: Point, size: f32) -> Path {
+        Path::new(|p| {
+            // make the asterisk shape with 3 lines
+            let s = size * 0.35;
+            let oy = Vector::new(size * 0.7, -size);
+            let pos = pos + oy;
+
+            let theta = 30.0_f32.to_radians();
+            let x = Vector::new(0., s);
+            let y = Vector::new(s, 0.);
+            p.move_to(pos + x * theta.cos() + y * theta.sin());
+            p.line_to(pos - x * theta.cos() - y * theta.sin());
+
+            p.move_to(pos - x * theta.cos() + y * theta.sin());
+            p.line_to(pos + x * theta.cos() - y * theta.sin());
+
+            p.move_to(pos + y);
+            p.line_to(pos - y);
         })
     }
 }

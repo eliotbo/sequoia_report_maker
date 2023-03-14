@@ -6,9 +6,9 @@ use iced::widget::canvas;
 
 use iced::widget::canvas::{Canvas, Cursor, Text};
 
-use iced::{Color, Element, Length, Point, Rectangle, Size};
+use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
-use crate::config::{CORNER_RADIUS, PLOT_Y_OFFSET_START, SPACE};
+use crate::config::{CORNER_RADIUS, LEGEND_HEIGHT, LEGEND_Y_OFFSET_START, SPACE};
 use crate::plot::{add_contour, Shape};
 use crate::Message;
 
@@ -60,10 +60,7 @@ impl canvas::Program<Message> for Legend {
         let lx = space + 2.0 * ss;
 
         // vertical space
-        let vs = 2. * ss + 1.0;
-
-        // vertical offset
-        let offset = 1.0 * vs;
+        let vs = 2. * ss - 1.0;
 
         // let legend_rect = Point::new(0.0, config::PLOT_Y_OFFSET_START + config::SPACE);
         // let rectangle = Rectangle::new(Point::ORIGIN, bounds.size());
@@ -77,7 +74,7 @@ impl canvas::Program<Message> for Legend {
         //         rule: canvas::FillRule::NonZero,
         //     },
         // );
-        let legend_rect_start = Point::new(0.0, PLOT_Y_OFFSET_START);
+        let legend_rect_start = Point::new(0.0, LEGEND_Y_OFFSET_START);
         // let legend_rect_size = Size::new(bounds.width, bounds.height - PLOT_Y_OFFSET_START  );
         let legend_rect_size = Size::new(bounds.width, 273.0);
         // let rectangle = Rectangle::new(legend_rect_start, legend_rect_size);
@@ -103,13 +100,13 @@ impl canvas::Program<Message> for Legend {
 
         let center_h = bounds.width / 2.0;
 
-        let mut v = 1.0 * vs + offset;
+        let mut v = LEGEND_Y_OFFSET_START + 9.0;
 
         let droit = Text {
             content: "DROITE".to_string(),
             color: legend_text_color,
             size: 16.0,
-            position: Point::new(space + 4.0, v - vs * 0.2),
+            position: Point::new(space + 4.0, v),
             horizontal_alignment: Horizontal::Left,
             vertical_alignment: Vertical::Center,
             ..Text::default()
@@ -120,7 +117,7 @@ impl canvas::Program<Message> for Legend {
             content: "GAUCHE".to_string(),
             color: legend_text_color,
             size: 16.0,
-            position: Point::new(bounds.width - space - 4.0, v - vs * 0.2),
+            position: Point::new(bounds.width - space - 4.0, v),
             horizontal_alignment: Horizontal::Right,
             vertical_alignment: Vertical::Center,
             ..Text::default()
@@ -128,7 +125,7 @@ impl canvas::Program<Message> for Legend {
 
         frame.fill_text(gauche.clone());
 
-        v += vs;
+        v += vs * 0.95;
         let seuil_aerien = Text {
             content: "SEUIL AÉRIEN".to_string(),
             color: legend_text_color,
@@ -188,7 +185,7 @@ impl canvas::Program<Message> for Legend {
         frame.stroke(&Shape::u(Point::new(rx, v), ss), stroke.clone());
         frame.stroke(&Shape::u(Point::new(lx, v), ss), stroke.clone());
 
-        v += 1.5 * vs;
+        v += 1.0 * vs;
         let seuil_osseux = Text {
             content: "SEUIL OSSEUX".to_string(),
             color: legend_text_color,
@@ -234,7 +231,7 @@ impl canvas::Program<Message> for Legend {
         frame.stroke(&Shape::left_bracket(Point::new(lx, v), ss), stroke.clone());
         frame.stroke(&Shape::right_bracket(Point::new(rx, v), ss), stroke.clone());
 
-        v += 1.5 * vs;
+        v += 1.0 * vs;
         let seuil_osseux = Text {
             content: "DIVERS".to_string(),
             color: legend_text_color,
@@ -284,28 +281,38 @@ impl canvas::Program<Message> for Legend {
             position: Point::new(center_h, v),
             ..legend_text
         });
-        let vt_offset = -0.0;
+
+        let dxy = Vector::new(ss * 0.7, -ss - 4.0);
         frame.stroke(
-            &Shape::vt(Point::new(lx + 0., v + vt_offset), ss),
+            &Shape::vt(Point::new(lx - 0.0, v) - dxy, ss),
             stroke.clone(),
         );
         frame.stroke(
-            &&Shape::vt(Point::new(rx + 0.3, v + vt_offset), ss),
+            &&Shape::vt(Point::new(rx + 0.3, v) - dxy, ss),
             stroke.clone(),
         );
 
-        // frame.fill_text(Text {
-        //     content: "VT".to_string(),
-        //     position: Point::new(lx + 0., v),
-        //     size: 18.0,
-        //     ..legend_text
-        // });
-        // frame.fill_text(Text {
-        //     content: "VT".to_string(),
-        //     position: Point::new(rx + 0.3, v),
-        //     size: 18.0,
-        //     ..legend_text
-        // });
+        v += vs;
+        let oy = Vector::new(ss * 0.7, -ss);
+        frame.fill_text(Text {
+            content: "Non-valide".to_string(),
+            position: Point::new(center_h, v),
+            ..legend_text
+        });
+        frame.stroke(&Shape::asterisk(Point::new(lx, v) - oy, ss), stroke.clone());
+        frame.stroke(&Shape::asterisk(Point::new(rx, v) - oy, ss), stroke.clone());
+
+        // frame.stroke(
+        //     &Shape::asterisk(Point::new(lx - 2.0, v) - dxy, ss),
+        //     stroke.clone(),
+        // );
+        // frame.stroke(
+        //     &&Shape::asterisk(Point::new(rx + 2.3, v) - dxy, ss),
+        //     stroke.clone(),
+        // );
+
+        // v += vs;
+        // println!("v = {}", v);
 
         vec![frame.into_geometry()]
     }
@@ -315,7 +322,9 @@ pub fn draw_legend() -> Element<'static, Message> {
     // let plotter = Plot::new(data);
     let legend = Legend::default();
     // Element::new(Plot::new(data))
-    let can = Canvas::new(legend).width(Length::Fill).height(Length::Fill);
+    let can = Canvas::new(legend)
+        .width(Length::Fill)
+        .height(Length::Fixed(LEGEND_HEIGHT));
 
     let element = Element::new(can);
     element
