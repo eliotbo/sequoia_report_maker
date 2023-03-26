@@ -8,7 +8,7 @@ use iced::widget::canvas::{Canvas, Cursor, Text};
 
 use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
-use crate::config::{CORNER_RADIUS, LEGEND_HEIGHT, LEGEND_Y_OFFSET_START, SPACE};
+use crate::config::{CORNER_RADIUS, LEGEND_HEIGHT, LEGEND_WIDTH, LEGEND_Y_OFFSET_START, SPACE};
 use crate::plot::{add_contour, Shape};
 use crate::Message;
 
@@ -185,6 +185,26 @@ impl canvas::Program<Message> for Legend {
         frame.stroke(&Shape::u(Point::new(rx, v), ss), stroke.clone());
         frame.stroke(&Shape::u(Point::new(lx, v), ss), stroke.clone());
 
+        v += vs;
+        // let oy = Vector::new(ss * 0.7, -ss);
+        frame.fill_text(Text {
+            content: "Champ libre".to_string(),
+            position: Point::new(center_h, v),
+            ..legend_text
+        });
+        frame.stroke(&Shape::z(Point::new(lx, v), ss), stroke.clone());
+        frame.stroke(&Shape::z(Point::new(rx, v), ss), stroke.clone());
+
+        v += vs;
+        let oy = Vector::new(ss * 0.7, -ss);
+        frame.fill_text(Text {
+            content: "Avec appareil auditif".to_string(),
+            position: Point::new(center_h, v),
+            ..legend_text
+        });
+        frame.stroke(&Shape::a(Point::new(lx, v), ss), stroke.clone());
+        frame.stroke(&Shape::a(Point::new(rx, v), ss), stroke.clone());
+
         v += 1.0 * vs;
         let seuil_osseux = Text {
             content: "SEUIL OSSEUX".to_string(),
@@ -233,7 +253,7 @@ impl canvas::Program<Message> for Legend {
 
         v += 1.0 * vs;
         let seuil_osseux = Text {
-            content: "DIVERS".to_string(),
+            content: " ".to_string(),
             color: legend_text_color,
             size: 16.0,
             position: Point::new(center_h, v),
@@ -295,7 +315,7 @@ impl canvas::Program<Message> for Legend {
         v += vs;
         let oy = Vector::new(ss * 0.7, -ss);
         frame.fill_text(Text {
-            content: "Non-valide".to_string(),
+            content: "Masque insuffisant".to_string(),
             position: Point::new(center_h, v),
             ..legend_text
         });
@@ -323,7 +343,7 @@ pub fn draw_legend() -> Element<'static, Message> {
     let legend = Legend::default();
     // Element::new(Plot::new(data))
     let can = Canvas::new(legend)
-        .width(Length::Fill)
+        .width(Length::Fixed(LEGEND_WIDTH))
         .height(Length::Fixed(LEGEND_HEIGHT));
 
     let element = Element::new(can);

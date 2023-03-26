@@ -2,14 +2,39 @@ use iced::{Color, Size};
 
 use iced::widget::canvas;
 
+pub const SECTION_TITLE_BG_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
+pub const SECTION_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.05, 0.05, 0.02);
+
+pub const SECTION_SEPARATOR_SPACE: f32 = 10.0;
+
+pub const TABLE_ENTRY_TITLE_SIZE: f32 = 16.;
+pub const TABLE_ENTRY_SIZE: f32 = 12.;
+pub const TABLE_TITLE_SIZE: f32 = 18.;
+
+pub const TABLE_TEXT_COLOR: Color = Color::from_rgb(0.75, 0.75, 0.7);
+pub const TABLE_SPACING: f32 = 4.0;
+pub const TABLE_BACKGROUND_COLOR: Color = Color::from_rgb(0.4, 0.4, 0.4);
+
+pub const TABLE_TITLE_BG_COLOR: Color = Color::from_rgb(0.4, 0.4, 0.4);
+pub const TABLE_BORDER_COLOR: Color = Color::from_rgb(0.4, 0.4, 0.4);
+
+pub const TABLE_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.85, 0.85, 0.8);
+pub const TONAL_TABLE_COL_WIDTH: f32 = 60.0;
+
 pub const SPACE: f32 = 1.0;
 pub const CORNER_RADIUS: f32 = 15.0;
 pub const AXIS_LABEL_COLOR: Color = Color::from_rgb(0.75, 0.75, 0.7);
 pub const GRID_COLOR: Color = Color::from_rgb(0.4, 0.4, 0.4);
 
-pub const LEGEND_HEIGHT: f32 = 245.0;
+pub const RADIO_SPACING: f32 = 3.0;
+pub const RADIO_TITLE_SIZE: f32 = 16.0;
+
+pub const LEGEND_HEIGHT: f32 = 283.0;
+pub const LEGEND_WIDTH: f32 = 220.0;
 pub const LEGEND_Y_OFFSET_START: f32 = 13.0;
 
+pub const PLOT_CANVAS_HEIGHT: f32 = 427.0;
+pub const PLOT_CANVAS_WIDTH: f32 = 460.0;
 pub const PLOT_X_OFFSET_START: f32 = 35.0;
 pub const PLOT_X_OFFSET_END: f32 = 35.0;
 pub const PLOT_Y_OFFSET_START: f32 = 25.0;

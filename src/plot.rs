@@ -2,7 +2,7 @@ use iced::alignment::{Horizontal, Vertical};
 
 use iced::theme::Theme;
 
-use iced::widget::canvas;
+use iced::widget::{canvas, container};
 
 use iced::widget::canvas::path::{Arc, Builder};
 use iced::widget::canvas::{Cache, Canvas, Cursor, Path, Text};
@@ -10,17 +10,21 @@ use iced::widget::canvas::{Cache, Canvas, Cursor, Path, Text};
 use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::config::{
-    self, CORNER_RADIUS, PLOT_CA_CO_Y_SPACE, PLOT_DASH, PLOT_DOT_SIZE, PLOT_SHAPE_SIZE,
-    PLOT_SHAPE_STROKE, PLOT_TICK_LABEL_SPACE, PLOT_TICK_SIZE, PLOT_X_AXIS, PLOT_X_OFFSET_END,
-    PLOT_X_OFFSET_START, PLOT_Y_AXIS, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START, SPACE,
+    self, CORNER_RADIUS, PLOT_CANVAS_HEIGHT, PLOT_CANVAS_WIDTH, PLOT_CA_CO_Y_SPACE, PLOT_DASH,
+    PLOT_DOT_SIZE, PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE, PLOT_TICK_LABEL_SPACE, PLOT_TICK_SIZE,
+    PLOT_X_AXIS, PLOT_X_OFFSET_END, PLOT_X_OFFSET_START, PLOT_Y_AXIS, PLOT_Y_OFFSET_END,
+    PLOT_Y_OFFSET_START, SPACE,
 };
 use crate::Message;
 
 const NUM_X_TICKS: usize = 7;
 const NUM_Y_TICKS: usize = 14;
+
+#[derive(Debug, Clone, Copy)]
 pub enum EarSide {
     Right,
     Left,
+    Free,
 }
 
 enum Conduction {
@@ -148,10 +152,10 @@ impl Plot {
                 &self.shape.draw_shape(Point::new(x, y), PLOT_SHAPE_SIZE),
                 PLOT_SHAPE_STROKE,
             );
-            frame.fill(
-                &Shape::circle(Point::new(x, y), PLOT_DOT_SIZE),
-                Color::from_rgb8(200, 0, 0),
-            );
+            // frame.fill(
+            //     &Shape::circle(Point::new(x, y), PLOT_DOT_SIZE),
+            //     Color::from_rgb8(200, 0, 0),
+            // );
         }
     }
 }
@@ -553,6 +557,16 @@ impl canvas::Program<Message> for Plot {
 
         self.plot_data(&mut frame, &self.ear_side);
 
+        // draw the A symbol as a data point example
+        x = x + 25.0;
+        frame.stroke(&Shape::a(Point::new(x, y), ss), stroke.clone());
+        frame.fill(&Shape::circle(Point::new(x, y), ds * 0.5), dot_color);
+
+        // draw the Z symbol as a data point example
+        x = x + 25.0;
+        frame.stroke(&Shape::z(Point::new(x, y), ss), stroke.clone());
+        frame.fill(&Shape::circle(Point::new(x, y), ds * 0.5), dot_color);
+
         // add_contour(&mut frame, rectangle, radius, space, 2.0, Color::WHITE);
 
         vec![frame.into_geometry()]
@@ -694,10 +708,12 @@ pub fn plot<'a>(data: Vec<f32>, shape: Shape, ear_side: EarSide) -> Element<'a, 
     let plotter = Plot::new(data, shape, ear_side);
     // Element::new(Plot::new(data))
     let can = Canvas::new(plotter)
-        .width(Length::Fill)
-        .height(Length::Fill);
+        // .width(Length::Fill)
+        .width(Length::Fixed(PLOT_CANVAS_WIDTH))
+        .height(Length::Fixed(PLOT_CANVAS_HEIGHT));
 
     let element = Element::new(can);
+    // let element = container(can).into();
     element
 }
 
@@ -771,8 +787,9 @@ impl Shape {
     // bottom left arrow
     pub fn bottom_left_arrow(pos: Point, size: f32) -> Path {
         Path::new(|p| {
-            let arror_len = size * 1.2;
-            let tail_len = 0.55 * size;
+            let s = size * 0.7;
+            let arror_len = s * 1.2;
+            let tail_len = 0.55 * s;
             let oy = Vector::new(0., size * 0.6);
             p.move_to(pos + oy);
             p.line_to(pos + Vector::new(-arror_len, arror_len) + oy);
@@ -785,8 +802,9 @@ impl Shape {
     // botton right arrow
     pub fn bottom_right_arrow(pos: Point, size: f32) -> Path {
         Path::new(|p| {
-            let arror_len = size * 1.2;
-            let tail_len = 0.55 * size;
+            let s = size * 0.7;
+            let arror_len = s * 1.2;
+            let tail_len = 0.55 * s;
             let oy = Vector::new(0., size * 0.6);
             p.move_to(pos + oy);
             p.line_to(pos + Vector::new(arror_len, arror_len) + oy);
@@ -913,6 +931,43 @@ impl Shape {
 
             p.move_to(pos + y);
             p.line_to(pos - y);
+        })
+    }
+
+    // the symbol for the letter A
+    pub fn a(pos: Point, size: f32) -> Path {
+        Path::new(|p| {
+            let s = size * 0.5;
+            // let oy = Vector::new(size * 0.7, -size);
+            let oy = Vector::new(0., 0.);
+            let pos = pos + oy;
+            let a = 0.75;
+
+            p.move_to(pos + Vector::new(-s * a, s));
+            p.line_to(pos + Vector::new(0.0, -s));
+            p.line_to(pos + Vector::new(s * a, s));
+
+            p.move_to(pos + Vector::new(-s * a / 2.0, s * 0.2));
+            p.line_to(pos + Vector::new(s * a / 2.0, s * 0.2));
+            // p.line_to(pos + Vector::new(-s, 0.0));
+            // p.move_to(pos + Vector::new(0.0, -s));
+            // p.line_to(pos + Vector::new(0.0, -s * 2.0));
+        })
+    }
+
+    // the symbol for the letter Z
+    pub fn z(pos: Point, size: f32) -> Path {
+        Path::new(|p| {
+            let s = size * 0.5;
+            // let oy = Vector::new(size * 0.7, -size);
+            let oy = Vector::new(0., 0.);
+            let pos = pos + oy;
+            let a = 0.75;
+
+            p.move_to(pos + Vector::new(-s * a, s));
+            p.line_to(pos + Vector::new(s * a, s));
+            p.line_to(pos + Vector::new(-s * a, -s));
+            p.line_to(pos + Vector::new(s * a, -s));
         })
     }
 }

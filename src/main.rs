@@ -5,9 +5,18 @@ mod config;
 mod legend;
 mod plot;
 mod preset;
+mod tonal_tables;
 
+use tonal_tables::{
+    get_message_fn, make_tonal_tables, make_vocal_tables, TableContainerCustomStyle,
+    TableTitleCustomStyle, TonalTable,
+};
 // use checkboxes::{Transductor, Validity};
 // use grid::Grid;
+use config::{
+    LEGEND_WIDTH, RADIO_SPACING, RADIO_TITLE_SIZE, SECTION_SEPARATOR_SPACE, SECTION_TITLE_BG_COLOR,
+    SECTION_TITLE_TEXT_COLOR,
+};
 use legend::{draw_legend, Legend};
 use plot::{plot, EarSide, Plot, Shape};
 use preset::Preset;
@@ -70,20 +79,6 @@ impl Default for Transductor {
     }
 }
 
-pub fn get_message_fn(s: &str, is_right: bool) -> impl Fn(String) -> Message {
-    match s {
-        "MSP" if is_right => Message::MSPRightChanged,
-        "SDP" if is_right => Message::SDPRightChanged,
-        "MSP4" if is_right => Message::MSP4RightChanged,
-        "SRP" if is_right => Message::SRPRightChanged,
-
-        "MSP" if !is_right => Message::MSPLeftChanged,
-        "SDP" if !is_right => Message::SDPLeftChanged,
-        "MSP4" if !is_right => Message::MSP4LeftChanged,
-        "SRP" if !is_right => Message::SRPLeftChanged,
-        _ => panic!("Not a valid Table message: {}", s),
-    }
-}
 pub fn main() -> iced::Result {
     env_logger::builder().format_timestamp(None).init();
 
@@ -91,7 +86,7 @@ pub fn main() -> iced::Result {
         antialiasing: true,
         window: window::Settings {
             position: window::Position::Centered,
-            size: (1080, 750),
+            size: (1080, 950),
             ..window::Settings::default()
         },
         ..Settings::default()
@@ -99,15 +94,13 @@ pub fn main() -> iced::Result {
 }
 
 #[derive(Default)]
-struct Table {
-    msp: String,
+struct VocalTable {
     sdp: String,
-    msp4: String,
     srp: String,
 }
 
 #[derive(Default)]
-struct AudioRox {
+pub struct AudioRox {
     is_playing: bool,
     queued_ticks: usize,
     speed: usize,
@@ -119,8 +112,13 @@ struct AudioRox {
     validity: Validity,
     method: Method,
     transductor: Transductor,
-    table_left: Table,
-    table_right: Table,
+    pub tonal_table_left: TonalTable,
+    pub tonal_table_right: TonalTable,
+    pub tonal_table_free: TonalTable,
+
+    vocal_table_left: VocalTable,
+    vocal_table_right: VocalTable,
+    vocal_table_free: VocalTable,
 }
 
 #[derive(Debug, Clone)]
@@ -139,6 +137,16 @@ pub enum Message {
     SDPLeftChanged(String),
     MSP4LeftChanged(String),
     SRPLeftChanged(String),
+
+    FLCHRightChanged(String),
+    FLCHLeftChanged(String),
+
+    MSPFreeChanged(String),
+    SDPFreeChanged(String),
+    MSP4FreeChanged(String),
+    SRPFreeChanged(String),
+    FLCHFreeChanged(String),
+
     None,
 }
 
@@ -175,15 +183,27 @@ impl Application for AudioRox {
                 self.transductor = new_transductor;
             }
             Message::MethodChanged(new_method) => self.method = new_method,
-            Message::MSPRightChanged(new_msp) => self.table_right.msp = new_msp,
-            Message::SDPRightChanged(new_sdp) => self.table_right.sdp = new_sdp,
-            Message::MSP4RightChanged(new_msp4) => self.table_right.msp4 = new_msp4,
-            Message::SRPRightChanged(new_srp) => self.table_right.srp = new_srp,
+            Message::MSPRightChanged(new_msp) => self.tonal_table_right.msp = new_msp,
+            Message::SDPRightChanged(new_sdp) => self.vocal_table_right.sdp = new_sdp,
+            Message::MSP4RightChanged(new_msp4) => self.tonal_table_right.msp4 = new_msp4,
+            Message::SRPRightChanged(new_srp) => self.vocal_table_right.srp = new_srp,
 
-            Message::MSPLeftChanged(new_msp) => self.table_left.msp = new_msp,
-            Message::SDPLeftChanged(new_sdp) => self.table_left.sdp = new_sdp,
-            Message::MSP4LeftChanged(new_msp4) => self.table_left.msp4 = new_msp4,
-            Message::SRPLeftChanged(new_srp) => self.table_left.srp = new_srp,
+            Message::MSPLeftChanged(new_msp) => self.tonal_table_left.msp = new_msp,
+            Message::SDPLeftChanged(new_sdp) => self.vocal_table_left.sdp = new_sdp,
+            Message::MSP4LeftChanged(new_msp4) => self.tonal_table_left.msp4 = new_msp4,
+            Message::SRPLeftChanged(new_srp) => self.vocal_table_left.srp = new_srp,
+
+            Message::FLCHRightChanged(new_fletcher) => {
+                self.tonal_table_right.fletcher = new_fletcher
+            }
+            Message::FLCHLeftChanged(new_fletcher) => self.tonal_table_left.fletcher = new_fletcher,
+
+            Message::MSPFreeChanged(new_msp) => self.tonal_table_free.msp = new_msp,
+            Message::MSP4FreeChanged(new_msp4) => self.tonal_table_free.msp4 = new_msp4,
+            Message::FLCHFreeChanged(new_fletcher) => self.tonal_table_free.fletcher = new_fletcher,
+
+            Message::SDPFreeChanged(new_sdp) => self.vocal_table_free.sdp = new_sdp,
+            Message::SRPFreeChanged(new_srp) => self.vocal_table_free.srp = new_srp,
 
             Message::None => {}
         }
@@ -196,9 +216,12 @@ impl Application for AudioRox {
     }
 
     fn view(&self) -> Element<Message> {
-        ///////////////////////////////////////////// VALIDITE /////////////////////////////////////////////
+        //
         let r_size = 16;
         let t_size = 16;
+        // let RADIO_TITLE_SIZE = 18;
+
+        ///////////////////////////////////////////// VALIDITE /////////////////////////////////////////////
         let validity = self.validity;
 
         let good_validity = radio(
@@ -207,6 +230,7 @@ impl Application for AudioRox {
             Some(validity),
             Message::ValidityChanged,
         )
+        .spacing(RADIO_SPACING)
         .size(r_size)
         .text_size(t_size);
 
@@ -216,6 +240,7 @@ impl Application for AudioRox {
             Some(validity),
             Message::ValidityChanged,
         )
+        .spacing(RADIO_SPACING)
         .size(r_size)
         .text_size(t_size);
 
@@ -225,6 +250,7 @@ impl Application for AudioRox {
             Some(validity),
             Message::ValidityChanged,
         )
+        .spacing(RADIO_SPACING)
         .size(r_size)
         .text_size(t_size);
 
@@ -232,14 +258,14 @@ impl Application for AudioRox {
             .spacing(6)
             .width(Length::Shrink);
 
-        let validity_title = text("Validité").size(20).width(Length::Shrink);
+        let validity_title = text("Validité")
+            .size(RADIO_TITLE_SIZE)
+            .width(Length::Shrink);
 
         let validity_content = column![validity_title, validity_section,].spacing(3);
         ///////////////////////////////////////////// VALIDITE /////////////////////////////////////////////
 
         ///////////////////////////////////////////// METHOD /////////////////////////////////////////////
-        let r_size = 16;
-        let t_size = 16;
         let method = self.method;
 
         let visual_method = radio(
@@ -249,36 +275,40 @@ impl Application for AudioRox {
             Message::MethodChanged,
         )
         .size(r_size)
+        .spacing(RADIO_SPACING)
         .text_size(t_size);
 
         let play_method = radio("Jeu", Method::Play, Some(method), Message::MethodChanged)
             .size(r_size)
-            .text_size(t_size);
+            .text_size(t_size)
+            .spacing(RADIO_SPACING);
 
         let method_section = column![visual_method, play_method]
             .spacing(6)
             .width(Length::Shrink);
 
-        let method_title = text("Méthode").size(20).width(Length::Shrink);
+        let method_title = text("Méthode").size(RADIO_TITLE_SIZE).width(Length::Shrink);
 
-        let audriometer_type = column![
-            text("Audiomètre:\nAD629")
-                .size(16)
-                .horizontal_alignment(Horizontal::Left),
-            vertical_space(10),
-            text("Normes ANSI\nen vigueur")
-                .size(16)
-                .horizontal_alignment(Horizontal::Left),
-        ]
-        .align_items(Alignment::Start);
+        // let audriometer_type =
 
-        let method_content = row![
-            horizontal_space(5),
-            audriometer_type,
-            horizontal_space(45),
-            column![method_title, vertical_space(3.0), method_section,],
-        ];
+        let method_radio = column![method_title, method_section].spacing(3);
+
+        // let method_radio_and_audiotype =
+        //     row![method_radio, horizontal_space(45.0), audriometer_type];
+
         ///////////////////////////////////////////// METHOD /////////////////////////////////////////////
+
+        ///////////////////////////////////////////// standard /////////////////////////////////////////////
+        let standard = column![
+            text("Audiomètre: AD629").size(16),
+            text("Normes en vigueur : ANSI série 3 ")
+                .size(16)
+                .horizontal_alignment(Horizontal::Left),
+            vertical_space(3.),
+            text("Seuils antérieurs aériens ( o) : _______").size(16),
+        ];
+        let standard_container = container(column![standard,].align_items(Alignment::Start));
+        ///////////////////////////////////////////// standard /////////////////////////////////////////////
 
         ///////////////////////////////////////////// TRANSDUCTOR /////////////////////////////////////////////
         let transductor = self.transductor;
@@ -289,6 +319,7 @@ impl Application for AudioRox {
             Some(transductor),
             Message::TransductorChanged,
         )
+        .spacing(RADIO_SPACING)
         .size(r_size)
         .text_size(t_size);
 
@@ -298,102 +329,31 @@ impl Application for AudioRox {
             Some(transductor),
             Message::TransductorChanged,
         )
+        .spacing(RADIO_SPACING)
         .size(r_size)
         .text_size(t_size);
 
         let free = radio(
-            "Libre",
+            "C.Libre",
             Transductor::Free,
             Some(transductor),
             Message::TransductorChanged,
         )
+        .spacing(RADIO_SPACING)
         .size(r_size)
         .text_size(t_size);
 
         let transductor_section = column![intra, supra, free].spacing(6).width(Length::Shrink);
 
-        let transductor_title = text("Écouteurs").size(20).width(Length::Shrink);
+        let transductor_title = text("Écouteurs")
+            .size(RADIO_TITLE_SIZE)
+            .width(Length::Shrink);
 
         let transductor_content = column![transductor_title, transductor_section,].spacing(3);
         ///////////////////////////////////////////// TRANSDUCTOR /////////////////////////////////////////////
-        ///
-        ///////////////////////////////////////////// TABLE /////////////////////////////////////////////
-        let input_table_columns_left = [
-            ("MSP", &self.table_left.msp),
-            ("SDP", &self.table_left.sdp),
-            ("MSP4", &self.table_left.msp4),
-            ("SRP", &self.table_left.srp),
-        ];
 
-        let input_table_columns_right = [
-            ("MSP", &self.table_right.msp),
-            ("SDP", &self.table_right.sdp),
-            ("MSP4", &self.table_right.msp4),
-            ("SRP", &self.table_right.srp),
-            // ("N Confor\nparole", &self),
-        ];
-        // let msp = column!["MSP", ""];
-        // let sdp = column!["SDP", ""];
-        // let msp4 = column!["MSP4", ""];
-        // let srp = column!["SRP", ""];
-        let mut table_left = Row::new();
-        let col_width = 60.0;
-
-        for (s, variable) in input_table_columns_left.iter() {
-            let is_right = false;
-            let message_fn = get_message_fn(s, is_right);
-            let entry = column![
-                container(text(*s))
-                    .style(theme::Container::Box)
-                    .padding(5)
-                    .width(Length::Fixed(col_width))
-                    .align_x(Horizontal::Center),
-                text_input("", &variable, message_fn)
-                    .padding(3)
-                    .size(24)
-                    .width(Length::Fixed(col_width)),
-                // container("sO").style(theme::Container::Box).padding(5)
-            ]
-            .align_items(Alignment::Center);
-
-            table_left = table_left.push(entry);
-            table_left = table_left.push(horizontal_space(Length::Fixed(3.0)));
-            // table = table.push(Rule::vertical(10));
-            // table_left = table_left.height(Length::Shrink);
-        }
-        let table_left = table_left.height(Length::Shrink);
-
-        let mut table_right = Row::new();
-
-        for (s, variable) in input_table_columns_right.iter() {
-            let is_right = true;
-            let message_fn = get_message_fn(s, is_right);
-            let entry = column![
-                container(text(*s))
-                    .style(theme::Container::Box)
-                    .padding(5)
-                    .width(Length::Fixed(col_width))
-                    .align_x(Horizontal::Center),
-                text_input("", &variable, message_fn)
-                    .padding(3)
-                    .size(24)
-                    .width(Length::Fixed(col_width)),
-                // container("sO").style(theme::Container::Box).padding(5)
-            ]
-            .align_items(Alignment::Center);
-
-            table_right = table_right.push(entry);
-            table_right = table_right.push(horizontal_space(Length::Fixed(3.0)));
-            // table = table.push(Rule::vertical(10));
-            // table_left = table_left.height(Length::Shrink);
-        }
-        let table_right = table_right.height(Length::Shrink);
-
-        // let delimited_table = column![table, Rule::horizontal(1)];
-
-        // let table = column!["TITLE", row![msp,sdp,msp4, srp]];
-
-        ///////////////////////////////////////////// TABLE /////////////////////////////////////////////
+        let (tonal_table_right, tonal_table_left, tonal_table_free) = make_tonal_tables(&self);
+        let (vocal_table_right, vocal_table_left) = make_vocal_tables(&self);
 
         // create a header with two columns of text: on the left and one on the right
         let text_vspace = 20.0;
@@ -406,9 +366,17 @@ impl Application for AudioRox {
                     .size(20)
                     .horizontal_alignment(Horizontal::Left),
             ]
-            .width(Length::Fill),
+            .width(Length::FillPortion(1)),
+            // .align(Alignment::Start),
+            horizontal_space(1),
+            text("ÉVALUATION\nAUDIOLOGIQUE")
+                .size(30)
+                .horizontal_alignment(Horizontal::Center)
+                .width(Length::Fill),
+            horizontal_space(1),
+            // .align(Alignment::Start),
             column![
-                vertical_space(Length::Fixed(text_vspace)),
+                row![text("DATE"), vertical_space(Length::Fixed(text_vspace))],
                 Rule::horizontal(1),
                 vertical_space(Length::Fixed(text_vspace)),
                 Rule::horizontal(1),
@@ -416,7 +384,8 @@ impl Application for AudioRox {
                 Rule::horizontal(1),
                 vertical_space(Length::Fixed(text_vspace)),
             ]
-            .width(Length::Fixed(400.0))
+            // .width(Length::Fixed(400.0))
+            .width(Length::FillPortion(1))
         ]
         .padding([0, 5, 0, 5])
         .width(Length::Fill);
@@ -427,27 +396,39 @@ impl Application for AudioRox {
         let data2 = data1.iter().map(|x| x + 10.0).collect::<Vec<f32>>();
         // let data2 = vec![1.0, 2.0, 3.0, 4.0, 3.0, 3.0, 1.0];
         // let data3 = vec![1.0, 2.0, 3.0, 4.0, 3.0, 4.0, 2.0, 2.5, 2.0, 1.0];
-        let audiogram_right = plot(data1.clone(), Shape::Less, EarSide::Right);
+        let audiogram_right =
+            container(plot(data1.clone(), Shape::Less, EarSide::Right)).align_x(Horizontal::Center);
+        // .style(theme::Container::Custom(Box::new(
+        //     TableContainerCustomStyle,
+        // )));
+
         let audio_right_title = text("OREILLE DROITE")
             .size(26)
             .horizontal_alignment(Horizontal::Center);
 
-        let audio_right = column![audio_right_title, audiogram_right]
-            .width(Length::FillPortion(2))
-            .align_items(Alignment::Center);
+        let audio_right = container(
+            column![audio_right_title, audiogram_right]
+                // .width(Length::FillPortion(2))
+                .align_items(Alignment::Center),
+        )
+        // .style(theme::Container::Custom(Box::new(
+        //     TableContainerCustomStyle,
+        // )))
+        .center_x();
 
         let audiorgam_left = plot(data2.clone(), Shape::X, EarSide::Left);
         let audio_left_title = text("OREILLE GAUCHE")
             .size(26)
             .horizontal_alignment(Horizontal::Center);
+
         let audio_left = column![audio_left_title, audiorgam_left]
-            .width(Length::FillPortion(2))
+            // .width(Length::FillPortion(2))
             .align_items(Alignment::Center);
 
         let legend = container(draw_legend())
             // .style(theme::Container::Custom(Box::new(LegendCustomStyle)))
-            .height(Length::Fill)
-            .width(Length::Fill);
+            // .height(Length::Fill)
+            .width(Length::Shrink);
 
         // let legend_title = text(" ").size(13).horizontal_alignment(Horizontal::Center);
 
@@ -458,23 +439,25 @@ impl Application for AudioRox {
             transductor_content
                 .width(Length::Shrink)
                 .height(Length::Shrink),
+            horizontal_space(2.0),
+            method_radio.width(Length::Shrink).height(Length::Shrink),
         ]
-        .spacing(40)
+        .spacing(5)
         .align_items(Alignment::Start);
 
         let mid_col = column![
-            vertical_space(20.0),
-            val_and_trans,
-            vertical_space(15.0),
-            method_content.width(Length::Shrink).height(Length::Shrink),
-            // vertical_space(-100.0),
-            // audriometer_type,
+            vertical_space(5.0),
             legend,
+            vertical_space(10.0),
+            val_and_trans.width(Length::Fixed(250.)),
+            vertical_space(15.0),
+            standard_container
         ]
         .align_items(Alignment::Center)
-        .height(Length::Shrink);
+        .height(Length::Shrink)
+        .width(Length::Fixed(LEGEND_WIDTH));
 
-        let mid_audiograph = container(mid_col).width(Length::FillPortion(1));
+        let mid_audiograph = container(mid_col).width(Length::Shrink);
 
         let tonal_audiogram_title = column![text("AUDIOMÉTRIE TONALE")
             .size(30)
@@ -500,38 +483,61 @@ impl Application for AudioRox {
                 TitleContainerCustomStyle,
             )));
 
+        let hum = row![
+            horizontal_space(10),
+            tonal_table_right,
+            horizontal_space(10),
+            tonal_table_free,
+            horizontal_space(10),
+            tonal_table_left,
+            horizontal_space(10),
+        ]
+        .width(Length::Shrink)
+        .align_items(Alignment::Center);
+
         let audiograms = column![
-            vocal_audiogram_title_container,
-            row![audio_right, mid_audiograph, horizontal_space(6), audio_left]
-                .align_items(Alignment::Center)
+            tonal_audiogram_title_container,
+            // row![audio_right, mid_audiograph, horizontal_space(6), audio_left] // .align_items(Alignment::Center)
+            row![
+                audio_right.width(Length::FillPortion(1)),
+                mid_audiograph.width(Length::Shrink),
+                horizontal_space(6),
+                audio_left.width(Length::FillPortion(1)) // .align(Alignment::Center)
+            ], // .align_items(Alignment::Center)
+            vertical_space(5.0),
+            hum
         ];
 
-        let tonal_audiogram_content = column![header, audiograms].height(Length::FillPortion(1));
+        let tonal_audiogram_content = column![header, audiograms];
 
         // let checkbex = checkboxes::CheckBex::default();
         // let checkbex_element = checkbex.view();
         //
         // let content = column![checkbex_element];
 
-        let tables = row![
-            table_left.align_items(Alignment::Center),
+        let vocal_tables = row![
+            vocal_table_left,
             horizontal_space(Length::Fixed(30.0)),
-            table_right.align_items(Alignment::Center)
+            vocal_table_right
         ]
         .align_items(Alignment::Center);
 
         let vocal_audiogram_content = column![
-            tonal_audiogram_title_container,
+            vocal_audiogram_title_container,
             vertical_space(Length::Fixed(15.0)),
-            tables
+            vocal_tables
         ]
         .align_items(Alignment::Center);
 
-        let content = column![tonal_audiogram_content, vocal_audiogram_content];
+        let content = column![
+            tonal_audiogram_content,
+            vertical_space(SECTION_SEPARATOR_SPACE),
+            vocal_audiogram_content
+        ];
 
         container(content.align_items(Alignment::Center))
             .width(Length::Fill)
-            .height(Length::Fill)
+            // .height(Length::Fill)
             .into()
     }
 
@@ -547,14 +553,15 @@ impl container::StyleSheet for TitleContainerCustomStyle {
 
     fn appearance(&self, _style: &Self::Style) -> Appearance {
         container::Appearance {
-            text_color: Some(Color::from_rgb(0.05, 0.05, 0.02)),
-            background: Some(Color::from_rgb(0.7, 0.7, 0.7).into()),
+            text_color: Some(SECTION_TITLE_TEXT_COLOR),
+            background: Some(SECTION_TITLE_BG_COLOR.into()),
             border_radius: 25.0,
             border_width: 0.0,
             border_color: Color::from_rgb(0.5, 0.25, 0.25),
         }
     }
 }
+
 struct LegendCustomStyle;
 impl container::StyleSheet for LegendCustomStyle {
     type Style = Theme;
