@@ -76,7 +76,7 @@ impl canvas::Program<Message> for Legend {
         // );
         let legend_rect_start = Point::new(0.0, LEGEND_Y_OFFSET_START);
         // let legend_rect_size = Size::new(bounds.width, bounds.height - PLOT_Y_OFFSET_START  );
-        let legend_rect_size = Size::new(bounds.width, 273.0);
+        let legend_rect_size = Size::new(bounds.width, LEGEND_HEIGHT + 5.0);
         // let rectangle = Rectangle::new(legend_rect_start, legend_rect_size);
 
         let rect_path = canvas::Path::rectangle(legend_rect_start, legend_rect_size);
@@ -312,10 +312,10 @@ impl canvas::Program<Message> for Legend {
             stroke.clone(),
         );
 
-        v += vs;
+        v += vs + 5.0;
         let oy = Vector::new(ss * 0.7, -ss);
         frame.fill_text(Text {
-            content: "Masque insuffisant".to_string(),
+            content: "Surassourdissement ou\nmasque insuffisant".to_string(),
             position: Point::new(center_h, v),
             ..legend_text
         });

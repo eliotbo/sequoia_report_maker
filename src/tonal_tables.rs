@@ -84,25 +84,20 @@ pub fn get_message_fn(s: &str, side: EarSide) -> impl Fn(String) -> Message {
     }
 }
 
-pub fn make_tonal_tables(
-    audio_rox: &AudioRox,
-) -> (Element<Message>, Element<Message>, Element<Message>) {
-    ///////////////////////////////////////////// TONAL TABLE LEFT /////////////////////////////////////////////
+pub fn make_tonal_tables(audio_rox: &AudioRox) -> (Element<Message>, Element<Message>) {
     let tonal_table_columns_left = [
         ("MSP", &audio_rox.tonal_table_left.msp),
         ("MSP4", &audio_rox.tonal_table_left.msp4),
         ("FLCH", &audio_rox.tonal_table_left.fletcher),
     ];
 
-    let tonal_table_left = make_one_table(
+    let tonal_table_left = make_one_tonal_table(
         EarSide::Left,
-        "Moyennes tonales oreille gauche (dB HL)",
+        // "Moyennes tonales oreille gauche (dB HL)",
+        "MOYENNES TONALES OREILLE GAUCHE - dB HL",
         &tonal_table_columns_left,
     );
 
-    ///////////////////////////////////////////// TONAL TABLE LEFT /////////////////////////////////////////////
-
-    ///////////////////////////////////////////// TONAL TABLE RIGHT /////////////////////////////////////////////
     let tonal_table_columns_right = [
         ("MSP", &audio_rox.tonal_table_right.msp),
         ("MSP4", &audio_rox.tonal_table_right.msp4),
@@ -110,15 +105,13 @@ pub fn make_tonal_tables(
         // ("N Confor\nparole", &audio_rox),
     ];
 
-    let tonal_table_right = make_one_table(
+    let tonal_table_right = make_one_tonal_table(
         EarSide::Right,
-        "Moyennes tonales oreille droite (dB HL)",
+        // "Moyennes tonales oreille droite (dB HL)",
+        "MOYENNES TONALES OREILLE DROITE - dB HL",
         &tonal_table_columns_right,
     );
 
-    ///////////////////////////////////////////// TONAL TABLE RIGHT /////////////////////////////////////////////
-
-    ///////////////////////////////////////////// TONAL TABLE FREE SPACE /////////////////////////////////////////////
     let tonal_table_columns_free = [
         ("MSP", &audio_rox.tonal_table_free.msp),
         ("MSP4", &audio_rox.tonal_table_free.msp4),
@@ -126,19 +119,19 @@ pub fn make_tonal_tables(
         // ("N Confor\nparole", &audio_rox),
     ];
 
-    let tonal_table_free = make_one_table(
-        EarSide::Free,
-        "Moyennes tonales champ libre (dB HL)",
-        &tonal_table_columns_free,
-    );
+    // let tonal_table_free = make_one_tonal_table(
+    //     EarSide::Free,
+    //     // "Moyennes tonales champ libre (dB HL)",
+    //     "MOYENNES TONALES CHAMP LIBRE - dB HL",
+    //     &tonal_table_columns_free,
+    // );
 
-    ///////////////////////////////////////////// TONAL TABLE FREE SPACE /////////////////////////////////////////////
-
-    (tonal_table_right, tonal_table_left, tonal_table_free)
+    (tonal_table_right, tonal_table_left)
 }
 
-pub fn make_vocal_tables(audio_rox: &AudioRox) -> (Element<Message>, Element<Message>) {
-    ///////////////////////////////////////////// VOCAL TABLES /////////////////////////////////////////////
+pub fn seuils_vocaux_tables(
+    audio_rox: &AudioRox,
+) -> (Element<Message>, Element<Message>, Element<Message>) {
     // vocal tables
     let vocal_input_table_columns_left = [
         ("SDP", &audio_rox.vocal_table_left.sdp),
@@ -150,79 +143,37 @@ pub fn make_vocal_tables(audio_rox: &AudioRox) -> (Element<Message>, Element<Mes
         ("SRP", &audio_rox.vocal_table_right.srp),
         // ("N Confor\nparole", &self),
     ];
-    let mut vocal_table_left = Row::new();
 
-    for (s, variable) in vocal_input_table_columns_left.iter() {
-        let ear_side = EarSide::Left;
-        let message_fn = get_message_fn(s, ear_side);
-        let entry = column![
-            container(text(*s).style(TABLE_TEXT_COLOR))
-                .style(theme::Container::Box)
-                .padding(5)
-                .width(Length::Fixed(TONAL_TABLE_COL_WIDTH))
-                .align_x(Horizontal::Center),
-            text_input("", &variable, message_fn)
-                .padding(3)
-                .size(TABLE_ENTRY_SIZE)
-                .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-            // container("sO").style(theme::Container::Box).padding(5)
-        ]
-        .align_items(Alignment::Center);
+    let vocal_input_table_columns_binaural = [
+        ("SDP", &audio_rox.vocal_table_binaural.sdp),
+        ("SRP", &audio_rox.vocal_table_binaural.srp),
+        // ("N Confor\nparole", &self),
+    ];
 
-        vocal_table_left = vocal_table_left.push(entry);
-        vocal_table_left = vocal_table_left.push(horizontal_space(Length::Fixed(3.0)));
-        // table = table.push(Rule::vertical(10));
-        // table_left = table_left.height(Length::Shrink);
-    }
+    let tonal_table_left = make_one_vocal_table(
+        EarSide::Left,
+        // "Moyennes tonales oreille gauche (dB HL)",
+        "SEUILS VOCAUX OREILLE GAUCHE - dB HL",
+        &vocal_input_table_columns_left,
+    );
 
-    let vocal_table_left = vocal_table_left.height(Length::Shrink);
+    let tonal_table_right = make_one_vocal_table(
+        EarSide::Right,
+        // "Moyennes tonales oreille droite (dB HL)",
+        "SEUILS VOCAUX OREILLE DROITE - dB HL",
+        &vocal_input_table_columns_right,
+    );
 
-    let vocal_table_left = column![
-        container(text("Moyennes vocales (dB HL)"))
-            .style(theme::Container::Box)
-            .padding(5)
-            .width(Length::Shrink)
-            .align_x(Horizontal::Center),
-        vocal_table_left
-    ]
-    .spacing(TABLE_SPACING);
-    let vocal_table_left = vocal_table_left.height(Length::Shrink);
-    // .spacing(TABLE_SPACING);
+    let tonal_table_bin = make_one_vocal_table(
+        EarSide::Free,
+        "SEUILS VOCAUX BINAURAL - dB HL",
+        &vocal_input_table_columns_binaural,
+    );
 
-    let mut vocal_table_right = Row::new();
-
-    for (s, variable) in vocal_input_table_columns_right.iter() {
-        let ear_side = EarSide::Right;
-        let message_fn = get_message_fn(s, ear_side);
-        let entry = column![
-            container(text(*s).style(TABLE_TEXT_COLOR))
-                .style(theme::Container::Box)
-                .padding(5)
-                .width(Length::Fixed(TONAL_TABLE_COL_WIDTH))
-                .align_x(Horizontal::Center),
-            text_input("", &variable, message_fn)
-                .padding(3)
-                .size(TABLE_ENTRY_SIZE)
-                .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-            // container("sO").style(theme::Container::Box).padding(5)
-        ]
-        .align_items(Alignment::Center);
-
-        vocal_table_right = vocal_table_right.push(entry);
-        vocal_table_right = vocal_table_right.push(horizontal_space(Length::Fixed(3.0)));
-        // table = table.push(Rule::vertical(10));
-        // table_left = table_left.height(Length::Shrink);
-    }
-    let vocal_table_right = vocal_table_right.height(Length::Shrink);
-
-    (
-        vocal_table_right.align_items(Alignment::Center).into(),
-        vocal_table_left.align_items(Alignment::Center).into(),
-    )
-    ///////////////////////////////////////////// VOCAL TABLES /////////////////////////////////////////////
+    (tonal_table_right, tonal_table_left, tonal_table_bin)
 }
 
-pub fn make_one_table(
+pub fn make_one_tonal_table(
     ear_side: EarSide,
     table_name: &str,
     table_columns: &[(&str, &String)],
@@ -290,3 +241,141 @@ pub fn make_one_table(
 
     table.into()
 }
+
+pub fn make_one_vocal_table(
+    ear_side: EarSide,
+    table_name: &str,
+    table_columns: &[(&str, &String)],
+) -> Element<'static, Message> {
+    let mut table = Row::new();
+
+    for (s, variable) in table_columns.iter() {
+        let message_fn = get_message_fn(s, ear_side);
+
+        let entry = row![
+            container(
+                text(*s)
+                    .style(TABLE_TEXT_COLOR)
+                    .size(TABLE_ENTRY_TITLE_SIZE)
+            ),
+            horizontal_space(2.0),
+            // .padding(3)
+            // .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+            // .align_x(Horizontal::Center),
+            text_input("", &variable, message_fn)
+                .size(TABLE_ENTRY_SIZE)
+                .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+            horizontal_space(6.0)
+        ]
+        .align_items(Alignment::Center);
+
+        table = table.push(entry);
+        table = table.push(horizontal_space(Length::Fixed(3.0)));
+        // table = table.push(Rule::vertical(10));
+        // table_left = table_left.height(Length::Shrink);
+    }
+    // let table = table.height(Length::Shrink);
+
+    let table = table
+        .spacing(3)
+        .height(Length::Shrink)
+        .align_items(Alignment::Center);
+
+    let table = container(
+        column![
+            container(
+                container(
+                    text(table_name)
+                        .size(TABLE_TITLE_SIZE)
+                        .style(TABLE_TITLE_TEXT_COLOR)
+                        .horizontal_alignment(Horizontal::Center)
+                )
+                .padding(3)
+            )
+            // .align_x(Ho::Center)
+            .align_x(Horizontal::Center)
+            .width(Length::Fill)
+            .style(theme::Container::Custom(Box::new(TableTitleCustomStyle,))),
+            vertical_space(6.),
+            table,
+            vertical_space(7.5),
+        ]
+        .align_items(Alignment::Center),
+    )
+    .style(theme::Container::Custom(Box::new(
+        TableContainerCustomStyle,
+    )))
+    .align_x(Horizontal::Center)
+    .width(Length::FillPortion(2));
+
+    table.into()
+}
+
+// pub fn make_vocal_table(
+//     ear_side: EarSide,
+//     table_name: &str,
+//     table_columns: &[(&str, &String)],
+// ) -> Element<'static, Message> {
+//     let mut table = Row::new();
+
+//     for (s, variable) in table_columns.iter() {
+//         let message_fn = get_message_fn(s, ear_side);
+
+//         let entry = row![
+//             container(
+//                 text(*s)
+//                     .style(TABLE_TEXT_COLOR)
+//                     .size(TABLE_ENTRY_TITLE_SIZE)
+//             ),
+//             horizontal_space(2.0),
+//             // .padding(3)
+//             // .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+//             // .align_x(Horizontal::Center),
+//             text_input("", &variable, message_fn)
+//                 .size(TABLE_ENTRY_SIZE)
+//                 .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+//             horizontal_space(6.0)
+//         ]
+//         .align_items(Alignment::Center);
+
+//         table = table.push(entry);
+//         table = table.push(horizontal_space(Length::Fixed(3.0)));
+//         // table = table.push(Rule::vertical(10));
+//         // table_left = table_left.height(Length::Shrink);
+//     }
+//     // let table = table.height(Length::Shrink);
+
+//     let table = table
+//         .spacing(3)
+//         .height(Length::Shrink)
+//         .align_items(Alignment::Center);
+
+//     let table = container(
+//         column![
+//             container(
+//                 container(
+//                     text(table_name)
+//                         .size(TABLE_TITLE_SIZE)
+//                         .style(TABLE_TITLE_TEXT_COLOR)
+//                         .horizontal_alignment(Horizontal::Center)
+//                 )
+//                 .padding(3)
+//             )
+//             // .align_x(Ho::Center)
+//             .align_x(Horizontal::Center)
+//             .width(Length::Fill)
+//             .style(theme::Container::Custom(Box::new(TableTitleCustomStyle,))),
+//             vertical_space(6.),
+//             table,
+//             vertical_space(7.5),
+//         ]
+//         .align_items(Alignment::Center),
+//     )
+//     .style(theme::Container::Custom(Box::new(
+//         TableContainerCustomStyle,
+//     )))
+//     .align_x(Horizontal::Center)
+//     .width(Length::FillPortion(2));
+
+//     table.into()
+// }
