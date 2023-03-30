@@ -110,7 +110,7 @@ pub fn main() -> iced::Result {
 struct VocalTable {
     sdp: String,
     srp: String,
-    pa: String,
+    misc: String,
 }
 
 #[derive(Default)]
@@ -134,7 +134,10 @@ pub struct AudioRox {
     vocal_table_right: VocalTable,
     vocal_table_free: VocalTable,
     vocal_table_binaural: VocalTable,
-    vocal_misc: String,
+
+    vocal_misc_right: String,
+    vocal_misc_left: String,
+    vocal_misc_bin: String,
 
     anterior_threshold_date: String,
     audiometer_name: String,
@@ -153,30 +156,30 @@ pub enum Message {
     ValidityChanged(Validity),
     MethodChanged(Method),
     TransductorChanged(Transductor),
+
     MSPRightChanged(String),
-    SDPRightChanged(String),
     MSP4RightChanged(String),
-    SRPRightChanged(String),
+    FLCHRightChanged(String),
 
     MSPLeftChanged(String),
-    SDPLeftChanged(String),
     MSP4LeftChanged(String),
-    SRPLeftChanged(String),
-
-    FLCHRightChanged(String),
     FLCHLeftChanged(String),
 
-    MSPFreeChanged(String),
+    SDPRightChanged(String),
+    SRPRightChanged(String),
+    MiscRightChanged(String),
+
+    SDPLeftChanged(String),
+    SRPLeftChanged(String),
+    MiscLeftChanged(String),
+
     SDPFreeChanged(String),
-    MSP4FreeChanged(String),
     SRPFreeChanged(String),
-    FLCHFreeChanged(String),
+    MiscBinChanged(String),
 
-    PARightChanged(String),
-    PALeftChanged(String),
-    PABinChanged(String),
-    VocalMiscChanged(String),
-
+    // VocalMiscRightChanged(String),
+    // VocalMiscLeftChanged(String),
+    // VocalMiscBinChanged(String),
     VocalLangChanged(Lang),
 
     None,
@@ -218,33 +221,32 @@ impl Application for AudioRox {
                 self.transductor = new_transductor;
             }
             Message::MethodChanged(new_method) => self.method = new_method,
+
             Message::MSPRightChanged(new_msp) => self.tonal_table_right.msp = new_msp,
-            Message::SDPRightChanged(new_sdp) => self.vocal_table_right.sdp = new_sdp,
             Message::MSP4RightChanged(new_msp4) => self.tonal_table_right.msp4 = new_msp4,
-            Message::SRPRightChanged(new_srp) => self.vocal_table_right.srp = new_srp,
-
-            Message::MSPLeftChanged(new_msp) => self.tonal_table_left.msp = new_msp,
-            Message::SDPLeftChanged(new_sdp) => self.vocal_table_left.sdp = new_sdp,
-            Message::MSP4LeftChanged(new_msp4) => self.tonal_table_left.msp4 = new_msp4,
-            Message::SRPLeftChanged(new_srp) => self.vocal_table_left.srp = new_srp,
-
             Message::FLCHRightChanged(new_fletcher) => {
                 self.tonal_table_right.fletcher = new_fletcher
             }
+
+            Message::MSPLeftChanged(new_msp) => self.tonal_table_left.msp = new_msp,
+            Message::MSP4LeftChanged(new_msp4) => self.tonal_table_left.msp4 = new_msp4,
             Message::FLCHLeftChanged(new_fletcher) => self.tonal_table_left.fletcher = new_fletcher,
 
-            Message::MSPFreeChanged(new_msp) => self.tonal_table_free.msp = new_msp,
-            Message::MSP4FreeChanged(new_msp4) => self.tonal_table_free.msp4 = new_msp4,
-            Message::FLCHFreeChanged(new_fletcher) => self.tonal_table_free.fletcher = new_fletcher,
+            Message::SDPRightChanged(new_sdp) => self.vocal_table_right.sdp = new_sdp,
+            Message::SRPRightChanged(new_srp) => self.vocal_table_right.srp = new_srp,
+            Message::SDPLeftChanged(new_sdp) => self.vocal_table_left.sdp = new_sdp,
+            Message::SRPLeftChanged(new_srp) => self.vocal_table_left.srp = new_srp,
 
-            Message::SDPFreeChanged(new_sdp) => self.vocal_table_free.sdp = new_sdp,
-            Message::SRPFreeChanged(new_srp) => self.vocal_table_free.srp = new_srp,
+            Message::SDPFreeChanged(new_sdp) => self.vocal_table_binaural.sdp = new_sdp,
+            Message::SRPFreeChanged(new_srp) => self.vocal_table_binaural.srp = new_srp,
 
-            Message::PARightChanged(new_pa) => self.vocal_table_right.pa = new_pa,
-            Message::PALeftChanged(new_pa) => self.vocal_table_left.pa = new_pa,
-            Message::PABinChanged(new_pa) => self.vocal_table_binaural.pa = new_pa,
-            Message::VocalMiscChanged(new_misc) => self.vocal_misc = new_misc,
+            Message::MiscRightChanged(new_pa) => self.vocal_table_right.misc = new_pa,
+            Message::MiscLeftChanged(new_pa) => self.vocal_table_left.misc = new_pa,
+            Message::MiscBinChanged(new_pa) => self.vocal_table_binaural.misc = new_pa,
 
+            // Message::MiscRightChanged(new_misc) => self.vocal_misc_right = new_misc,
+            // Message::MiscLeftChanged(new_misc) => self.vocal_misc_left = new_misc,
+            // Message::MiscBinChanged(new_misc) => self.vocal_misc_bin = new_misc,
             Message::VocalLangChanged(new_lang) => self.vocal_lang = new_lang,
 
             Message::None => {}
@@ -427,9 +429,7 @@ impl Application for AudioRox {
 
         let transductor_section = column![intra, supra, free].spacing(6).width(Length::Shrink);
 
-        let transductor_title = text("ÉCOUTEURS")
-            .size(RADIO_TITLE_SIZE)
-            .width(Length::Shrink);
+        let transductor_title = text("SOURCE").size(RADIO_TITLE_SIZE).width(Length::Shrink);
 
         let transductor_content = column![transductor_title, transductor_section,].spacing(3);
         ///////////////////////////////////////////// TRANSDUCTOR /////////////////////////////////////////////
@@ -533,6 +533,7 @@ impl Application for AudioRox {
         // let legend_title = text(" ").size(13).horizontal_alignment(Horizontal::Center);
 
         let val_and_trans = row![
+            horizontal_space(10.0),
             validity_content
                 .width(Length::Shrink)
                 .height(Length::Shrink),
@@ -622,8 +623,9 @@ impl Application for AudioRox {
         ///
         // a column of two checkboxes for "FR" and "ANG"
         let vocal_lang = column![
+            text("LANGUE").size(RADIO_TITLE_SIZE),
             radio(
-                "FR",
+                "Fr.",
                 Lang::French,
                 Some(self.vocal_lang),
                 Message::VocalLangChanged
@@ -632,7 +634,7 @@ impl Application for AudioRox {
             .size(r_size)
             .text_size(t_size),
             radio(
-                "ANG",
+                "Ang.",
                 Lang::English,
                 Some(self.vocal_lang),
                 Message::VocalLangChanged
@@ -643,15 +645,56 @@ impl Application for AudioRox {
         ]
         .spacing(6);
 
+        let voice = column![
+            text("VOIX").size(RADIO_TITLE_SIZE),
+            radio(
+                "Nue",
+                Lang::French,
+                Some(self.vocal_lang),
+                Message::VocalLangChanged
+            )
+            .spacing(RADIO_SPACING)
+            .size(r_size)
+            .text_size(t_size),
+            radio(
+                "Enregis.",
+                Lang::English,
+                Some(self.vocal_lang),
+                Message::VocalLangChanged
+            )
+            .spacing(RADIO_SPACING)
+            .size(r_size)
+            .text_size(t_size),
+        ]
+        .spacing(6);
+
+        let open_text_input_right =
+            text_input("", &self.vocal_misc_right, Message::MiscRightChanged)
+                .size(TABLE_MISC_SIZE)
+                .width(Length::Fill);
+
+        let open_text_input_left = text_input("", &self.vocal_misc_left, Message::MiscLeftChanged)
+            .size(TABLE_MISC_SIZE)
+            .width(Length::Fill);
+
+        let open_text_input_bin = text_input("", &self.vocal_misc_bin, Message::MiscBinChanged)
+            .size(TABLE_MISC_SIZE)
+            .width(Length::Fill);
+
         let vocal_tables = row![
             horizontal_space(10),
-            vocal_table_right,
+            column![vocal_table_right, vertical_space(10), open_text_input_right]
+                .width(Length::FillPortion(2)),
             horizontal_space(10),
             vocal_lang,
             horizontal_space(10),
-            vocal_table_bin,
+            column![vocal_table_bin, vertical_space(10), open_text_input_bin]
+                .width(Length::FillPortion(2)),
             horizontal_space(10),
-            vocal_table_left,
+            voice,
+            horizontal_space(10),
+            column![vocal_table_left, vertical_space(10), open_text_input_left]
+                .width(Length::FillPortion(2)),
             horizontal_space(10),
         ]
         .width(Length::Shrink)
@@ -665,20 +708,20 @@ impl Application for AudioRox {
         // .align_items(Alignment::Center);
 
         ///////////////////////////////////// VOCAL TABLES /////////////////////////////////////
-        let vocal_misc = row![
-            horizontal_space(10),
-            text_input("", &self.vocal_misc, Message::VocalMiscChanged)
-                .size(TABLE_MISC_SIZE)
-                .width(Length::Fill),
-            horizontal_space(10),
-        ];
+        // let vocal_misc = row![
+        //     horizontal_space(10),
+        //     text_input("", &self.vocal_misc_right, Message::VocalMiscRightChanged)
+        //         .size(TABLE_MISC_SIZE)
+        //         .width(Length::Fill),
+        //     horizontal_space(10),
+        // ];
 
         let vocal_audiogram_content = column![
             vocal_audiogram_title_container,
             vertical_space(Length::Fixed(15.0)),
             vocal_tables,
-            vertical_space(Length::Fixed(10.0)),
-            vocal_misc
+            // vertical_space(Length::Fixed(10.0)),
+            // vocal_misc
         ]
         .align_items(Alignment::Center);
 

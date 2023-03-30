@@ -23,7 +23,7 @@ pub const TABLE_BACKGROUND_COLOR: Color = Color::from_rgb(0.4, 0.4, 0.4);
 pub const TABLE_TITLE_BG_COLOR: Color = Color::from_rgb(0.4, 0.4, 0.4);
 pub const TABLE_BORDER_COLOR: Color = Color::from_rgb(0.4, 0.4, 0.4);
 
-pub const TABLE_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.05, 0.05, 0.02);
+pub const TABLE_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.8, 0.82, 0.810);
 pub const TONAL_TABLE_COL_WIDTH: f32 = 60.0;
 
 pub const SPACE: f32 = 1.0;

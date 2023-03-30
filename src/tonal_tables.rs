@@ -63,22 +63,25 @@ impl container::StyleSheet for TableTitleCustomStyle {
 pub fn get_message_fn(s: &str, side: EarSide) -> impl Fn(String) -> Message {
     match (s, side) {
         ("MSP", EarSide::Right) => Message::MSPRightChanged,
-        ("SDP", EarSide::Right) => Message::SDPRightChanged,
         ("MSP4", EarSide::Right) => Message::MSP4RightChanged,
-        ("SRP", EarSide::Right) => Message::SRPRightChanged,
         ("FLCH", EarSide::Right) => Message::FLCHRightChanged,
 
+        ("SDP", EarSide::Right) => Message::SDPRightChanged,
+        ("SRP", EarSide::Right) => Message::SRPRightChanged,
+
+        ("", EarSide::Right) => Message::MiscRightChanged,
+
         ("MSP", EarSide::Left) => Message::MSPLeftChanged,
-        ("SDP", EarSide::Left) => Message::SDPLeftChanged,
         ("MSP4", EarSide::Left) => Message::MSP4LeftChanged,
-        ("SRP", EarSide::Left) => Message::SRPLeftChanged,
         ("FLCH", EarSide::Left) => Message::FLCHLeftChanged,
 
-        ("MSP", EarSide::Free) => Message::MSPFreeChanged,
+        ("SRP", EarSide::Left) => Message::SRPLeftChanged,
+        ("SDP", EarSide::Left) => Message::SDPLeftChanged,
+        ("", EarSide::Left) => Message::MiscLeftChanged,
+
         ("SDP", EarSide::Free) => Message::SDPFreeChanged,
-        ("MSP4", EarSide::Free) => Message::MSP4FreeChanged,
         ("SRP", EarSide::Free) => Message::SRPFreeChanged,
-        ("FLCH", EarSide::Free) => Message::FLCHFreeChanged,
+        ("", EarSide::Free) => Message::MiscBinChanged,
 
         _ => panic!("Not a valid Table message: {}", s),
     }
@@ -112,20 +115,6 @@ pub fn make_tonal_tables(audio_rox: &AudioRox) -> (Element<Message>, Element<Mes
         &tonal_table_columns_right,
     );
 
-    let tonal_table_columns_free = [
-        ("MSP", &audio_rox.tonal_table_free.msp),
-        ("MSP4", &audio_rox.tonal_table_free.msp4),
-        ("FLCH", &audio_rox.tonal_table_free.fletcher),
-        // ("N Confor\nparole", &audio_rox),
-    ];
-
-    // let tonal_table_free = make_one_tonal_table(
-    //     EarSide::Free,
-    //     // "Moyennes tonales champ libre (dB HL)",
-    //     "MOYENNES TONALES CHAMP LIBRE - dB HL",
-    //     &tonal_table_columns_free,
-    // );
-
     (tonal_table_right, tonal_table_left)
 }
 
@@ -136,31 +125,34 @@ pub fn seuils_vocaux_tables(
     let vocal_input_table_columns_left = [
         ("SDP", &audio_rox.vocal_table_left.sdp),
         ("SRP", &audio_rox.vocal_table_left.srp),
+        ("", &audio_rox.vocal_table_left.misc),
     ];
 
     let vocal_input_table_columns_right = [
         ("SDP", &audio_rox.vocal_table_right.sdp),
         ("SRP", &audio_rox.vocal_table_right.srp),
+        ("", &audio_rox.vocal_table_right.misc),
         // ("N Confor\nparole", &self),
     ];
 
     let vocal_input_table_columns_binaural = [
         ("SDP", &audio_rox.vocal_table_binaural.sdp),
         ("SRP", &audio_rox.vocal_table_binaural.srp),
+        ("", &audio_rox.vocal_table_binaural.misc),
         // ("N Confor\nparole", &self),
     ];
 
     let tonal_table_left = make_one_vocal_table(
         EarSide::Left,
         // "Moyennes tonales oreille gauche (dB HL)",
-        "SEUILS VOCAUX OREILLE GAUCHE - dB HL",
+        "SEUILS VOCAUX OR. GAUCHE - dB HL",
         &vocal_input_table_columns_left,
     );
 
     let tonal_table_right = make_one_vocal_table(
         EarSide::Right,
         // "Moyennes tonales oreille droite (dB HL)",
-        "SEUILS VOCAUX OREILLE DROITE - dB HL",
+        "SEUILS VOCAUX OR. DROITE - dB HL",
         &vocal_input_table_columns_right,
     );
 
@@ -251,7 +243,11 @@ pub fn make_one_vocal_table(
 
     for (s, variable) in table_columns.iter() {
         let message_fn = get_message_fn(s, ear_side);
-
+        // let txt = if *s == "" {
+        //     "------------------------"
+        // } else {
+        //     ""
+        // };
         let entry = row![
             container(
                 text(*s)
@@ -262,7 +258,7 @@ pub fn make_one_vocal_table(
             // .padding(3)
             // .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
             // .align_x(Horizontal::Center),
-            text_input("", &variable, message_fn)
+            text_input("------------------------", &variable, message_fn)
                 .size(TABLE_ENTRY_SIZE)
                 .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
             horizontal_space(6.0)
