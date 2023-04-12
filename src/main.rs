@@ -8,8 +8,8 @@ mod preset;
 mod tonal_tables;
 
 use tonal_tables::{
-    get_message_fn, make_tonal_tables, seuils_vocaux_tables, TableContainerCustomStyle,
-    TableTitleCustomStyle, TonalTable,
+    get_message_fn, identification_language, make_tonal_tables, seuils_vocaux_tables,
+    TableContainerCustomStyle, TableTitleCustomStyle, TonalTable,
 };
 // use checkboxes::{Transductor, Validity};
 // use grid::Grid;
@@ -113,6 +113,14 @@ struct VocalTable {
     misc: String,
 }
 
+#[derive(Default, Debug, Clone)]
+pub struct IdLang {
+    pub result1: String,
+    pub level1: String,
+    pub result2: String,
+    pub level2: String,
+}
+
 #[derive(Default)]
 pub struct AudioRox {
     is_playing: bool,
@@ -142,6 +150,10 @@ pub struct AudioRox {
     anterior_threshold_date: String,
     audiometer_name: String,
     adequate_rest_period: bool,
+
+    id_lang_left: IdLang,
+    id_lang_right: IdLang,
+    id_lang_bin: IdLang,
 
     vocal_lang: Lang,
 }
@@ -181,6 +193,21 @@ pub enum Message {
     // VocalMiscLeftChanged(String),
     // VocalMiscBinChanged(String),
     VocalLangChanged(Lang),
+
+    IdLanRes1LeftChanged(String),
+    IdLanRes2LeftChanged(String),
+    IdLanLev1LeftChanged(String),
+    IdLanLev2LeftChanged(String),
+
+    IdLanRes1RightChanged(String),
+    IdLanRes2RightChanged(String),
+    IdLanLev1RightChanged(String),
+    IdLanLev2RightChanged(String),
+
+    IdLanRes1BinChanged(String),
+    IdLanRes2BinChanged(String),
+    IdLanLev1BinChanged(String),
+    IdLanLev2BinChanged(String),
 
     None,
 }
@@ -248,6 +275,21 @@ impl Application for AudioRox {
             // Message::MiscLeftChanged(new_misc) => self.vocal_misc_left = new_misc,
             // Message::MiscBinChanged(new_misc) => self.vocal_misc_bin = new_misc,
             Message::VocalLangChanged(new_lang) => self.vocal_lang = new_lang,
+
+            Message::IdLanRes1LeftChanged(new_lang) => self.id_lang_left.result1 = new_lang,
+            Message::IdLanRes2LeftChanged(new_lang) => self.id_lang_left.result2 = new_lang,
+            Message::IdLanLev1LeftChanged(new_lang) => self.id_lang_left.level1 = new_lang,
+            Message::IdLanLev2LeftChanged(new_lang) => self.id_lang_left.level2 = new_lang,
+
+            Message::IdLanRes1RightChanged(new_lang) => self.id_lang_right.result1 = new_lang,
+            Message::IdLanRes2RightChanged(new_lang) => self.id_lang_right.result2 = new_lang,
+            Message::IdLanLev1RightChanged(new_lang) => self.id_lang_right.level1 = new_lang,
+            Message::IdLanLev2RightChanged(new_lang) => self.id_lang_right.level2 = new_lang,
+
+            Message::IdLanRes1BinChanged(new_lang) => self.id_lang_bin.result1 = new_lang,
+            Message::IdLanRes2BinChanged(new_lang) => self.id_lang_bin.result2 = new_lang,
+            Message::IdLanLev1BinChanged(new_lang) => self.id_lang_bin.level1 = new_lang,
+            Message::IdLanLev2BinChanged(new_lang) => self.id_lang_bin.level2 = new_lang,
 
             Message::None => {}
         }
@@ -436,6 +478,8 @@ impl Application for AudioRox {
 
         let (tonal_table_right, tonal_table_left) = make_tonal_tables(&self);
         let (vocal_table_right, vocal_table_left, vocal_table_bin) = seuils_vocaux_tables(&self);
+        let (id_lang_table_right, id_lang_table_left, id_lang_table_bin) =
+            identification_language(&self);
 
         // create a header with two columns of text: on the left and one on the right
         let text_vspace = 20.0;
@@ -581,11 +625,24 @@ impl Application for AudioRox {
         .width(Length::Fill)
         .align_items(Alignment::Center);
 
+        let immitance_title = column![text("IMMITANCEMÉTRIE")
+            .size(30)
+            .horizontal_alignment(Horizontal::Center)]
+        .width(Length::Fill)
+        .align_items(Alignment::Center);
+
         let vocal_audiogram_title_container = container(vocal_audiogram_title)
             .width(Length::Fill)
             .style(theme::Container::Custom(Box::new(
                 TitleContainerCustomStyle,
             )));
+
+        let immitance_title_container =
+            container(immitance_title)
+                .width(Length::Fill)
+                .style(theme::Container::Custom(Box::new(
+                    TitleContainerCustomStyle,
+                )));
 
         // ///////////////////////////////////// TONAL TABLES /////////////////////////////////////
         // let tonal_tables = row![
@@ -620,7 +677,7 @@ impl Application for AudioRox {
         // let content = column![checkbex_element];
 
         ///////////////////////////////////// VOCAL TABLES /////////////////////////////////////
-        ///
+
         // a column of two checkboxes for "FR" and "ANG"
         let vocal_lang = column![
             text("LANGUE").size(RADIO_TITLE_SIZE),
@@ -683,38 +740,34 @@ impl Application for AudioRox {
 
         let vocal_tables = row![
             horizontal_space(10),
-            column![vocal_table_right, vertical_space(10), open_text_input_right]
+            column![vocal_table_right, vertical_space(5), open_text_input_right]
                 .width(Length::FillPortion(2)),
             horizontal_space(10),
             vocal_lang,
             horizontal_space(10),
-            column![vocal_table_bin, vertical_space(10), open_text_input_bin]
+            column![vocal_table_bin, vertical_space(5), open_text_input_bin]
                 .width(Length::FillPortion(2)),
             horizontal_space(10),
             voice,
             horizontal_space(10),
-            column![vocal_table_left, vertical_space(10), open_text_input_left]
+            column![vocal_table_left, vertical_space(5), open_text_input_left]
                 .width(Length::FillPortion(2)),
             horizontal_space(10),
         ]
         .width(Length::Shrink)
         .align_items(Alignment::Center);
 
-        // let vocal_tables = row![
-        //     vocal_table_left,
-        //     horizontal_space(Length::Fixed(30.0)),
-        //     vocal_table_right
-        // ]
-        // .align_items(Alignment::Center);
-
-        ///////////////////////////////////// VOCAL TABLES /////////////////////////////////////
-        // let vocal_misc = row![
-        //     horizontal_space(10),
-        //     text_input("", &self.vocal_misc_right, Message::VocalMiscRightChanged)
-        //         .size(TABLE_MISC_SIZE)
-        //         .width(Length::Fill),
-        //     horizontal_space(10),
-        // ];
+        let id_lang_tables = row![
+            horizontal_space(10),
+            id_lang_table_right,
+            horizontal_space(10),
+            id_lang_table_bin,
+            horizontal_space(10),
+            id_lang_table_left,
+            horizontal_space(10),
+        ]
+        .width(Length::Shrink)
+        .align_items(Alignment::Center);
 
         let vocal_audiogram_content = column![
             vocal_audiogram_title_container,
@@ -725,10 +778,16 @@ impl Application for AudioRox {
         ]
         .align_items(Alignment::Center);
 
+        let immitance_content = column![immitance_title_container];
+
         let content = column![
             tonal_audiogram_content,
             vertical_space(SECTION_SEPARATOR_SPACE),
-            vocal_audiogram_content
+            vocal_audiogram_content,
+            vertical_space(8),
+            id_lang_tables,
+            vertical_space(SECTION_SEPARATOR_SPACE),
+            immitance_content
         ];
 
         container(content.align_items(Alignment::Center))
