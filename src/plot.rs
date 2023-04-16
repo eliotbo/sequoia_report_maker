@@ -37,10 +37,9 @@ pub struct Plot {
     ear_side: EarSide,
     shape: Shape,
     space: f32,
-
     top_left: Point,
-    size: Size,
 
+    size: Size,
     corner_radius: f32,
     plot_cache: Cache,
 }
@@ -286,7 +285,15 @@ impl canvas::Program<Message> for Plot {
                     p.move_to(Point::new(first_x, y));
                     p.line_to(Point::new(last_x, y));
                 }),
-                y_stroke.clone(),
+                // y_stroke.clone(),
+                canvas::Stroke {
+                    style: canvas::Style::Solid(config::GRID_COLOR),
+                    width: 1.0,
+                    line_cap: canvas::LineCap::Round,
+                    line_join: canvas::LineJoin::Round,
+                    line_dash: canvas::LineDash::default(),
+                    // ..canvas::Stroke::default()
+                },
             );
 
             let units = format!("{}", y_axis[y_usize]);
@@ -480,92 +487,92 @@ impl canvas::Program<Message> for Plot {
 
         //////////////////////////////// bottom CA CO table //////////////////////////////////////
 
-        let stroke = PLOT_SHAPE_STROKE;
+        // let stroke = PLOT_SHAPE_STROKE;
 
-        let dot_color = Color::from_rgb8(200, 0, 0);
-        let ss = PLOT_SHAPE_SIZE; // shape size
-        let ds = PLOT_DOT_SIZE;
+        // let dot_color = Color::from_rgb8(200, 0, 0);
+        // let ss = PLOT_SHAPE_SIZE; // shape size
+        // let ds = PLOT_DOT_SIZE;
 
-        let y = 350.0;
-        let mut x = 50.0;
+        // let y = 350.0;
+        // let mut x = 50.0;
 
-        // draw small square as a data point example
-        x = x + 25.0;
-        frame.stroke(&Shape::circle(Point::new(x, y), ss), stroke.clone());
-        frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
+        // // draw small square as a data point example
+        // x = x + 25.0;
+        // frame.stroke(&Shape::circle(Point::new(x, y), ss), stroke.clone());
+        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
 
-        // draw an x as a data point example
+        // // draw an x as a data point example
 
-        x = x + 25.0;
-        frame.stroke(&Shape::x(Point::new(x, y), ss), stroke.clone());
-        frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
+        // x = x + 25.0;
+        // frame.stroke(&Shape::x(Point::new(x, y), ss), stroke.clone());
+        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
 
-        // draw small triangle as a data point example
-        x = x + 25.0;
-        frame.stroke(&Shape::triangle(Point::new(x, y), 12.0), stroke.clone());
-        frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-        frame.stroke(
-            &Shape::bottom_left_arrow(Point::new(x, y), ss),
-            stroke.clone(),
-        );
+        // // draw small triangle as a data point example
+        // x = x + 25.0;
+        // frame.stroke(&Shape::triangle(Point::new(x, y), 12.0), stroke.clone());
+        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
+        // frame.stroke(
+        //     &Shape::bottom_left_arrow(Point::new(x, y), ss),
+        //     stroke.clone(),
+        // );
 
-        // draw small circle as a data point example
-        x = x + 25.0;
-        frame.stroke(&Shape::square(Point::new(x, y), ss), stroke.clone());
-        frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
+        // // draw small circle as a data point example
+        // x = x + 25.0;
+        // frame.stroke(&Shape::square(Point::new(x, y), ss), stroke.clone());
+        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
 
-        // draw U  symbol as a data point example
-        x = x + 25.0;
-        frame.stroke(&Shape::u(Point::new(x, y), ss), stroke.clone());
-        frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
+        // // draw U  symbol as a data point example
+        // x = x + 25.0;
+        // frame.stroke(&Shape::u(Point::new(x, y), ss), stroke.clone());
+        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
 
-        // draw greater than symbol as a data point example
-        x = x + 25.0;
-        frame.stroke(&Shape::greater_than(Point::new(x, y), ss), stroke.clone());
-        frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
+        // // draw greater than symbol as a data point example
+        // x = x + 25.0;
+        // frame.stroke(&Shape::greater_than(Point::new(x, y), ss), stroke.clone());
+        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
 
-        // draw less than symbol as a data point example
-        x = x + 25.0;
-        frame.stroke(&Shape::less_than(Point::new(x, y), ss), stroke.clone());
-        frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
+        // // draw less than symbol as a data point example
+        // x = x + 25.0;
+        // frame.stroke(&Shape::less_than(Point::new(x, y), ss), stroke.clone());
+        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
 
-        // draw a small bracket ([) as a data point example
-        x = x + 25.0;
-        frame.stroke(&Shape::left_bracket(Point::new(x, y), ss), stroke.clone());
-        frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-        // draw a small bottom left arrow as a data point example
-        frame.stroke(
-            &Shape::bottom_left_arrow(Point::new(x, y), ss),
-            stroke.clone(),
-        );
+        // // draw a small bracket ([) as a data point example
+        // x = x + 25.0;
+        // frame.stroke(&Shape::left_bracket(Point::new(x, y), ss), stroke.clone());
+        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
+        // // draw a small bottom left arrow as a data point example
+        // frame.stroke(
+        //     &Shape::bottom_left_arrow(Point::new(x, y), ss),
+        //     stroke.clone(),
+        // );
 
-        // draw the corresponding closing bracket (]) as a data point example
-        x = x + 25.0;
-        frame.stroke(&Shape::right_bracket(Point::new(x, y), ss), stroke.clone());
-        frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-        frame.stroke(&Shape::vt(Point::new(x, y), ss), stroke.clone());
-        // draw a small bottom right arrow as a data point example
-        frame.stroke(
-            &Shape::bottom_right_arrow(Point::new(x, y), ss),
-            stroke.clone(),
-        );
+        // // draw the corresponding closing bracket (]) as a data point example
+        // x = x + 25.0;
+        // frame.stroke(&Shape::right_bracket(Point::new(x, y), ss), stroke.clone());
+        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
+        // frame.stroke(&Shape::vt(Point::new(x, y), ss), stroke.clone());
+        // // draw a small bottom right arrow as a data point example
+        // frame.stroke(
+        //     &Shape::bottom_right_arrow(Point::new(x, y), ss),
+        //     stroke.clone(),
+        // );
 
-        // draw asterisk as a data point example
-        x = x + 25.0;
-        frame.stroke(&Shape::asterisk(Point::new(x, y), ss), stroke.clone());
-        frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
+        // // draw asterisk as a data point example
+        // x = x + 25.0;
+        // frame.stroke(&Shape::asterisk(Point::new(x, y), ss), stroke.clone());
+        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
 
-        self.plot_data(&mut frame, &self.ear_side);
+        // self.plot_data(&mut frame, &self.ear_side);
 
-        // draw the A symbol as a data point example
-        x = x + 25.0;
-        frame.stroke(&Shape::a(Point::new(x, y), ss), stroke.clone());
-        frame.fill(&Shape::circle(Point::new(x, y), ds * 0.5), dot_color);
+        // // draw the A symbol as a data point example
+        // x = x + 25.0;
+        // frame.stroke(&Shape::a(Point::new(x, y), ss), stroke.clone());
+        // frame.fill(&Shape::circle(Point::new(x, y), ds * 0.5), dot_color);
 
-        // draw the Z symbol as a data point example
-        x = x + 25.0;
-        frame.stroke(&Shape::z(Point::new(x, y), ss), stroke.clone());
-        frame.fill(&Shape::circle(Point::new(x, y), ds * 0.5), dot_color);
+        // // draw the Z symbol as a data point example
+        // x = x + 25.0;
+        // frame.stroke(&Shape::z(Point::new(x, y), ss), stroke.clone());
+        // frame.fill(&Shape::circle(Point::new(x, y), ds * 0.5), dot_color);
 
         // add_contour(&mut frame, rectangle, radius, space, 2.0, Color::WHITE);
 

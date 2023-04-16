@@ -2,25 +2,34 @@
 // mod checkboxes;
 mod config;
 // mod grid;
+mod immi_plot;
+mod immitance;
 mod legend;
 mod plot;
 mod preset;
 mod tonal_tables;
 
+use immitance::*;
+
 use tonal_tables::{
-    get_message_fn, identification_language, make_tonal_tables, seuils_vocaux_tables,
+    get_message_fn, identification_language, make_tonal_tables, seuils_vocaux_tables, stap, tympa,
     TableContainerCustomStyle, TableTitleCustomStyle, TonalTable,
 };
 // use checkboxes::{Transductor, Validity};
 // use grid::Grid;
 use config::{
-    DEFAULT_TEXT_INPUT_CONTENT_SIZE, DEFAULT_TEXT_SIZE, LEGEND_BOTTOM_SPACE, LEGEND_WIDTH,
-    RADIO_SPACING, RADIO_TITLE_SIZE, SECTION_SEPARATOR_SPACE, SECTION_TITLE_BG_COLOR,
-    SECTION_TITLE_TEXT_COLOR, TABLE_MISC_SIZE,
+    LegendCustomStyle, TitleContainerCustomStyle, DEFAULT_TEXT_INPUT_CONTENT_SIZE,
+    DEFAULT_TEXT_SIZE, LEGEND_BOTTOM_SPACE, LEGEND_WIDTH, RADIO_SPACING, RADIO_TITLE_SIZE,
+    SECTION_SEPARATOR_SPACE, SECTION_TITLE_BG_COLOR, SECTION_TITLE_TEXT_COLOR,
+    SPACE_BELOW_SECTION_TITLE, TABLE_MISC_SIZE,
 };
+use immi_plot::im_plot;
 use legend::{draw_legend, Legend};
 use plot::{plot, EarSide, Plot, Shape};
 use preset::Preset;
+
+use chrono;
+use chrono::Datelike;
 
 use iced::alignment::{Horizontal, Vertical};
 use iced::executor;
@@ -58,11 +67,10 @@ impl Default for Validity {
 pub enum Lang {
     French,
     English,
-    None,
 }
 impl Default for Lang {
     fn default() -> Self {
-        Lang::None
+        Lang::French
     }
 }
 
@@ -99,7 +107,7 @@ pub fn main() -> iced::Result {
         antialiasing: true,
         window: window::Settings {
             position: window::Position::Centered,
-            size: (1080, 950),
+            size: (1080, 1500),
             ..window::Settings::default()
         },
         ..Settings::default()
@@ -121,6 +129,51 @@ pub struct IdLang {
     pub level2: String,
 }
 
+#[derive(Default, Debug, Clone)]
+pub struct Tympa {
+    pub volume: String,
+    pub pressure: String,
+    pub compliance: String,
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct KHzList {
+    pub khz_500: String,
+    pub khz_1000: String,
+    pub khz_2000: String,
+    pub khz_4000: String,
+}
+#[derive(Default, Debug, Clone)]
+pub struct Stap {
+    pub ipsi: KHzList,
+    pub control: KHzList,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum IsRecorded {
+    Yes,
+    No,
+}
+
+impl Default for IsRecorded {
+    fn default() -> Self {
+        IsRecorded::No
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Succursale {
+    Montmagny,
+    Levy,
+    None,
+}
+
+impl Default for Succursale {
+    fn default() -> Self {
+        Succursale::None
+    }
+}
+
 #[derive(Default)]
 pub struct AudioRox {
     is_playing: bool,
@@ -128,6 +181,8 @@ pub struct AudioRox {
     speed: usize,
     next_speed: Option<usize>,
     version: usize,
+
+    succursale: Succursale,
 
     default_checkbox: bool,
     custom_checkbox: bool,
@@ -155,7 +210,14 @@ pub struct AudioRox {
     id_lang_right: IdLang,
     id_lang_bin: IdLang,
 
+    tympa_left: Tympa,
+    tympa_right: Tympa,
+
+    stap_left: Stap,
+    stap_right: Stap,
+
     vocal_lang: Lang,
+    is_recorded: IsRecorded,
 }
 
 #[derive(Debug, Clone)]
@@ -168,6 +230,8 @@ pub enum Message {
     ValidityChanged(Validity),
     MethodChanged(Method),
     TransductorChanged(Transductor),
+
+    SuccursaleChanged(Succursale),
 
     MSPRightChanged(String),
     MSP4RightChanged(String),
@@ -193,6 +257,7 @@ pub enum Message {
     // VocalMiscLeftChanged(String),
     // VocalMiscBinChanged(String),
     VocalLangChanged(Lang),
+    IsRecordedChanged(IsRecorded),
 
     IdLanRes1LeftChanged(String),
     IdLanRes2LeftChanged(String),
@@ -208,6 +273,34 @@ pub enum Message {
     IdLanRes2BinChanged(String),
     IdLanLev1BinChanged(String),
     IdLanLev2BinChanged(String),
+
+    TympaVolumeLeftChanged(String),
+    TympaPressureLeftChanged(String),
+    TympaComplianceLeftChanged(String),
+
+    TympaVolumeRightChanged(String),
+    TympaPressureRightChanged(String),
+    TympaComplianceRightChanged(String),
+
+    StapIpsi500LeftChanged(String),
+    StapIpsi1000LeftChanged(String),
+    StapIpsi2000LeftChanged(String),
+    StapIpsi4000LeftChanged(String),
+
+    StapControl500LeftChanged(String),
+    StapControl1000LeftChanged(String),
+    StapControl2000LeftChanged(String),
+    StapControl4000LeftChanged(String),
+
+    StapIpsi500RightChanged(String),
+    StapIpsi1000RightChanged(String),
+    StapIpsi2000RightChanged(String),
+    StapIpsi4000RightChanged(String),
+
+    StapControl500RightChanged(String),
+    StapControl1000RightChanged(String),
+    StapControl2000RightChanged(String),
+    StapControl4000RightChanged(String),
 
     None,
 }
@@ -248,6 +341,7 @@ impl Application for AudioRox {
                 self.transductor = new_transductor;
             }
             Message::MethodChanged(new_method) => self.method = new_method,
+            Message::SuccursaleChanged(new_succursale) => self.succursale = new_succursale,
 
             Message::MSPRightChanged(new_msp) => self.tonal_table_right.msp = new_msp,
             Message::MSP4RightChanged(new_msp4) => self.tonal_table_right.msp4 = new_msp4,
@@ -275,6 +369,7 @@ impl Application for AudioRox {
             // Message::MiscLeftChanged(new_misc) => self.vocal_misc_left = new_misc,
             // Message::MiscBinChanged(new_misc) => self.vocal_misc_bin = new_misc,
             Message::VocalLangChanged(new_lang) => self.vocal_lang = new_lang,
+            Message::IsRecordedChanged(new) => self.is_recorded = new,
 
             Message::IdLanRes1LeftChanged(new_lang) => self.id_lang_left.result1 = new_lang,
             Message::IdLanRes2LeftChanged(new_lang) => self.id_lang_left.result2 = new_lang,
@@ -290,6 +385,47 @@ impl Application for AudioRox {
             Message::IdLanRes2BinChanged(new_lang) => self.id_lang_bin.result2 = new_lang,
             Message::IdLanLev1BinChanged(new_lang) => self.id_lang_bin.level1 = new_lang,
             Message::IdLanLev2BinChanged(new_lang) => self.id_lang_bin.level2 = new_lang,
+
+            Message::TympaVolumeLeftChanged(new_tympa_num) => {
+                self.tympa_left.volume = new_tympa_num
+            }
+            Message::TympaVolumeRightChanged(new_tympa_num) => {
+                self.tympa_right.volume = new_tympa_num
+            }
+
+            Message::TympaPressureLeftChanged(new_tympa_num) => {
+                self.tympa_left.pressure = new_tympa_num
+            }
+            Message::TympaPressureRightChanged(new_tympa_num) => {
+                self.tympa_right.pressure = new_tympa_num
+            }
+
+            Message::TympaComplianceLeftChanged(new_tympa_num) => {
+                self.tympa_left.compliance = new_tympa_num
+            }
+            Message::TympaComplianceRightChanged(new_tympa_num) => {
+                self.tympa_right.compliance = new_tympa_num
+            }
+
+            Message::StapIpsi500LeftChanged(new) => self.stap_left.ipsi.khz_500 = new,
+            Message::StapIpsi1000LeftChanged(new) => self.stap_left.ipsi.khz_1000 = new,
+            Message::StapIpsi2000LeftChanged(new) => self.stap_left.ipsi.khz_2000 = new,
+            Message::StapIpsi4000LeftChanged(new) => self.stap_left.ipsi.khz_4000 = new,
+
+            Message::StapControl500LeftChanged(new) => self.stap_left.control.khz_500 = new,
+            Message::StapControl1000LeftChanged(new) => self.stap_left.control.khz_1000 = new,
+            Message::StapControl2000LeftChanged(new) => self.stap_left.control.khz_2000 = new,
+            Message::StapControl4000LeftChanged(new) => self.stap_left.control.khz_4000 = new,
+
+            Message::StapIpsi500RightChanged(new) => self.stap_right.ipsi.khz_500 = new,
+            Message::StapIpsi1000RightChanged(new) => self.stap_right.ipsi.khz_1000 = new,
+            Message::StapIpsi2000RightChanged(new) => self.stap_right.ipsi.khz_2000 = new,
+            Message::StapIpsi4000RightChanged(new) => self.stap_right.ipsi.khz_4000 = new,
+
+            Message::StapControl500RightChanged(new) => self.stap_right.control.khz_500 = new,
+            Message::StapControl1000RightChanged(new) => self.stap_right.control.khz_1000 = new,
+            Message::StapControl2000RightChanged(new) => self.stap_right.control.khz_2000 = new,
+            Message::StapControl4000RightChanged(new) => self.stap_right.control.khz_4000 = new,
 
             Message::None => {}
         }
@@ -414,7 +550,7 @@ impl Application for AudioRox {
 
         // a checkbox for adequate rest period
         let adequate_rest_period = checkbox(
-            "Durée de repos sonore adéquate",
+            "Durée de repos\nsonore adéquate",
             self.adequate_rest_period,
             Message::AdequateRestPeriodChanged,
         )
@@ -480,9 +616,36 @@ impl Application for AudioRox {
         let (vocal_table_right, vocal_table_left, vocal_table_bin) = seuils_vocaux_tables(&self);
         let (id_lang_table_right, id_lang_table_left, id_lang_table_bin) =
             identification_language(&self);
+        let (tympa_table_right, tympa_table_left) = tympa(&self);
+        let (stap_table_right, stap_table_left) = stap(&self);
 
         // create a header with two columns of text: on the left and one on the right
         let text_vspace = 20.0;
+
+        let montmagny = radio(
+            "83 Bd Taché O, Montmagny, QC G5V 3A6",
+            Succursale::Montmagny,
+            Some(self.succursale),
+            Message::SuccursaleChanged,
+        )
+        .size(12)
+        .text_size(14);
+
+        let levy = radio(
+            "2604E Av. Royale, Saint-Charles-de-Bellechasse, QC G0R 2T0",
+            Succursale::Levy,
+            Some(self.succursale),
+            Message::SuccursaleChanged,
+        )
+        .size(12)
+        .text_size(14);
+
+        let current_date = chrono::Utc::now().date_naive();
+        // println!("{}", current_date.year());
+        let year = current_date.year();
+        let day = current_date.day();
+        let month = current_date.month();
+
         let header = row![
             column![
                 text("Roxanne Bolduc,")
@@ -502,13 +665,21 @@ impl Application for AudioRox {
             horizontal_space(1),
             // .align(Alignment::Start),
             column![
-                row![text("DATE"), vertical_space(Length::Fixed(text_vspace))],
+                row![
+                    text(format!("Date de l'évaluation: {day}/{month}/{year}")).size(14),
+                    vertical_space(Length::Fixed(text_vspace))
+                ],
                 Rule::horizontal(1),
-                vertical_space(Length::Fixed(text_vspace)),
-                Rule::horizontal(1),
-                vertical_space(Length::Fixed(text_vspace)),
-                Rule::horizontal(1),
-                vertical_space(Length::Fixed(text_vspace)),
+                text("Clinique de l'Audition Bois & Associés audioprothésistes").size(14),
+                montmagny,
+                levy,
+                vertical_space(Length::Fixed(2.)),
+                // text("Clinique de l'Audition Bois & Associés audioprothésistes,\n83 Bd Taché O, Montmagny, QC G5V 3A6").size(15),
+                // vertical_space(Length::Fixed(text_vspace)),
+                // Rule::horizontal(1),
+                // vertical_space(Length::Fixed(text_vspace)),
+                // Rule::horizontal(1),
+                // vertical_space(Length::Fixed(text_vspace)),
             ]
             // .width(Length::Fixed(400.0))
             .width(Length::FillPortion(1))
@@ -524,17 +695,19 @@ impl Application for AudioRox {
         // let data3 = vec![1.0, 2.0, 3.0, 4.0, 3.0, 4.0, 2.0, 2.5, 2.0, 1.0];
         let audiogram_right =
             container(plot(data1.clone(), Shape::Less, EarSide::Right)).align_x(Horizontal::Center);
+
+        let immit_graph = container(im_plot()).align_x(Horizontal::Center);
         // .style(theme::Container::Custom(Box::new(
         //     TableContainerCustomStyle,
         // )));
 
-        let audio_right_title = text("OREILLE DROITE")
-            .size(26)
-            .horizontal_alignment(Horizontal::Center);
+        // let audio_right_title = text("OREILLE DROITE")
+        //     .size(26)
+        //     .horizontal_alignment(Horizontal::Center);
 
         let audio_right = container(
             column![
-                audio_right_title,
+                // audio_right_title,
                 audiogram_right,
                 vertical_space(7.0),
                 row![
@@ -552,12 +725,12 @@ impl Application for AudioRox {
         .center_x();
 
         let audiorgam_left = plot(data2.clone(), Shape::X, EarSide::Left);
-        let audio_left_title = text("OREILLE GAUCHE")
-            .size(26)
-            .horizontal_alignment(Horizontal::Center);
+        // let audio_left_title = text("OREILLE GAUCHE")
+        //     .size(26)
+        //     .horizontal_alignment(Horizontal::Center);
 
         let audio_left = column![
-            audio_left_title,
+            // audio_left_title,
             audiorgam_left,
             vertical_space(7.0),
             row![
@@ -577,11 +750,11 @@ impl Application for AudioRox {
         // let legend_title = text(" ").size(13).horizontal_alignment(Horizontal::Center);
 
         let val_and_trans = row![
-            horizontal_space(10.0),
+            horizontal_space(3.0),
             validity_content
                 .width(Length::Shrink)
                 .height(Length::Shrink),
-            horizontal_space(10.0),
+            horizontal_space(6.0),
             transductor_content
                 .width(Length::Shrink)
                 .height(Length::Shrink),
@@ -592,14 +765,18 @@ impl Application for AudioRox {
         .align_items(Alignment::Start);
 
         let mid_col = column![
-            // vertical_space(2.0),
+            vertical_space(5.0),
             legend,
             vertical_space(LEGEND_BOTTOM_SPACE),
-            val_and_trans.width(Length::Fixed(250.)),
-            vertical_space(15.0),
-            text("Normes en vigueur : ANSI série 3 ").size(DEFAULT_TEXT_SIZE),
-            vertical_space(15.0),
-            standard_container
+            container(column![
+                val_and_trans.width(Length::Fixed(250.)),
+                vertical_space(6.0),
+                text("Normes en vigueur : ANSI série 3 ").size(DEFAULT_TEXT_SIZE),
+                vertical_space(6.0),
+                standard_container
+            ])
+            .padding(5.0)
+            .style(theme::Container::Custom(Box::new(LegendCustomStyle,))) // .style(LegendCustomStyle),
         ]
         .align_items(Alignment::Center)
         .height(Length::Shrink)
@@ -607,11 +784,38 @@ impl Application for AudioRox {
 
         let mid_audiograph = container(mid_col).width(Length::Shrink);
 
-        let tonal_audiogram_title = column![text("AUDIOMÉTRIE TONALE")
-            .size(30)
-            .horizontal_alignment(Horizontal::Center)]
+        let tonal_audiogram_title = column![row![
+            container(
+                text("OREILLE DROITE")
+                    .size(22)
+                    .horizontal_alignment(Horizontal::Center) // .vertical_alignment(Vertical::Bottom)
+            )
+            .width(Length::FillPortion(1))
+            .height(Length::Fill)
+            .align_x(Horizontal::Center)
+            .align_y(Vertical::Center),
+            container(
+                text("AUDIOMÉTRIE TONALE")
+                    .size(30)
+                    .horizontal_alignment(Horizontal::Center)
+            )
+            .width(Length::FillPortion(1))
+            .align_x(Horizontal::Center)
+            .align_y(Vertical::Bottom),
+            container(
+                text("OREILLE GAUCHE")
+                    .size(22)
+                    .horizontal_alignment(Horizontal::Center)
+            )
+            .width(Length::FillPortion(1))
+            .height(Length::Fill)
+            .align_x(Horizontal::Center)
+            .align_y(Vertical::Center),
+        ]
+        .align_items(Alignment::Center)]
         .width(Length::Fill)
-        .align_items(Alignment::Center);
+        .height(Length::Fixed(32.0))
+        .align_items(Alignment::End);
 
         let tonal_audiogram_title_container = container(tonal_audiogram_title)
             .width(Length::Fill)
@@ -706,18 +910,18 @@ impl Application for AudioRox {
             text("VOIX").size(RADIO_TITLE_SIZE),
             radio(
                 "Nue",
-                Lang::French,
-                Some(self.vocal_lang),
-                Message::VocalLangChanged
+                IsRecorded::No,
+                Some(self.is_recorded),
+                Message::IsRecordedChanged
             )
             .spacing(RADIO_SPACING)
             .size(r_size)
             .text_size(t_size),
             radio(
                 "Enregis.",
-                Lang::English,
-                Some(self.vocal_lang),
-                Message::VocalLangChanged
+                IsRecorded::Yes,
+                Some(self.is_recorded),
+                Message::IsRecordedChanged
             )
             .spacing(RADIO_SPACING)
             .size(r_size)
@@ -771,14 +975,51 @@ impl Application for AudioRox {
 
         let vocal_audiogram_content = column![
             vocal_audiogram_title_container,
-            vertical_space(Length::Fixed(15.0)),
+            vertical_space(Length::Fixed(SPACE_BELOW_SECTION_TITLE)),
             vocal_tables,
             // vertical_space(Length::Fixed(10.0)),
             // vocal_misc
         ]
         .align_items(Alignment::Center);
 
-        let immitance_content = column![immitance_title_container];
+        let tympa_content = row![
+            horizontal_space(10),
+            column![
+                tympa_table_right,
+                vertical_space(SPACE_BELOW_SECTION_TITLE),
+                stap_table_right
+            ]
+            .width(Length::FillPortion(2)),
+            horizontal_space(2.0),
+            immit_graph.width(Length::FillPortion(1)),
+            horizontal_space(2.0),
+            // horizontal_space(LEGEND_WIDTH * 1.15),
+            column![
+                tympa_table_left,
+                vertical_space(SPACE_BELOW_SECTION_TITLE),
+                stap_table_left
+            ]
+            .width(Length::FillPortion(2)),
+            horizontal_space(10),
+        ];
+
+        let immitance_content = column![
+            immitance_title_container,
+            vertical_space(Length::Fixed(SPACE_BELOW_SECTION_TITLE)),
+            tympa_content
+        ];
+
+        // (stap_table_right, stap_table_left)
+
+        // let stap_content = row![
+        //     horizontal_space(10),
+        //     stap_table_right,
+        //     horizontal_space(LEGEND_WIDTH * 1.15),
+        //     stap_table_left,
+        //     horizontal_space(10),
+        // ];
+
+        //
 
         let content = column![
             tonal_audiogram_content,
@@ -797,37 +1038,6 @@ impl Application for AudioRox {
     }
 
     fn theme(&self) -> Theme {
-        Theme::Dark
-    }
-}
-
-struct TitleContainerCustomStyle;
-
-impl container::StyleSheet for TitleContainerCustomStyle {
-    type Style = Theme;
-
-    fn appearance(&self, _style: &Self::Style) -> Appearance {
-        container::Appearance {
-            text_color: Some(SECTION_TITLE_TEXT_COLOR),
-            background: Some(SECTION_TITLE_BG_COLOR.into()),
-            border_radius: 25.0,
-            border_width: 0.0,
-            border_color: Color::from_rgb(0.5, 0.25, 0.25),
-        }
-    }
-}
-
-struct LegendCustomStyle;
-impl container::StyleSheet for LegendCustomStyle {
-    type Style = Theme;
-
-    fn appearance(&self, _style: &Self::Style) -> Appearance {
-        container::Appearance {
-            text_color: Some(Color::from_rgb(0.05, 0.05, 0.02)),
-            background: Some(Color::from_rgb(0.3, 0.3, 0.3).into()),
-            border_radius: 25.0,
-            border_width: 0.0,
-            border_color: Color::from_rgb(0.5, 0.25, 0.25),
-        }
+        Theme::Light
     }
 }
