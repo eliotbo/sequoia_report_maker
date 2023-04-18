@@ -9,9 +9,8 @@ use iced::widget::canvas::{Canvas, Cursor, Text};
 use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::config::{
-    CORNER_RADIUS, LEGEND_BORDER_COLOR, LEGEND_HEIGHT, LEGEND_SYMBOL_STROKE_COLOR,
-    LEGEND_TEXT_COLOR, LEGEND_TITLES_BG_COLOR, LEGEND_TITLES_COLOR, LEGEND_WIDTH,
-    LEGEND_Y_OFFSET_START, SPACE,
+    CORNER_RADIUS, GRAY, LEGEND_BORDER_COLOR, LEGEND_HEIGHT, LEGEND_SYMBOL_STROKE_COLOR,
+    LEGEND_TEXT_COLOR, LEGEND_TITLES_COLOR, LEGEND_WIDTH, LEGEND_Y_OFFSET_START, SPACE,
 };
 use crate::plot::{add_contour, Shape};
 use crate::Message;
@@ -146,7 +145,7 @@ impl canvas::Program<Message> for Legend {
         frame.fill(
             &rect_path_seuil,
             canvas::Fill {
-                style: canvas::Style::Solid(LEGEND_TITLES_BG_COLOR),
+                style: canvas::Style::Solid(GRAY),
                 rule: canvas::FillRule::NonZero,
             },
         );
@@ -228,7 +227,7 @@ impl canvas::Program<Message> for Legend {
         frame.fill(
             &rect_path_seuil,
             canvas::Fill {
-                style: canvas::Style::Solid(LEGEND_TITLES_BG_COLOR),
+                style: canvas::Style::Solid(GRAY),
                 rule: canvas::FillRule::NonZero,
             },
         );
@@ -288,7 +287,7 @@ impl canvas::Program<Message> for Legend {
         frame.fill(
             &rect_path_seuil,
             canvas::Fill {
-                style: canvas::Style::Solid(LEGEND_TITLES_BG_COLOR),
+                style: canvas::Style::Solid(GRAY),
                 rule: canvas::FillRule::NonZero,
             },
         );

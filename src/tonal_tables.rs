@@ -1,7 +1,7 @@
 use crate::plot::EarSide;
 
 use super::config::{
-    STAP_ENTRY_SIZE, TABLE_BORDER_COLOR, TABLE_ENTRY_SIZE, TABLE_ENTRY_TITLE_SIZE,
+    GRAY, STAP_ENTRY_SIZE, TABLE_BORDER_COLOR, TABLE_ENTRY_SIZE, TABLE_ENTRY_TITLE_SIZE,
     TABLE_TEXT_COLOR, TABLE_TITLE_BG_COLOR, TABLE_TITLE_SIZE, TABLE_TITLE_TEXT_COLOR,
     TONAL_TABLE_COL_WIDTH,
 };
@@ -51,7 +51,7 @@ impl container::StyleSheet for TableTitleCustomStyle {
     fn appearance(&self, _style: &Self::Style) -> Appearance {
         container::Appearance {
             text_color: None, //Some(Color::from_rgb(0.05, 0.05, 0.02)),
-            background: Some(TABLE_TITLE_BG_COLOR.into()),
+            background: Some(GRAY.into()),
             // background: None,
             border_radius: 0.0,
             border_width: 2.0,
@@ -167,21 +167,21 @@ pub fn seuils_vocaux_tables(
 ) -> (Element<Message>, Element<Message>, Element<Message>) {
     // vocal tables
     let vocal_input_table_columns_left = [
-        ("SDP", &audio_rox.vocal_table_left.sdp),
         ("SRP", &audio_rox.vocal_table_left.srp),
+        ("SDP", &audio_rox.vocal_table_left.sdp),
         ("N confort\nparole", &audio_rox.vocal_table_left.misc),
     ];
 
     let vocal_input_table_columns_right = [
-        ("SDP", &audio_rox.vocal_table_right.sdp),
         ("SRP", &audio_rox.vocal_table_right.srp),
+        ("SDP", &audio_rox.vocal_table_right.sdp),
         ("N confort\nparole", &audio_rox.vocal_table_right.misc),
         // ("N Confor\nparole", &self),
     ];
 
     let vocal_input_table_columns_binaural = [
-        ("SDP", &audio_rox.vocal_table_binaural.sdp),
         ("SRP", &audio_rox.vocal_table_binaural.srp),
+        ("SDP", &audio_rox.vocal_table_binaural.sdp),
         ("N confort\nparole", &audio_rox.vocal_table_binaural.misc),
         // ("N Confor\nparole", &self),
     ];
@@ -246,7 +246,7 @@ pub fn make_one_tonal_table(
         let entry = row![
             container(
                 text(*s)
-                    .style(TABLE_TEXT_COLOR)
+                    // .style(TABLE_TEXT_COLOR)
                     .size(TABLE_ENTRY_TITLE_SIZE)
             ),
             horizontal_space(2.0),
@@ -320,7 +320,7 @@ pub fn make_one_vocal_table(
         let entry = row![
             container(
                 text(*s)
-                    .style(TABLE_TEXT_COLOR)
+                    // .style(TABLE_TEXT_COLOR)
                     .size(TABLE_ENTRY_TITLE_SIZE)
                     .horizontal_alignment(Horizontal::Right)
             ),
@@ -393,7 +393,7 @@ pub fn make_one_id_language_table(
         // vertical_space(2.0),
         container(
             text("Résultat")
-                .style(TABLE_TEXT_COLOR)
+                // .style(TABLE_TEXT_COLOR)
                 .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
         )
         .align_x(Horizontal::Right)
@@ -428,7 +428,7 @@ pub fn make_one_id_language_table(
         ),
         horizontal_space(2.0),
         text("%")
-            .style(TABLE_TEXT_COLOR)
+            // .style(TABLE_TEXT_COLOR)
             .size(TABLE_ENTRY_TITLE_SIZE)
             .horizontal_alignment(Horizontal::Right)
     ]
@@ -439,7 +439,7 @@ pub fn make_one_id_language_table(
         // vertical_space(2.0),
         container(
             text("  Niveau")
-                .style(TABLE_TEXT_COLOR)
+                // .style(TABLE_TEXT_COLOR)
                 .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
         )
         .align_x(Horizontal::Right)
@@ -468,8 +468,8 @@ pub fn make_one_id_language_table(
             .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         ),
         horizontal_space(2.0),
-        text("db HL")
-            .style(TABLE_TEXT_COLOR)
+        text("dB HL")
+            // .style(TABLE_TEXT_COLOR)
             .size(TABLE_ENTRY_TITLE_SIZE)
             .horizontal_alignment(Horizontal::Right)
     ]
@@ -552,11 +552,11 @@ pub fn make_one_tympa_table(
         container(
             column![
                 text("Volume")
-                    .style(TABLE_TEXT_COLOR)
+                    // .style(TABLE_TEXT_COLOR)
                     .size(TABLE_ENTRY_TITLE_SIZE)
                     .horizontal_alignment(Horizontal::Center),
                 text("ml")
-                    .style(TABLE_TEXT_COLOR)
+                    // .style(TABLE_TEXT_COLOR)
                     .size(TABLE_ENTRY_TITLE_SIZE * 0.7)
                     .horizontal_alignment(Horizontal::Center)
             ]
@@ -589,11 +589,11 @@ pub fn make_one_tympa_table(
         container(
             column![
                 text("Pression")
-                    .style(TABLE_TEXT_COLOR)
+                    // .style(TABLE_TEXT_COLOR)
                     .size(TABLE_ENTRY_TITLE_SIZE)
                     .horizontal_alignment(Horizontal::Center),
                 text("daPa")
-                    .style(TABLE_TEXT_COLOR)
+                    // .style(TABLE_TEXT_COLOR)
                     .size(TABLE_ENTRY_TITLE_SIZE * 0.7)
                     .horizontal_alignment(Horizontal::Center)
             ]
@@ -618,11 +618,11 @@ pub fn make_one_tympa_table(
         container(
             column![
                 text("Compliance")
-                    .style(TABLE_TEXT_COLOR)
+                    // .style(TABLE_TEXT_COLOR)
                     .size(TABLE_ENTRY_TITLE_SIZE)
                     .horizontal_alignment(Horizontal::Center),
                 text("ml")
-                    .style(TABLE_TEXT_COLOR)
+                    // .style(TABLE_TEXT_COLOR)
                     .size(TABLE_ENTRY_TITLE_SIZE * 0.7)
                     .horizontal_alignment(Horizontal::Center)
             ]
@@ -683,13 +683,13 @@ pub fn make_one_tympa_table(
 pub fn stap(audio_rox: &AudioRox) -> (Element<Message>, Element<Message>) {
     let stap_table_left = make_one_stap_table(
         EarSide::Left,
-        "RÉFLEXE STAPÉDIEN OR. GAUCHE - dB HL",
+        "RÉFLEXE STAPÉDIEN OR. GAUCHE - dB",
         &audio_rox.stap_left,
     );
 
     let stap_table_right = make_one_stap_table(
         EarSide::Right,
-        "RÉFLEXE STAPÉDIEN OR. DROITE - dB HL",
+        "RÉFLEXE STAPÉDIEN OR. DROITE - dB",
         &audio_rox.stap_right,
     );
 
@@ -716,7 +716,7 @@ pub fn make_one_stap_table(
     let top_row = row![
         container(
             text("Stimulation")
-                .style(TABLE_TEXT_COLOR)
+                // .style(TABLE_TEXT_COLOR)
                 .size(TABLE_ENTRY_TITLE_SIZE)
                 .horizontal_alignment(Horizontal::Center),
         )
@@ -724,7 +724,7 @@ pub fn make_one_stap_table(
         .align_x(Horizontal::Right),
         container(
             text("500Hz")
-                .style(TABLE_TEXT_COLOR)
+                // .style(TABLE_TEXT_COLOR)
                 .size(TABLE_ENTRY_TITLE_SIZE)
                 .horizontal_alignment(Horizontal::Center),
         )
@@ -732,7 +732,7 @@ pub fn make_one_stap_table(
         .align_x(Horizontal::Center),
         container(
             text("1kHz")
-                .style(TABLE_TEXT_COLOR)
+                // .style(TABLE_TEXT_COLOR)
                 .size(TABLE_ENTRY_TITLE_SIZE)
                 .horizontal_alignment(Horizontal::Center),
         )
@@ -740,7 +740,7 @@ pub fn make_one_stap_table(
         .align_x(Horizontal::Center),
         container(
             text("2kHz")
-                .style(TABLE_TEXT_COLOR)
+                // .style(TABLE_TEXT_COLOR)
                 .size(TABLE_ENTRY_TITLE_SIZE)
                 .horizontal_alignment(Horizontal::Center),
         )
@@ -748,7 +748,7 @@ pub fn make_one_stap_table(
         .align_x(Horizontal::Center),
         container(
             text("4kHz")
-                .style(TABLE_TEXT_COLOR)
+                // .style(TABLE_TEXT_COLOR)
                 .size(TABLE_ENTRY_TITLE_SIZE)
                 .horizontal_alignment(Horizontal::Center),
         )
@@ -763,7 +763,7 @@ pub fn make_one_stap_table(
     let second_row = row![
         container(
             text("Ipsilatéral")
-                .style(TABLE_TEXT_COLOR)
+                // .style(TABLE_TEXT_COLOR)
                 .size(TABLE_ENTRY_TITLE_SIZE)
                 .horizontal_alignment(Horizontal::Center),
         )
@@ -820,7 +820,7 @@ pub fn make_one_stap_table(
     let third_row = row![
         container(
             text("Controlatéral")
-                .style(TABLE_TEXT_COLOR)
+                // .style(TABLE_TEXT_COLOR)
                 .size(TABLE_ENTRY_TITLE_SIZE)
                 .horizontal_alignment(Horizontal::Center),
         )

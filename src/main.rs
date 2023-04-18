@@ -8,8 +8,10 @@ mod legend;
 mod plot;
 mod preset;
 mod tonal_tables;
+mod partners;
 
 use immitance::*;
+use partners::*;
 
 use tonal_tables::{
     get_message_fn, identification_language, make_tonal_tables, seuils_vocaux_tables, stap, tympa,
@@ -21,7 +23,7 @@ use config::{
     LegendCustomStyle, TitleContainerCustomStyle, DEFAULT_TEXT_INPUT_CONTENT_SIZE,
     DEFAULT_TEXT_SIZE, LEGEND_BOTTOM_SPACE, LEGEND_WIDTH, RADIO_SPACING, RADIO_TITLE_SIZE,
     SECTION_SEPARATOR_SPACE, SECTION_TITLE_BG_COLOR, SECTION_TITLE_TEXT_COLOR,
-    SPACE_BELOW_SECTION_TITLE, TABLE_MISC_SIZE,
+    SPACE_BELOW_SECTION_TITLE, TABLE_MISC_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH,
 };
 use immi_plot::im_plot;
 use legend::{draw_legend, Legend};
@@ -39,7 +41,7 @@ use iced::widget::canvas;
 use iced::widget::canvas::event::{self, Event};
 use iced::widget::canvas::path::Builder;
 use iced::widget::canvas::{Cache, Canvas, Cursor, Frame, Geometry, Path, Text};
-use iced::widget::{
+use iced::widget::{self,
     button, checkbox, column, container, container::Appearance, horizontal_space, pick_list, radio,
     row, slider, text, text_input, vertical_space, Container, Row, Rule,
 };
@@ -107,7 +109,7 @@ pub fn main() -> iced::Result {
         antialiasing: true,
         window: window::Settings {
             position: window::Position::Centered,
-            size: (1080, 1500),
+            size: (WINDOW_WIDTH, WINDOW_HEIGHT),
             ..window::Settings::default()
         },
         ..Settings::default()
@@ -176,13 +178,15 @@ impl Default for Succursale {
 
 #[derive(Default)]
 pub struct AudioRox {
+
+    show_partner_choices: bool,
     is_playing: bool,
     queued_ticks: usize,
     speed: usize,
     next_speed: Option<usize>,
     version: usize,
 
-    succursale: Succursale,
+    partner: Partner,
 
     default_checkbox: bool,
     custom_checkbox: bool,
@@ -220,8 +224,19 @@ pub struct AudioRox {
     is_recorded: IsRecorded,
 }
 
+impl AudioRox {
+    fn hide_partner_choices(&mut self) {
+        self.show_partner_choices = false;
+        // self.email.clear();
+        // self.password.clear();
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Message {
+    ShowParnerChoices,
+    HidePartnerChoices,
+    PartnerChanged(Partner),
     AdequateRestPeriodChanged(bool),
     AnteriorThresholdDateChanged(String),
     AudiometerNameChanged(String),
@@ -231,7 +246,7 @@ pub enum Message {
     MethodChanged(Method),
     TransductorChanged(Transductor),
 
-    SuccursaleChanged(Succursale),
+    // SuccursaleChanged(Succursale),
 
     MSPRightChanged(String),
     MSP4RightChanged(String),
@@ -327,6 +342,16 @@ impl Application for AudioRox {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
+            Message::PartnerChanged(value) => self.partner = value,
+            
+            Message::ShowParnerChoices => {
+                self.show_partner_choices = true;
+                return widget::focus_next();
+            }
+            Message::HidePartnerChoices => {
+                self.hide_partner_choices(); 
+            }
+
             Message::AdequateRestPeriodChanged(value) => self.adequate_rest_period = value,
             Message::AnteriorThresholdDateChanged(value) => self.anterior_threshold_date = value,
             Message::AudiometerNameChanged(value) => self.audiometer_name = value,
@@ -341,7 +366,7 @@ impl Application for AudioRox {
                 self.transductor = new_transductor;
             }
             Message::MethodChanged(new_method) => self.method = new_method,
-            Message::SuccursaleChanged(new_succursale) => self.succursale = new_succursale,
+            // Message::SuccursaleChanged(new_succursale) => self.succursale = new_succursale,
 
             Message::MSPRightChanged(new_msp) => self.tonal_table_right.msp = new_msp,
             Message::MSP4RightChanged(new_msp4) => self.tonal_table_right.msp4 = new_msp4,
@@ -550,7 +575,7 @@ impl Application for AudioRox {
 
         // a checkbox for adequate rest period
         let adequate_rest_period = checkbox(
-            "Durée de repos\nsonore adéquate",
+            "Durée de repos sonore adéquate (> 16h)",
             self.adequate_rest_period,
             Message::AdequateRestPeriodChanged,
         )
@@ -607,7 +632,9 @@ impl Application for AudioRox {
 
         let transductor_section = column![intra, supra, free].spacing(6).width(Length::Shrink);
 
-        let transductor_title = text("SOURCE").size(RADIO_TITLE_SIZE).width(Length::Shrink);
+        let transductor_title = text("ÉCOUTEURS")
+            .size(RADIO_TITLE_SIZE)
+            .width(Length::Shrink);
 
         let transductor_content = column![transductor_title, transductor_section,].spacing(3);
         ///////////////////////////////////////////// TRANSDUCTOR /////////////////////////////////////////////
@@ -622,23 +649,23 @@ impl Application for AudioRox {
         // create a header with two columns of text: on the left and one on the right
         let text_vspace = 20.0;
 
-        let montmagny = radio(
-            "83 Bd Taché O, Montmagny, QC G5V 3A6",
-            Succursale::Montmagny,
-            Some(self.succursale),
-            Message::SuccursaleChanged,
-        )
-        .size(12)
-        .text_size(14);
+        // let montmagny = radio(
+        //     "83 Bd Taché O, Montmagny, QC G5V 3A6, 418-248-7077",
+        //     Succursale::Montmagny,
+        //     Some(self.succursale),
+        //     Message::SuccursaleChanged,
+        // )
+        // .size(12)
+        // .text_size(14);
 
-        let levy = radio(
-            "2604E Av. Royale, Saint-Charles-de-Bellechasse, QC G0R 2T0",
-            Succursale::Levy,
-            Some(self.succursale),
-            Message::SuccursaleChanged,
-        )
-        .size(12)
-        .text_size(14);
+        // let levy = radio(
+        //     "5500 Bd Guillaume-Couture suite 111, Lévis, QC G6V 4Z2, 418-837-3626",
+        //     Succursale::Levy,
+        //     Some(self.succursale),
+        //     Message::SuccursaleChanged,
+        // )
+        // .size(12)
+        // .text_size(14);
 
         let current_date = chrono::Utc::now().date_naive();
         // println!("{}", current_date.year());
@@ -666,13 +693,17 @@ impl Application for AudioRox {
             // .align(Alignment::Start),
             column![
                 row![
-                    text(format!("Date de l'évaluation: {day}/{month}/{year}")).size(14),
-                    vertical_space(Length::Fixed(text_vspace))
+                    text(format!("Date de l'évaluation:")).size(14),
+                    
+                    // text(format!("Date de l'évaluation: {day}/{month}/{year}")).size(14),
+                    // vertical_space(Length::Fixed(text_vspace)),
+                    Rule::horizontal(text_vspace*1.3),
                 ],
-                Rule::horizontal(1),
-                text("Clinique de l'Audition Bois & Associés audioprothésistes").size(14),
-                montmagny,
-                levy,
+                // Rule::horizontal(1),
+                text("Lieu de l'évaluation: Clinique de l'Audition Bois & Associés audioprothésistes").size(14),
+                get_all_succursales(&self.partner),
+                // montmagny,
+                // levy,
                 vertical_space(Length::Fixed(2.)),
                 // text("Clinique de l'Audition Bois & Associés audioprothésistes,\n83 Bd Taché O, Montmagny, QC G5V 3A6").size(15),
                 // vertical_space(Length::Fixed(text_vspace)),
@@ -1038,6 +1069,6 @@ impl Application for AudioRox {
     }
 
     fn theme(&self) -> Theme {
-        Theme::Light
+        Theme::Dark
     }
 }

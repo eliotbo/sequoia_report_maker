@@ -10,10 +10,10 @@ use iced::widget::canvas::{Cache, Canvas, Cursor, Path, Text};
 use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::config::{
-    self, CORNER_RADIUS, PLOT_CANVAS_HEIGHT, PLOT_CANVAS_WIDTH, PLOT_CA_CO_Y_SPACE, PLOT_DASH,
-    PLOT_DOT_SIZE, PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE, PLOT_TICK_LABEL_SPACE, PLOT_TICK_SIZE,
-    PLOT_X_AXIS, PLOT_X_OFFSET_END, PLOT_X_OFFSET_START, PLOT_Y_AXIS, PLOT_Y_OFFSET_END,
-    PLOT_Y_OFFSET_START, SPACE,
+    self, CORNER_RADIUS, LEGEND_WIDTH, PLOT_CANVAS_HEIGHT, PLOT_CANVAS_WIDTH, PLOT_CA_CO_Y_SPACE,
+    PLOT_DASH, PLOT_DOT_SIZE, PLOT_LEGEMD_SPACE, PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE,
+    PLOT_TICK_LABEL_SPACE, PLOT_TICK_SIZE, PLOT_X_AXIS, PLOT_X_OFFSET_END, PLOT_X_OFFSET_START,
+    PLOT_Y_AXIS, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START, SPACE, WINDOW_HEIGHT, WINDOW_WIDTH,
 };
 use crate::Message;
 
@@ -62,7 +62,7 @@ impl Default for Plot {
 
 impl Plot {
     pub fn new(data: Vec<f32>, shape: Shape, ear_side: EarSide) -> Self {
-        let space = SPACE;
+        let space = PLOT_LEGEMD_SPACE;
 
         let mut first_x = PLOT_X_OFFSET_START + space;
         let plot_width = (PLOT_X_AXIS.len()) as f32 * PLOT_TICK_SIZE * 2.0;
@@ -188,7 +188,7 @@ impl canvas::Program<Message> for Plot {
         // let y_offset1 = PLOT_Y_OFFSET_END;
 
         let y_axis = [-10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120];
-        let x_axis = [0, 125, 250, 500, 1000, 2000, 4000, 8000];
+        let x_axis = [125, 250, 500, 1000, 2000, 4000, 8000];
 
         let x_offset = PLOT_X_OFFSET_START;
 
@@ -198,7 +198,7 @@ impl canvas::Program<Message> for Plot {
         //     PLOT_X_OFFSET_START
         // };
 
-        let plot_width = (x_axis.len()) as f32 * PLOT_TICK_SIZE * 2.0;
+        let plot_width = (x_axis.len()) as f32 * (PLOT_TICK_SIZE * 2.0 - 1.);
         let plot_height = PLOT_Y_OFFSET_START + space + (y_axis.len() - 1) as f32 * PLOT_TICK_SIZE;
 
         let y_unit = PLOT_TICK_SIZE;
@@ -220,7 +220,8 @@ impl canvas::Program<Message> for Plot {
         };
 
         let mut first_x = x_offset + space;
-        let mut last_x = first_x + plot_width - x_unit * 0.6;
+        // let mut last_x = first_x + plot_width - PLOT_LEGEMD_SPACE;
+        let mut last_x = (WINDOW_WIDTH as f32 - LEGEND_WIDTH) / 2.0 - PLOT_LEGEMD_SPACE * 2.;
 
         let mut db_x_position = first_x - PLOT_TICK_LABEL_SPACE + 10.0;
         let mut db_halign = Horizontal::Right;
@@ -239,8 +240,8 @@ impl canvas::Program<Message> for Plot {
         let mut ca_label_x = first_x - PLOT_TICK_LABEL_SPACE;
 
         if let EarSide::Left = self.ear_side {
-            first_x = space;
-            last_x = first_x + plot_width - x_unit;
+            first_x = PLOT_LEGEMD_SPACE;
+            last_x = first_x + plot_width - x_unit * 0.6;
 
             y_tick_x_pos = last_x + PLOT_TICK_LABEL_SPACE;
             y_tick_h_align = Horizontal::Left;
@@ -248,7 +249,7 @@ impl canvas::Program<Message> for Plot {
             db_x_position = last_x + PLOT_TICK_LABEL_SPACE;
             db_halign = Horizontal::Left;
 
-            hz_x_position = space;
+            hz_x_position = last_x - 5.0;
             hz_halign = Horizontal::Left;
 
             ca_upper_left = Point::new(first_x, y1);
@@ -259,8 +260,8 @@ impl canvas::Program<Message> for Plot {
         frame.fill_text(Text {
             content: "dB HL".to_string(),
             horizontal_alignment: db_halign,
-            vertical_alignment: Vertical::Bottom,
-            position: Point::new(db_x_position, space + y_offset0 - 10.0),
+            vertical_alignment: Vertical::Top,
+            position: Point::new(db_x_position, space + plot_height + 1.0),
             ..legend_text
         });
 
@@ -268,7 +269,6 @@ impl canvas::Program<Message> for Plot {
             content: "Hz".to_string(),
             horizontal_alignment: hz_halign,
             vertical_alignment: Vertical::Bottom,
-            // position: Point::new(space + 15.0, (num_y_ticks as f32) * y_unit + 0.0 + y_offset),
             position: Point::new(
                 hz_x_position,
                 space + PLOT_Y_OFFSET_START - PLOT_TICK_LABEL_SPACE,
@@ -298,6 +298,7 @@ impl canvas::Program<Message> for Plot {
 
             let units = format!("{}", y_axis[y_usize]);
 
+            // if y_usize > 0 {
             frame.fill_text(Text {
                 content: units,
                 horizontal_alignment: y_tick_h_align,
@@ -305,6 +306,7 @@ impl canvas::Program<Message> for Plot {
                 position: Point::new(y_tick_x_pos, y),
                 ..legend_text
             });
+            // }
 
             // if let EarSide::Right = self.ear_side {
 
@@ -335,7 +337,7 @@ impl canvas::Program<Message> for Plot {
             ..canvas::Stroke::default()
         };
 
-        for x_usize in 0..8 {
+        for x_usize in 0..7 {
             let x = x_unit * 2.0 * x_usize as f32 + first_x;
 
             frame.stroke(
@@ -347,9 +349,9 @@ impl canvas::Program<Message> for Plot {
             );
             let content = format!("{}", x_axis[x_usize] as f32 / 1.0);
 
-            if x_usize == 0 {
-                continue;
-            }
+            // if x_usize == 0 {
+            //     continue;
+            // }
 
             frame.fill_text(Text {
                 content,
@@ -370,7 +372,8 @@ impl canvas::Program<Message> for Plot {
             x_stroke.clone(),
         );
 
-        for x_usize in 2..NUM_X_TICKS {
+        // pointillé
+        for x_usize in 2..NUM_X_TICKS - 1 {
             let x = x_unit * 2.0 * (x_usize as f32 + 0.5) + first_x;
             // let y1 = plot_height + y_offset0 + space;
 
@@ -385,7 +388,7 @@ impl canvas::Program<Message> for Plot {
                     line_cap: canvas::LineCap::Round,
                     line_join: canvas::LineJoin::Round,
                     line_dash: canvas::LineDash {
-                        segments: &[3., 3.],
+                        segments: &[3., 4.],
                         offset: 0,
                     },
                 },
@@ -398,7 +401,7 @@ impl canvas::Program<Message> for Plot {
         // let max_x_units = 13;
         // let max_x = x_unit * 0.5 * (max_x_units as f32 + 1.0) + x_offset;
 
-        let max_x = x_unit * ((2 * NUM_X_TICKS) as f32 + 0.5);
+        let max_x = x_unit * ((2 * NUM_X_TICKS) as f32 + 0.5 - 2.0);
         let size = Size::new(max_x, PLOT_TICK_SIZE * 2.0);
 
         let caco_stroke = canvas::Stroke {
@@ -417,7 +420,7 @@ impl canvas::Program<Message> for Plot {
 
         frame.fill(
             &Path::new(|p| {
-                p.rectangle(ca_upper_left, Size::new(x_unit * 3.5, size.height));
+                p.rectangle(ca_upper_left, Size::new(x_unit * 1.5, size.height));
             }),
             config::GRID_COLOR,
         );
@@ -430,7 +433,7 @@ impl canvas::Program<Message> for Plot {
             caco_stroke.clone(),
         );
 
-        for x in 1..(2 * NUM_X_TICKS + 1) {
+        for x in 1..(2 * NUM_X_TICKS - 1) {
             let x = x_unit * (x as f32 + 0.5) + ca_upper_left.x;
             // let y1 = plot_height + y_offset0 + space;
 
@@ -452,7 +455,7 @@ impl canvas::Program<Message> for Plot {
         frame.fill(
             &Path::new(|p| {
                 p.rectangle(
-                    ca_upper_left + Vector::new(x_unit * 4.5, 0.0),
+                    ca_upper_left + Vector::new(x_unit * 2.5, 0.0),
                     Size::new(x_unit, size.height),
                 );
             }),
@@ -462,7 +465,7 @@ impl canvas::Program<Message> for Plot {
         frame.fill(
             &Path::new(|p| {
                 p.rectangle(
-                    ca_upper_left + Vector::new(x_unit * 12.5, size.height / 2.0),
+                    ca_upper_left + Vector::new(x_unit * 10.5, size.height / 2.0),
                     Size::new(x_unit * 2.0, size.height / 2.0),
                 );
             }),

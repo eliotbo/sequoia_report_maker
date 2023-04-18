@@ -1,0 +1,27 @@
+Ajouter un menu deroulent pour le client. Le menu deroulent va faire apparaitre des boutons radios pour la succursale
+ajouter "Lieu de l'évaluation: ", 
+Voir les addresse que rox a envoyé - pour la version papier, rox veux 4 version avec des addresse a cocher.
+enlever la date faite automatiquement (pour version papier)
+
+retirer ligne pointille entre 250 et 200
+
+plus d'espace en haut pour mettre l'étiquette du patient 90 x 30 mm
+125 dans l'axe des y
+Titre des graph -> gris tres pale 
+enlever OR. GAUCHE et OR. DROITE, mettre dans la barre de titre
+enlever binaural seiuls vocal
+barre si pas utilise text input
+niveau en premier dans la colonne -> et resultat en 2e
+ajouter dans ID Parole binaural : "Avec lecture labiale", juste À binaural -> ajouter un bouton option en haut de la 2e colonne "Avec lecture labiale"
+
+
+Résultat / Niveau / Liste. Add a full row for ''Liste'' -> text input à droite de Parole binaural. (A1, B1, E, F)
+enlever 4Khz
+Ajouter "Tympanomètre: " + text_input en haut du graph
+mettre dB à droite des textes input dans réflexes stapédiens
+
+Nom de Rox en bas à droite, + place pour signature en bas du nom
+En bas à gauche, "note: " + deux ligne 
+En bas des note: "Voir rapport audiologique complet ci-joint"
+En bas: évaluation global des besoins faite
+en bas bas : "CC" cocher Patient, Audioprothesiste, Medecin de famille, ORL
