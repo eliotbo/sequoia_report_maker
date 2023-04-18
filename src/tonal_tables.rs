@@ -253,7 +253,8 @@ pub fn make_one_tonal_table(
             // .padding(3)
             // .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
             // .align_x(Horizontal::Center),
-            text_input("", &variable, message_fn)
+            text_input("", &variable,)
+                .on_input(message_fn)
                 .size(TABLE_ENTRY_SIZE)
                 .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
             horizontal_space(6.0)
@@ -328,7 +329,8 @@ pub fn make_one_vocal_table(
             // .padding(3)
             // .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
             // .align_x(Horizontal::Center),
-            text_input("", &variable, message_fn)
+            text_input("", &variable)
+                .on_input(message_fn)
                 .size(TABLE_ENTRY_SIZE)
                 .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
             horizontal_space(2.0)
@@ -407,24 +409,18 @@ pub fn make_one_id_language_table(
         // .align_x(Horizontal::Center),
         // vertical_space(3.0),
         container(
-            text_input(
-                "",
-                &table_columns.result1,
-                get_message_fn("IdParoleRes1", ear_side)
-            )
-            .size(TABLE_ENTRY_SIZE)
-            .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+            text_input("", &table_columns.result1,)
+                .on_input(get_message_fn("IdParoleRes1", ear_side))
+                .size(TABLE_ENTRY_SIZE)
+                .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         ),
         // vertical_space(1.0),
         horizontal_space(15.0),
         container(
-            text_input(
-                "",
-                &table_columns.result2,
-                get_message_fn("IdParoleRes2", ear_side)
-            )
-            .size(TABLE_ENTRY_SIZE)
-            .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+            text_input("", &table_columns.result2,)
+                .on_input(get_message_fn("IdParoleRes2", ear_side))
+                .size(TABLE_ENTRY_SIZE)
+                .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         ),
         horizontal_space(2.0),
         text("%")
@@ -451,8 +447,9 @@ pub fn make_one_id_language_table(
             text_input(
                 "",
                 &table_columns.level1,
-                get_message_fn("IdParoleLev1", ear_side)
+                // get_message_fn("IdParoleLev1", ear_side)
             )
+            .on_input(get_message_fn("IdParoleLev1", ear_side))
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         ),
@@ -462,8 +459,9 @@ pub fn make_one_id_language_table(
             text_input(
                 "",
                 &table_columns.level2,
-                get_message_fn("IdParoleLev2", ear_side)
+                // get_message_fn("IdParoleLev2", ear_side)
             )
+            .on_input(get_message_fn("IdParoleLev2", ear_side))
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         ),
@@ -567,13 +565,10 @@ pub fn make_one_tympa_table(
         .width(Length::Shrink),
         //
         container(
-            text_input(
-                "",
-                &table_columns.volume,
-                get_message_fn("TympaVolume", ear_side)
-            )
-            .size(TABLE_ENTRY_SIZE)
-            .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+            text_input("", &table_columns.volume,)
+                .on_input(get_message_fn("TympaVolume", ear_side))
+                .size(TABLE_ENTRY_SIZE)
+                .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         ),
         // horizontal_space(2.0),
         // container(
@@ -606,8 +601,9 @@ pub fn make_one_tympa_table(
             text_input(
                 "",
                 &table_columns.pressure,
-                get_message_fn("TympaPressure", ear_side)
+                // get_message_fn("TympaPressure", ear_side)
             )
+            .on_input(get_message_fn("TympaPressure", ear_side))
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         ),
@@ -636,8 +632,9 @@ pub fn make_one_tympa_table(
             text_input(
                 "",
                 &table_columns.compliance,
-                get_message_fn("TympaCompliance", ear_side)
+                // get_message_fn("TympaCompliance", ear_side)
             )
+            .on_input(get_message_fn("TympaCompliance", ear_side))
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         ),
@@ -773,8 +770,9 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.ipsi.khz_500,
-                get_message_fn("StapIpsi500", ear_side)
+                // get_message_fn("StapIpsi500", ear_side)
             )
+            .on_input(get_message_fn("StapIpsi500", ear_side))
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(text_input_width)),
         )
@@ -784,8 +782,9 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.ipsi.khz_1000,
-                get_message_fn("StapIpsi1000", ear_side)
+                // get_message_fn("StapIpsi1000", ear_side)
             )
+            .on_input(get_message_fn("StapIpsi1000", ear_side))
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(text_input_width)),
         )
@@ -795,8 +794,9 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.ipsi.khz_2000,
-                get_message_fn("StapIpsi2000", ear_side)
+                // get_message_fn("StapIpsi2000", ear_side)
             )
+            .on_input(get_message_fn("StapIpsi2000", ear_side))
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(text_input_width)),
         )
@@ -806,8 +806,9 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.ipsi.khz_4000,
-                get_message_fn("StapIpsi4000", ear_side)
+                // get_message_fn("StapIpsi4000", ear_side)
             )
+            .on_input(get_message_fn("StapIpsi4000", ear_side))
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(text_input_width)),
         )
@@ -830,8 +831,9 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.control.khz_500,
-                get_message_fn("StapControl500", ear_side)
+                // get_message_fn("StapControl500", ear_side)
             )
+            .on_input(get_message_fn("StapControl500", ear_side))
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(text_input_width)),
         )
@@ -841,8 +843,9 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.control.khz_1000,
-                get_message_fn("StapControl1000", ear_side)
+                // get_message_fn("StapControl1000", ear_side)
             )
+            .on_input(get_message_fn("StapControl1000", ear_side))
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(text_input_width)),
         )
@@ -852,8 +855,9 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.control.khz_2000,
-                get_message_fn("StapControl2000", ear_side)
+                // get_message_fn("StapControl2000", ear_side)
             )
+            .on_input(get_message_fn("StapControl2000", ear_side))
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(text_input_width)),
         )
@@ -863,8 +867,9 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.control.khz_4000,
-                get_message_fn("StapControl4000", ear_side)
+                // get_message_fn("StapControl4000", ear_side)
             )
+            .on_input(get_message_fn("StapControl4000", ear_side))
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(text_input_width)),
         )

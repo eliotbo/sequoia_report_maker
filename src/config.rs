@@ -2,8 +2,8 @@ use iced::{Color, Size};
 
 use iced::theme::{self, Theme};
 
-use iced::widget::canvas;
 use iced::widget::container;
+use iced::widget::{button, canvas};
 
 pub const WINDOW_WIDTH: u32 = 1000;
 pub const WINDOW_HEIGHT: u32 = 1500;
@@ -94,6 +94,52 @@ pub const PLOT_DASH: canvas::LineDash = canvas::LineDash {
     segments: &[8., 5.],
     offset: 11,
 };
+
+pub struct CustomButtonStyle;
+
+impl button::StyleSheet for CustomButtonStyle {
+    type Style = Theme;
+
+    // fn appearance(&self, _style: &Self::Style) -> button::Appearance {
+    //     button::Appearance {
+    //         // shadow_offset: Vector<f32>,
+    //         // background: Option<Background>,
+    //         // border_radius: f32,
+    //         // border_width: f32,
+    //         // border_color: Color,
+    //         // text_color: Color,
+    //         ..Default::default()
+    //     }
+    // }
+
+    fn active(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: None,
+            ..Default::default()
+        }
+    }
+
+    fn hovered(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: None,
+            ..Default::default()
+        }
+    }
+
+    fn pressed(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: None,
+            ..Default::default()
+        }
+    }
+
+    fn disabled(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: None,
+            ..Default::default()
+        }
+    }
+}
 
 pub struct TitleContainerCustomStyle;
 

@@ -5,13 +5,16 @@ mod config;
 mod immi_plot;
 mod immitance;
 mod legend;
+mod partners;
 mod plot;
 mod preset;
 mod tonal_tables;
-mod partners;
+// mod modal;
+// mod partners::modal::*;
 
 use immitance::*;
-use partners::*;
+use partners::modal::Modal;
+use partners::{get_all_partners, get_all_succursales, modal, Partner};
 
 use tonal_tables::{
     get_message_fn, identification_language, make_tonal_tables, seuils_vocaux_tables, stap, tympa,
@@ -20,10 +23,11 @@ use tonal_tables::{
 // use checkboxes::{Transductor, Validity};
 // use grid::Grid;
 use config::{
-    LegendCustomStyle, TitleContainerCustomStyle, DEFAULT_TEXT_INPUT_CONTENT_SIZE,
-    DEFAULT_TEXT_SIZE, LEGEND_BOTTOM_SPACE, LEGEND_WIDTH, RADIO_SPACING, RADIO_TITLE_SIZE,
-    SECTION_SEPARATOR_SPACE, SECTION_TITLE_BG_COLOR, SECTION_TITLE_TEXT_COLOR,
-    SPACE_BELOW_SECTION_TITLE, TABLE_MISC_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH,
+    CustomButtonStyle, LegendCustomStyle, TitleContainerCustomStyle,
+    DEFAULT_TEXT_INPUT_CONTENT_SIZE, DEFAULT_TEXT_SIZE, LEGEND_BOTTOM_SPACE, LEGEND_WIDTH,
+    RADIO_SPACING, RADIO_TITLE_SIZE, SECTION_SEPARATOR_SPACE, SECTION_TITLE_BG_COLOR,
+    SECTION_TITLE_TEXT_COLOR, SPACE_BELOW_SECTION_TITLE, TABLE_MISC_SIZE, WINDOW_HEIGHT,
+    WINDOW_WIDTH,
 };
 use immi_plot::im_plot;
 use legend::{draw_legend, Legend};
@@ -41,9 +45,9 @@ use iced::widget::canvas;
 use iced::widget::canvas::event::{self, Event};
 use iced::widget::canvas::path::Builder;
 use iced::widget::canvas::{Cache, Canvas, Cursor, Frame, Geometry, Path, Text};
-use iced::widget::{self,
-    button, checkbox, column, container, container::Appearance, horizontal_space, pick_list, radio,
-    row, slider, text, text_input, vertical_space, Container, Row, Rule,
+use iced::widget::{
+    self, button, checkbox, column, container, container::Appearance, horizontal_space, pick_list,
+    radio, row, slider, text, text_input, vertical_space, Container, Row, Rule,
 };
 use iced::window;
 use iced::{
@@ -178,7 +182,6 @@ impl Default for Succursale {
 
 #[derive(Default)]
 pub struct AudioRox {
-
     show_partner_choices: bool,
     is_playing: bool,
     queued_ticks: usize,
@@ -247,7 +250,6 @@ pub enum Message {
     TransductorChanged(Transductor),
 
     // SuccursaleChanged(Succursale),
-
     MSPRightChanged(String),
     MSP4RightChanged(String),
     FLCHRightChanged(String),
@@ -343,13 +345,13 @@ impl Application for AudioRox {
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
             Message::PartnerChanged(value) => self.partner = value,
-            
+
             Message::ShowParnerChoices => {
                 self.show_partner_choices = true;
                 return widget::focus_next();
             }
             Message::HidePartnerChoices => {
-                self.hide_partner_choices(); 
+                self.hide_partner_choices();
             }
 
             Message::AdequateRestPeriodChanged(value) => self.adequate_rest_period = value,
@@ -367,7 +369,6 @@ impl Application for AudioRox {
             }
             Message::MethodChanged(new_method) => self.method = new_method,
             // Message::SuccursaleChanged(new_succursale) => self.succursale = new_succursale,
-
             Message::MSPRightChanged(new_msp) => self.tonal_table_right.msp = new_msp,
             Message::MSP4RightChanged(new_msp4) => self.tonal_table_right.msp4 = new_msp4,
             Message::FLCHRightChanged(new_fletcher) => {
@@ -552,8 +553,9 @@ impl Application for AudioRox {
             text_input(
                 "AD629",
                 &self.audiometer_name,
-                Message::AudiometerNameChanged
+                // Message::AudiometerNameChanged
             )
+            .on_input(Message::AudiometerNameChanged)
             .size(DEFAULT_TEXT_INPUT_CONTENT_SIZE)
             .width(Length::Fill)
         ]
@@ -566,8 +568,9 @@ impl Application for AudioRox {
             text_input(
                 "",
                 &self.anterior_threshold_date,
-                Message::AnteriorThresholdDateChanged
+                // Message::AnteriorThresholdDateChanged
             )
+            .on_input(Message::AnteriorThresholdDateChanged)
             .size(DEFAULT_TEXT_INPUT_CONTENT_SIZE)
             .width(Length::Fill)
         ]
@@ -694,13 +697,16 @@ impl Application for AudioRox {
             column![
                 row![
                     text(format!("Date de l'évaluation:")).size(14),
-                    
                     // text(format!("Date de l'évaluation: {day}/{month}/{year}")).size(14),
                     // vertical_space(Length::Fixed(text_vspace)),
-                    Rule::horizontal(text_vspace*1.3),
+                    Rule::horizontal(text_vspace * 1.3),
                 ],
+                // modal
                 // Rule::horizontal(1),
-                text("Lieu de l'évaluation: Clinique de l'Audition Bois & Associés audioprothésistes").size(14),
+                button("Lieu de l'évaluation: ")
+                    .on_press(Message::ShowParnerChoices)
+                    .style(theme::Button::Custom(Box::new(CustomButtonStyle))),
+                // text("Lieu de l'évaluation: Clinique de l'Audition Bois & Associés audioprothésistes").size(14),
                 get_all_succursales(&self.partner),
                 // montmagny,
                 // levy,
@@ -960,16 +966,18 @@ impl Application for AudioRox {
         ]
         .spacing(6);
 
-        let open_text_input_right =
-            text_input("", &self.vocal_misc_right, Message::MiscRightChanged)
-                .size(TABLE_MISC_SIZE)
-                .width(Length::Fill);
-
-        let open_text_input_left = text_input("", &self.vocal_misc_left, Message::MiscLeftChanged)
+        let open_text_input_right = text_input("", &self.vocal_misc_right)
+            .on_input(Message::MiscRightChanged)
             .size(TABLE_MISC_SIZE)
             .width(Length::Fill);
 
-        let open_text_input_bin = text_input("", &self.vocal_misc_bin, Message::MiscBinChanged)
+        let open_text_input_left = text_input("", &self.vocal_misc_left)
+            .on_input(Message::MiscLeftChanged)
+            .size(TABLE_MISC_SIZE)
+            .width(Length::Fill);
+
+        let open_text_input_bin = text_input("", &self.vocal_misc_bin)
+            .on_input(Message::MiscBinChanged)
             .size(TABLE_MISC_SIZE)
             .width(Length::Fill);
 
@@ -1062,10 +1070,35 @@ impl Application for AudioRox {
             immitance_content
         ];
 
-        container(content.align_items(Alignment::Center))
+        let final_content = container(content.align_items(Alignment::Center))
             .width(Length::Fill)
             // .height(Length::Fill)
-            .into()
+            ;
+
+        if self.show_partner_choices {
+            let modal_content = container(
+                column![
+                    text("Sign Up").size(24),
+                    column![
+                        // column![text("Email").size(12),].spacing(5),
+                        // column![text("Password").size(12),].spacing(5),
+                        get_all_partners(&self.partner),
+                        button(text("Submit")).on_press(Message::HidePartnerChoices),
+                    ]
+                    .spacing(10)
+                ]
+                .spacing(20),
+            )
+            .width(300)
+            .padding(10)
+            .style(theme::Container::Box);
+
+            modal::Modal::new(final_content, modal_content)
+                .on_blur(Message::HidePartnerChoices)
+                .into()
+        } else {
+            final_content.into()
+        }
     }
 
     fn theme(&self) -> Theme {

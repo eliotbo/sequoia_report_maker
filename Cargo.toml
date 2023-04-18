@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = { version = "0.8", features = ["canvas", "tokio", "debug"] }
-iced_native = { version = "0.8" }
+iced = { version = "0.9", features = ["canvas", "tokio", "debug"] }
+iced_native = { version = "0.10.1" }
 # iced = { path = "iced", features = ["canvas", "tokio", "debug"] }
 
 tokio = { version = "1.0", features = ["sync"] }
