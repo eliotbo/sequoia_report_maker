@@ -1,4 +1,6 @@
-use iced::widget::{self, button, column, container, horizontal_space, radio, row, text, Rule};
+use iced::widget::{
+    self, button, column, container, horizontal_space, radio, row, text, vertical_space, Rule,
+};
 use iced::{
     executor, keyboard, subscription, theme, Alignment, Application, Command, Element, Event,
     Length, Settings, Subscription,
@@ -8,6 +10,8 @@ use iced::{event, mouse, overlay, Color, Point, Rectangle, Size};
 use iced_native;
 
 use super::Message;
+
+use crate::config::TEXT_LINE_VSPACE;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Partner {
@@ -78,14 +82,15 @@ impl Default for Aures {
 }
 
 pub fn get_all_partners(partner: &Partner) -> Element<Message> {
+    let size = 16;
     let harmonie = radio(
         "Harmonie",
         Partner::Harmonie(Harmonie::None),
         Some(*partner),
         Message::PartnerChanged,
     )
-    .size(12)
-    .text_size(14);
+    .size(size)
+    .text_size(size);
 
     let bois = radio(
         "Bois",
@@ -93,8 +98,8 @@ pub fn get_all_partners(partner: &Partner) -> Element<Message> {
         Some(*partner),
         Message::PartnerChanged,
     )
-    .size(12)
-    .text_size(14);
+    .size(size)
+    .text_size(size);
 
     let prevost = radio(
         "Prévost",
@@ -102,8 +107,8 @@ pub fn get_all_partners(partner: &Partner) -> Element<Message> {
         Some(*partner),
         Message::PartnerChanged,
     )
-    .size(12)
-    .text_size(14);
+    .size(size)
+    .text_size(size);
 
     let aures = radio(
         "Aures",
@@ -111,15 +116,23 @@ pub fn get_all_partners(partner: &Partner) -> Element<Message> {
         Some(*partner),
         Message::PartnerChanged,
     )
-    .size(12)
-    .text_size(14);
+    .size(size)
+    .text_size(size);
 
-    column![harmonie, bois, prevost, aures].into()
+    column![harmonie, bois, prevost, aures].spacing(2.0).into()
 }
 
-pub fn get_all_succursales(partner: &Partner) -> Element<Message> {
-    let succursales = match partner {
+pub fn get_all_succursales(partner: &Partner) -> (String, Element<Message>) {
+    let vspace = 1.5;
+    let clinic_vspace = 1.5;
+    let clinic_name_size = 14.;
+
+    let (clinic, succursales) = match partner {
         Partner::Bois(_) => {
+            // let clinic = text("Clinique de l'audition Bois et Associés audioprothésistes")
+            //     .size(clinic_name_size);
+            let clinic = "Clinique de l'audition Bois et Associés audioprothésistes";
+
             let montmagny = radio(
                 "83 Bd Taché O, Montmagny, QC G5V 3A6, 418-248-7077",
                 Partner::Bois(Bois::Montmagny),
@@ -138,9 +151,13 @@ pub fn get_all_succursales(partner: &Partner) -> Element<Message> {
             .size(12)
             .text_size(14);
 
-            column![montmagny, levis]
+            (clinic, column![montmagny, vertical_space(vspace), levis])
         }
         Partner::Harmonie(_) => {
+            // let clinic =
+            //     text("Harmonie Audition - Myriam Brunel Audioprothésiste").size(clinic_name_size);
+            let clinic = "Harmonie Audition - Myriam Brunel Audioprothésiste";
+
             let jean_gauvin = radio(
                 "790 Rte Jean-Gauvin local 230, Québec City, Quebec G1X 0B6. (418) 476-1455",
                 Partner::Harmonie(Harmonie::JeanGauvin),
@@ -151,9 +168,11 @@ pub fn get_all_succursales(partner: &Partner) -> Element<Message> {
             .size(12)
             .text_size(14);
 
-            column![jean_gauvin]
+            (clinic, column![jean_gauvin])
         }
         Partner::Prevost(_) => {
+            // let clinic = text("Prévost Audioprothésistes").size(clinic_name_size);
+            let clinic = "Prévost Audioprothésistes";
             let quebec = radio(
                 "1000 Ch Ste-Foy bureau 201, Québec City, Quebec G1S 2L6. (418) 688-1430",
                 Partner::Prevost(Prevost::Quebec),
@@ -184,49 +203,70 @@ pub fn get_all_succursales(partner: &Partner) -> Element<Message> {
             .size(12)
             .text_size(14);
 
-            column![quebec, malbaie, baie_st_paul]
+            (
+                clinic,
+                column![
+                    quebec,
+                    vertical_space(vspace),
+                    malbaie,
+                    vertical_space(vspace),
+                    baie_st_paul
+                ],
+            )
         }
-        Partner::Aures(_) => {
-            let quebec = radio(
-                "1363 Av. Maguire Bureau 202, Québec, QC G1T 1Z2. (581) 491-6363",
-                // Aures::Quebec,
-                Partner::Aures(Aures::Quebec),
-                Some(*partner),
-                Message::PartnerChanged,
-            )
-            .size(12)
-            .text_size(14);
 
-            let beaupre = radio(
-                "175 Bd du Beau Pré, Beaupré, QC G0A 1E0. (418) 702-1721",
-                // Aures::Beaupre,
-                Partner::Aures(Aures::Beaupre),
-                Some(*partner),
-                Message::PartnerChanged,
-            )
-            .size(12)
-            .text_size(14);
+        // Partner::Aures(_) => {
+        //     let quebec = radio(
+        //         "1363 Av. Maguire Bureau 202, Québec, QC G1T 1Z2. (581) 491-6363",
+        //         // Aures::Quebec,
+        //         Partner::Aures(Aures::Quebec),
+        //         Some(*partner),
+        //         Message::PartnerChanged,
+        //     )
+        //     .size(12)
+        //     .text_size(14);
 
-            let baie_st_paul = radio(
-                "4 Rue du Moulin Local 101, Baie-Saint-Paul, QC G3Z 2R8. (418) 760 - 8521",
-                // Aures::BaieStPaul,
-                Partner::Aures(Aures::BaieStPaul),
-                Some(*partner),
-                Message::PartnerChanged,
-            )
-            .size(12)
-            .text_size(14);
+        //     let beaupre = radio(
+        //         "175 Bd du Beau Pré, Beaupré, QC G0A 1E0. (418) 702-1721",
+        //         // Aures::Beaupre,
+        //         Partner::Aures(Aures::Beaupre),
+        //         Some(*partner),
+        //         Message::PartnerChanged,
+        //     )
+        //     .size(12)
+        //     .text_size(14);
 
-            column![quebec, beaupre, baie_st_paul]
+        //     let baie_st_paul = radio(
+        //         "4 Rue du Moulin Local 101, Baie-Saint-Paul, QC G3Z 2R8. (418) 760 - 8521",
+        //         // Aures::BaieStPaul,
+        //         Partner::Aures(Aures::BaieStPaul),
+        //         Some(*partner),
+        //         Message::PartnerChanged,
+        //     )
+        //     .size(12)
+        //     .text_size(14);
+
+        //     column![quebec, beaupre, baie_st_paul]
+        // }
+        _ => {
+            let vspace = TEXT_LINE_VSPACE;
+            (
+                "",
+                column![
+                    vertical_space(vspace),
+                    Rule::horizontal(0),
+                    vertical_space(vspace),
+                    Rule::horizontal(0),
+                    vertical_space(vspace),
+                    Rule::horizontal(1),
+                    vertical_space(vspace),
+                    Rule::horizontal(1)
+                ],
+            )
         }
-        _ => column![
-            Rule::horizontal(1),
-            Rule::horizontal(1),
-            Rule::horizontal(1)
-        ],
     };
 
-    return succursales.into();
+    return (clinic.into(), container(succursales).into());
 }
 
 pub mod modal {
@@ -234,7 +274,7 @@ pub mod modal {
     use iced_native::widget::{self, Tree};
     use iced_native::{
         event, layout, mouse, overlay, renderer, Clipboard, Color, Element, Event, Layout, Length,
-        Point, Rectangle, Shell, Size, Widget,
+        Point, Rectangle, Shell, Size, Vector, Widget,
     };
 
     /// A widget that centers a modal element over some base element
@@ -403,6 +443,7 @@ pub mod modal {
             child.align(Alignment::Center, Alignment::Center, limits.max());
 
             let mut node = layout::Node::with_children(self.size, vec![child]);
+
             node.move_to(position);
 
             node

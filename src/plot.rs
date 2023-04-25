@@ -11,7 +11,7 @@ use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::config::{
     self, CORNER_RADIUS, LEGEND_WIDTH, PLOT_CANVAS_HEIGHT, PLOT_CANVAS_WIDTH, PLOT_CA_CO_Y_SPACE,
-    PLOT_DASH, PLOT_DOT_SIZE, PLOT_LEGEMD_SPACE, PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE,
+    PLOT_DASH, PLOT_DOT_SIZE, PLOT_LEGEMD_SPACE, PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE, PLOT_SPACE,
     PLOT_TICK_LABEL_SPACE, PLOT_TICK_SIZE, PLOT_X_AXIS, PLOT_X_OFFSET_END, PLOT_X_OFFSET_START,
     PLOT_Y_AXIS, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START, SPACE, WINDOW_HEIGHT, WINDOW_WIDTH,
 };
@@ -62,7 +62,8 @@ impl Default for Plot {
 
 impl Plot {
     pub fn new(data: Vec<f32>, shape: Shape, ear_side: EarSide) -> Self {
-        let space = PLOT_LEGEMD_SPACE;
+        let space = PLOT_SPACE;
+        // let space = 10.;
 
         let mut first_x = PLOT_X_OFFSET_START + space;
         let plot_width = (PLOT_X_AXIS.len()) as f32 * PLOT_TICK_SIZE * 2.0;
@@ -75,7 +76,7 @@ impl Plot {
             last_x = first_x + plot_width - PLOT_TICK_SIZE;
         }
 
-        let top_left = Point::new(first_x, PLOT_Y_OFFSET_START + space);
+        let top_left = Point::new(first_x, PLOT_Y_OFFSET_START);
         let size = Size::new(last_x - first_x, y_size);
 
         Plot {
@@ -226,9 +227,10 @@ impl canvas::Program<Message> for Plot {
         let mut db_x_position = first_x - PLOT_TICK_LABEL_SPACE + 10.0;
         let mut db_halign = Horizontal::Right;
 
-        let mut hz_x_position = last_x;
+        let mut hz_x_position = last_x + 3.0;
         let mut hz_halign = Horizontal::Right;
 
+        let mut y0_tick_x_pos = first_x - PLOT_TICK_LABEL_SPACE + 2.0;
         let mut y_tick_x_pos = first_x - PLOT_TICK_LABEL_SPACE;
         let mut y_tick_h_align = Horizontal::Right;
 
@@ -244,6 +246,7 @@ impl canvas::Program<Message> for Plot {
             last_x = first_x + plot_width - x_unit * 0.6;
 
             y_tick_x_pos = last_x + PLOT_TICK_LABEL_SPACE;
+            y0_tick_x_pos = y_tick_x_pos;
             y_tick_h_align = Horizontal::Left;
 
             db_x_position = last_x + PLOT_TICK_LABEL_SPACE;
@@ -257,13 +260,13 @@ impl canvas::Program<Message> for Plot {
             ca_label_x = last_x + PLOT_TICK_LABEL_SPACE - x_unit * 0.5;
         };
 
-        frame.fill_text(Text {
-            content: "dB HL".to_string(),
-            horizontal_alignment: db_halign,
-            vertical_alignment: Vertical::Top,
-            position: Point::new(db_x_position, space + plot_height + 1.0),
-            ..legend_text
-        });
+        // frame.fill_text(Text {
+        //     content: "dB HL".to_string(),
+        //     horizontal_alignment: db_halign,
+        //     vertical_alignment: Vertical::Top,
+        //     position: Point::new(db_x_position, space + plot_height + 1.0),
+        //     ..legend_text
+        // });
 
         frame.fill_text(Text {
             content: "Hz".to_string(),
@@ -298,15 +301,23 @@ impl canvas::Program<Message> for Plot {
 
             let units = format!("{}", y_axis[y_usize]);
 
-            // if y_usize > 0 {
-            frame.fill_text(Text {
-                content: units,
-                horizontal_alignment: y_tick_h_align,
-                vertical_alignment: Vertical::Center,
-                position: Point::new(y_tick_x_pos, y),
-                ..legend_text
-            });
-            // }
+            if units == "0" {
+                frame.fill_text(Text {
+                    content: "0 dBHL".into(),
+                    horizontal_alignment: y_tick_h_align,
+                    vertical_alignment: Vertical::Center,
+                    position: Point::new(y0_tick_x_pos, y),
+                    ..legend_text
+                });
+            } else {
+                frame.fill_text(Text {
+                    content: units,
+                    horizontal_alignment: y_tick_h_align,
+                    vertical_alignment: Vertical::Center,
+                    position: Point::new(y_tick_x_pos, y),
+                    ..legend_text
+                });
+            }
 
             // if let EarSide::Right = self.ear_side {
 

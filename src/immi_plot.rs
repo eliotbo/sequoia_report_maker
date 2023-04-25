@@ -10,10 +10,10 @@ use iced::widget::canvas::{Cache, Canvas, Cursor, Path, Text};
 use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::config::{
-    self, CORNER_RADIUS, IMMIT_CANVAS_WIDTH, IM_PLOT_TICK_SIZE, PLOT_CANVAS_HEIGHT,
-    PLOT_CANVAS_WIDTH, PLOT_CA_CO_Y_SPACE, PLOT_DASH, PLOT_DOT_SIZE, PLOT_SHAPE_SIZE,
-    PLOT_SHAPE_STROKE, PLOT_TICK_LABEL_SPACE, PLOT_X_AXIS, PLOT_X_OFFSET_END, PLOT_X_OFFSET_START,
-    PLOT_Y_AXIS, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START, SPACE,
+    self, CORNER_RADIUS, IMMIT_CANVAS_HEIGHT, IMMIT_CANVAS_WIDTH, IM_PLOT_TICK_SIZE,
+    PLOT_CANVAS_HEIGHT, PLOT_CANVAS_WIDTH, PLOT_CA_CO_Y_SPACE, PLOT_DASH, PLOT_DOT_SIZE,
+    PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE, PLOT_TICK_LABEL_SPACE, PLOT_X_AXIS, PLOT_X_OFFSET_END,
+    PLOT_X_OFFSET_START, PLOT_Y_AXIS, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START, SPACE,
 };
 use crate::Message;
 
@@ -109,13 +109,13 @@ impl canvas::Program<Message> for ImmitPlot {
 
         let y1 = plot_height + PLOT_CA_CO_Y_SPACE;
 
-        frame.fill_text(Text {
-            content: "ml".to_string(),
-            horizontal_alignment: db_halign,
-            vertical_alignment: Vertical::Bottom,
-            position: Point::new(db_x_position - 10.0, space + y_offset0 - 15.0),
-            ..legend_text
-        });
+        // frame.fill_text(Text {
+        //     content: "ml".to_string(),
+        //     horizontal_alignment: db_halign,
+        //     vertical_alignment: Vertical::Bottom,
+        //     position: Point::new(db_x_position - 10.0, space + y_offset0 - 15.0),
+        //     ..legend_text
+        // });
 
         // frame.fill_text(Text {
         //     content: "Hz".to_string(),
@@ -141,8 +141,11 @@ impl canvas::Program<Message> for ImmitPlot {
                 y_stroke.clone(),
             );
 
-            let units = format!("{}", y_axis[y_usize]);
+            let mut units = format!("{}", y_axis[y_usize]);
 
+            if units == "0" {
+                units = "0 ml".into();
+            }
             frame.fill_text(Text {
                 content: units,
                 horizontal_alignment: y_tick_h_align,
@@ -195,7 +198,7 @@ pub fn im_plot<'a>() -> Element<'a, Message> {
     let can = Canvas::new(plotter)
         // .width(Length::Fill)
         .width(Length::Fixed(IMMIT_CANVAS_WIDTH))
-        .height(Length::Fixed(IMMIT_CANVAS_WIDTH));
+        .height(Length::Fixed(IMMIT_CANVAS_HEIGHT));
 
     let element = Element::new(can);
     // let element = container(can).into();
