@@ -27,7 +27,7 @@ pub const TABLE_MISC_SIZE: f32 = 16.0;
 pub const STAP_ENTRY_SIZE: f32 = 8.0;
 
 pub const IMMIT_CANVAS_WIDTH: f32 = 210.0;
-pub const IMMIT_CANVAS_HEIGHT: f32 = 185.0;
+pub const IMMIT_CANVAS_HEIGHT: f32 = 165.0;
 
 pub const DEFAULT_TEXT_INPUT_CONTENT_SIZE: f32 = 12.0;
 pub const DEFAULT_TEXT_SIZE: f32 = 16.0;
@@ -44,7 +44,7 @@ pub const TABLE_TITLE_BG_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 pub const TABLE_BORDER_COLOR: Color = Color::from_rgb(0.5, 0.5, 0.5);
 // pub const TABLE_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.8, 0.82, 0.810);
 pub const TABLE_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.05, 0.02, 0.030);
-pub const TONAL_TABLE_COL_WIDTH: f32 = 60.0;
+pub const TONAL_TABLE_COL_WIDTH: f32 = 40.0;
 pub const VOCAL_TABLE_CONTENT_HEIGHT: f32 = 45.0;
 
 pub const SPACE: f32 = 1.0;
@@ -75,7 +75,7 @@ pub const PLOT_CANVAS_WIDTH: f32 = 435.0;
 pub const PLOT_X_OFFSET_START: f32 = 37.0;
 pub const PLOT_X_OFFSET_END: f32 = 35.0;
 // pub const FIRST_X_RIGHT_PLOT: f32 =
-pub const PLOT_Y_OFFSET_START: f32 = 12.0;
+pub const PLOT_Y_OFFSET_START: f32 = 16.0;
 pub const PLOT_Y_OFFSET_END: f32 = 75.0;
 pub const PLOT_DOT_SIZE: f32 = 5.0;
 pub const PLOT_SHAPE_SIZE: f32 = 10.0;
@@ -86,6 +86,7 @@ pub const PLOT_X_AXIS: [isize; 8] = [0, 125, 250, 500, 1000, 2000, 4000, 8000];
 pub const PLOT_Y_AXIS: [isize; 14] = [-10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120];
 
 pub const IM_PLOT_TICK_SIZE: f32 = 28.0;
+pub const IM_PLOT_X_OFFSET: f32 = 24.0;
 
 pub const PLOT_SHAPE_STROKE: canvas::Stroke = canvas::Stroke {
     style: canvas::Style::Solid(Color {

@@ -11,9 +11,10 @@ use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::config::{
     self, CORNER_RADIUS, IMMIT_CANVAS_HEIGHT, IMMIT_CANVAS_WIDTH, IM_PLOT_TICK_SIZE,
-    PLOT_CANVAS_HEIGHT, PLOT_CANVAS_WIDTH, PLOT_CA_CO_Y_SPACE, PLOT_DASH, PLOT_DOT_SIZE,
-    PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE, PLOT_TICK_LABEL_SPACE, PLOT_X_AXIS, PLOT_X_OFFSET_END,
-    PLOT_X_OFFSET_START, PLOT_Y_AXIS, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START, SPACE,
+    IM_PLOT_X_OFFSET, PLOT_CANVAS_HEIGHT, PLOT_CANVAS_WIDTH, PLOT_CA_CO_Y_SPACE, PLOT_DASH,
+    PLOT_DOT_SIZE, PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE, PLOT_TICK_LABEL_SPACE, PLOT_X_AXIS,
+    PLOT_X_OFFSET_END, PLOT_X_OFFSET_START, PLOT_Y_AXIS, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START,
+    SPACE,
 };
 use crate::Message;
 
@@ -71,7 +72,7 @@ impl canvas::Program<Message> for ImmitPlot {
         let y_axis = [2.5, 2.0, 1.5, 1.0, 0.5, 0.0];
         let x_axis = [-300, -200, -100, 0, 100, 200];
 
-        let x_offset = PLOT_X_OFFSET_START;
+        let x_offset = IM_PLOT_X_OFFSET;
 
         let plot_width = (x_axis.len() - 1) as f32 * IM_PLOT_TICK_SIZE * 1.0;
         let plot_height =
@@ -173,11 +174,30 @@ impl canvas::Program<Message> for ImmitPlot {
                 }),
                 x_stroke.clone(),
             );
-            let content = format!("{}", x_axis[x_usize] as f32 / 1.0);
+            let mut content = format!("{}", x_axis[x_usize] as f32 / 1.0);
+
+            if x_axis[x_usize] == 200 {
+                frame.fill_text(Text {
+                    content: "daPa".to_string(),
+                    horizontal_alignment: Horizontal::Left,
+                    vertical_alignment: Vertical::Bottom,
+                    position: Point::new(
+                        x + 12.0,
+                        space - PLOT_TICK_LABEL_SPACE + PLOT_Y_OFFSET_START,
+                    ),
+                    // size: 10.0,
+                    ..legend_text
+                });
+            }
 
             if x_usize == 0 {
                 continue;
             }
+
+            // if x_axis[x_usize] == 200 {
+            //     content = "200".into();
+            //     println!("here");
+            // }
 
             frame.fill_text(Text {
                 content,

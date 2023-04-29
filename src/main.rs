@@ -24,8 +24,8 @@ use tonal_tables::{
 // use grid::Grid;
 use config::{
     CustomButtonStyle, LegendCustomStyle, TitleContainerCustomStyle,
-    DEFAULT_TEXT_INPUT_CONTENT_SIZE, DEFAULT_TEXT_SIZE, LEGEND_BOTTOM_SPACE, LEGEND_WIDTH,
-    MAX_DIGITS, RADIO_SIZE, RADIO_SPACING, RADIO_TEXT_SIZE, RADIO_TITLE_SIZE,
+    DEFAULT_TEXT_INPUT_CONTENT_SIZE, DEFAULT_TEXT_SIZE, IMMIT_CANVAS_WIDTH, LEGEND_BOTTOM_SPACE,
+    LEGEND_WIDTH, MAX_DIGITS, RADIO_SIZE, RADIO_SPACING, RADIO_TEXT_SIZE, RADIO_TITLE_SIZE,
     SECTION_SEPARATOR_SPACE, SECTION_TITLE_BG_COLOR, SECTION_TITLE_TEXT_COLOR,
     SPACE_BELOW_SECTION_TITLE, TABLE_MISC_SIZE, TEXT_LINE_VSPACE, WINDOW_HEIGHT, WINDOW_WIDTH,
 };
@@ -114,6 +114,7 @@ pub fn main() -> iced::Result {
 struct VocalTable {
     sdp: String,
     srp: String,
+    list: String,
     misc: String,
 }
 
@@ -189,6 +190,7 @@ pub struct AudioRox {
 
     anterior_threshold_date: String,
     audiometer_name: String,
+    tympanometer_name: String,
     adequate_rest_period: bool,
 
     id_lang_left: IdLang,
@@ -224,6 +226,7 @@ pub enum Message {
     AdequateRestPeriodChanged(bool),
     AnteriorThresholdDateChanged(String),
     AudiometerNameChanged(String),
+    TympanometerNameChanged(String),
     DefaultChecked(bool),
     CustomChecked(bool),
     ValidityChanged(Validity),
@@ -241,10 +244,12 @@ pub enum Message {
 
     SDPRightChanged(String),
     SRPRightChanged(String),
+    ListRightChanged(String),
     MiscRightChanged(String),
 
     SDPLeftChanged(String),
     SRPLeftChanged(String),
+    ListLeftChanged(String),
     MiscLeftChanged(String),
 
     SDPFreeChanged(String),
@@ -339,6 +344,7 @@ impl Application for AudioRox {
             Message::AdequateRestPeriodChanged(value) => self.adequate_rest_period = value,
             Message::AnteriorThresholdDateChanged(value) => self.anterior_threshold_date = value,
             Message::AudiometerNameChanged(value) => self.audiometer_name = value,
+            Message::TympanometerNameChanged(value) => self.tympanometer_name = value,
             Message::DefaultChecked(value) => {
                 self.default_checkbox = value;
             }
@@ -359,8 +365,10 @@ impl Application for AudioRox {
 
             Message::SDPRightChanged(value) => self.vocal_table_right.sdp = value,
             Message::SRPRightChanged(value) => self.vocal_table_right.srp = value,
+            Message::ListRightChanged(value) => self.vocal_table_right.list = value,
             Message::SDPLeftChanged(value) => self.vocal_table_left.sdp = value,
             Message::SRPLeftChanged(value) => self.vocal_table_left.srp = value,
+            Message::ListLeftChanged(value) => self.vocal_table_left.list = value,
 
             Message::SDPFreeChanged(value) => self.vocal_table_binaural.sdp = value,
             Message::SRPFreeChanged(value) => self.vocal_table_binaural.srp = value,
@@ -646,22 +654,23 @@ impl Application for AudioRox {
 
         let header = row![
             column![
-                text("Roxanne Bolduc,")
-                    .size(26)
+                text("Roxanne Bolduc")
+                    .size(30)
                     .horizontal_alignment(Horizontal::Left),
-                text("Audiologiste M.P.A., OOAQ #4182")
-                    .size(16)
+                text("Audiologiste")
+                    .size(20)
                     .horizontal_alignment(Horizontal::Left),
             ]
             .width(Length::FillPortion(2)),
             // .align(Alignment::Start),
             horizontal_space(1),
-            container(
+            container(column![
                 text("ÉVALUATION AUDIOLOGIQUE")
                     .size(33)
                     .horizontal_alignment(Horizontal::Center)
-                    .width(Length::Fill)
-            )
+                    .width(Length::Fill),
+                vertical_space(15.)
+            ])
             .width(Length::FillPortion(3)),
             horizontal_space(1),
             // .align(Alignment::Start),
@@ -700,6 +709,7 @@ impl Application for AudioRox {
             // .width(Length::Fixed(400.0))
             .width(Length::FillPortion(2))
         ]
+        .align_items(Alignment::End)
         .padding([0, 5, 0, 5])
         .width(Length::Fill);
 
@@ -835,6 +845,40 @@ impl Application for AudioRox {
         // .align_items(Alignment::Center);
         // ///////////////////////////////////// TONAL TABLES /////////////////////////////////////
 
+        let method_eval = row![
+            text("Méthode d'évaluation : conditionnement ").size(15),
+            horizontal_space(10.0),
+            radio(
+                "Standard (Hughson-Westlake)",
+                MethodEval::Standard,
+                Some(self.method),
+                Message::MethodChanged
+            )
+            .spacing(RADIO_SPACING)
+            .size(12)
+            .text_size(14),
+            horizontal_space(10.0),
+            radio(
+                "Jeu",
+                MethodEval::Play,
+                Some(self.method),
+                Message::MethodChanged
+            )
+            .spacing(RADIO_SPACING)
+            .size(12)
+            .text_size(14),
+            horizontal_space(10.0),
+            radio(
+                "Visuel",
+                MethodEval::Visual,
+                Some(self.method),
+                Message::MethodChanged
+            )
+            .spacing(RADIO_SPACING)
+            .size(12)
+            .text_size(14),
+        ];
+
         let audiograms = column![
             tonal_audiogram_title_container,
             // row![audio_right, mid_audiograph, horizontal_space(6), audio_left] // .align_items(Alignment::Center)
@@ -850,9 +894,12 @@ impl Application for AudioRox {
                     .width(Length::FillPortion(1))
                     .align_x(Horizontal::Left) // .align(Alignment::Center)
             ], // .align_items(Alignment::Center)
-               // vertical_space(5.0),
-               // tonal_tables
-        ];
+            // vertical_space(5.0),
+            // tonal_tables
+            vertical_space(2.0),
+            method_eval
+        ]
+        .align_items(Alignment::Center);
 
         let tonal_audiogram_content = column![header, audiograms];
 
@@ -948,7 +995,7 @@ impl Application for AudioRox {
 
         let vocal_tables = row![
             horizontal_space(10),
-            container(vocal_table_right).width(Length::FillPortion(4)),
+            container(vocal_table_right).width(Length::FillPortion(6)),
             // horizontal_space(10),
             // container(vocal_lang).width(Length::FillPortion(1)),
             horizontal_space(10),
@@ -961,7 +1008,7 @@ impl Application for AudioRox {
             // horizontal_space(10),
             // container(voice).width(Length::FillPortion(1)),
             horizontal_space(10),
-            container(vocal_table_left).width(Length::FillPortion(4)),
+            container(vocal_table_left).width(Length::FillPortion(6)),
             horizontal_space(10),
         ]
         .width(Length::Shrink)
@@ -1009,6 +1056,21 @@ impl Application for AudioRox {
         ]
         .align_items(Alignment::Center);
 
+        let tympanometer_type = row![
+            text("Tympanomètre: ")
+                .size(16)
+                .horizontal_alignment(Horizontal::Left),
+            text_input(
+                "",
+                &self.tympanometer_name,
+                // Message::AudiometerNameChanged
+            )
+            .on_input(Message::TympanometerNameChanged)
+            .size(DEFAULT_TEXT_INPUT_CONTENT_SIZE) // .width(Length::Fill)
+        ]
+        .width(Length::Fixed(IMMIT_CANVAS_WIDTH - 50.0))
+        .align_items(Alignment::Center);
+
         let tympa_content = row![
             horizontal_space(10),
             column![
@@ -1016,9 +1078,11 @@ impl Application for AudioRox {
                 vertical_space(SPACE_BELOW_SECTION_TITLE),
                 stap_table_right
             ]
-            .width(Length::FillPortion(2)),
+            .width(Length::FillPortion(5)),
             horizontal_space(2.0),
-            immit_graph.width(Length::FillPortion(1)),
+            column![immit_graph, vertical_space(2.0), tympanometer_type]
+                .width(Length::FillPortion(3))
+                .align_items(Alignment::Center),
             horizontal_space(2.0),
             // horizontal_space(LEGEND_WIDTH * 1.15),
             column![
@@ -1026,7 +1090,7 @@ impl Application for AudioRox {
                 vertical_space(SPACE_BELOW_SECTION_TITLE),
                 stap_table_left
             ]
-            .width(Length::FillPortion(2)),
+            .width(Length::FillPortion(5)),
             horizontal_space(10),
         ]
         .height(Length::Shrink);
@@ -1060,7 +1124,7 @@ impl Application for AudioRox {
             text("Voir rapport audiologique complet ci-joint.").size(note_vspace),
             text("Évaluation globale des besoins faite.").size(note_vspace),
         ]
-        .width(Length::Fixed(350.0));
+        .width(Length::Fixed(330.0));
 
         let cc = column![
             text("CC").size(note_vspace),
@@ -1088,45 +1152,28 @@ impl Application for AudioRox {
                 container(image::Image::new("images/ordre128.jpg").width(128))
                     .width(Length::Fixed(96.)),
             ],
+            // column![
+            //     vertical_space(10.0),
+            //     container(image::Image::new("images/logo.PNG").width(128))
+            //         .width(Length::Fixed(96.)),
+            // ],
             column![
                 vertical_space(60.0),
                 Rule::horizontal(1.),
                 row![
-                    text("Roxanne Bolduc, MPA, OOAQ #4182"),
+                    text("Roxanne Bolduc  MPA,\nAudiologiste OOAQ #4182"),
                     horizontal_space(25.)
                 ],
             ]
             .width(Length::Fill)
-            .align_items(Alignment::Start)
-        ];
-
-        let method_eval = row![
-            "méthode d'évaluation : conditionnement",
-            radio(
-                "Standard (Hughson-Westlake)",
-                MethodEval::Standard,
-                Some(self.method),
-                Message::MethodChanged
-            ),
-            radio(
-                "Jeu",
-                MethodEval::Play,
-                Some(self.method),
-                Message::MethodChanged
-            ),
-            radio(
-                "Visuel Renforcé",
-                MethodEval::Visual,
-                Some(self.method),
-                Message::MethodChanged
-            ),
+            .align_items(Alignment::End)
         ];
 
         let bottom_content = row![
             // method_eval,
             horizontal_space(3.0),
             note,
-            horizontal_space(100.0),
+            horizontal_space(25.0),
             cc,
             horizontal_space(25.0),
             signature
@@ -1143,7 +1190,7 @@ impl Application for AudioRox {
             immitance_content,
             // .style(theme::Container::Custom(Box::new(TableTitleCustomStyle,))),
             // vertical_space(SECTION_SEPARATOR_SPACE),
-            method_eval,
+            // method_eval,
             bottom_content
         ];
 
