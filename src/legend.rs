@@ -198,8 +198,8 @@ impl canvas::Program<Message> for Legend {
             position: Point::new(center_h, v),
             ..legend_text
         });
-        frame.stroke(&Shape::z(Point::new(lx, v), ss), symbol_stroke.clone());
-        frame.stroke(&Shape::z(Point::new(rx, v), ss), symbol_stroke.clone());
+        frame.stroke(&Shape::s(Point::new(lx, v), ss), symbol_stroke.clone());
+        frame.stroke(&Shape::s(Point::new(rx, v), ss), symbol_stroke.clone());
 
         v += vs;
         let oy = Vector::new(ss * 0.7, -ss);

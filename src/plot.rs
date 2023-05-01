@@ -13,7 +13,8 @@ use crate::config::{
     self, CORNER_RADIUS, LEGEND_WIDTH, PLOT_CANVAS_HEIGHT, PLOT_CANVAS_WIDTH, PLOT_CA_CO_Y_SPACE,
     PLOT_DASH, PLOT_DOT_SIZE, PLOT_LEGEMD_SPACE, PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE, PLOT_SPACE,
     PLOT_TICK_LABEL_SPACE, PLOT_TICK_SIZE, PLOT_X_AXIS, PLOT_X_OFFSET_END, PLOT_X_OFFSET_START,
-    PLOT_Y_AXIS, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START, SPACE, WINDOW_HEIGHT, WINDOW_WIDTH,
+    PLOT_Y_AXIS, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START, SPACE, TABLE_BORDER_COLOR, WINDOW_HEIGHT,
+    WINDOW_WIDTH,
 };
 use crate::Message;
 
@@ -282,31 +283,48 @@ impl canvas::Program<Message> for Plot {
         // add grid to the plot frame
         for y_usize in 0..NUM_Y_TICKS {
             y = y_unit * y_usize as f32 + y_offset0 + space;
-
-            frame.stroke(
-                &Path::new(|p| {
-                    p.move_to(Point::new(first_x, y));
-                    p.line_to(Point::new(last_x, y));
-                }),
-                // y_stroke.clone(),
-                canvas::Stroke {
-                    style: canvas::Style::Solid(config::GRID_COLOR),
-                    width: 1.0,
-                    line_cap: canvas::LineCap::Round,
-                    line_join: canvas::LineJoin::Round,
-                    line_dash: canvas::LineDash::default(),
-                    // ..canvas::Stroke::default()
-                },
-            );
-
             let units = format!("{}", y_axis[y_usize]);
+
+            if units == "20" {
+                frame.stroke(
+                    &Path::new(|p| {
+                        p.move_to(Point::new(first_x, y));
+                        p.line_to(Point::new(last_x, y));
+                    }),
+                    // y_stroke.clone(),
+                    canvas::Stroke {
+                        style: canvas::Style::Solid(Color::from_rgb(0.5, 0.5, 0.5)),
+                        width: 2.0,
+                        line_cap: canvas::LineCap::Round,
+                        line_join: canvas::LineJoin::Round,
+                        line_dash: canvas::LineDash::default(),
+                        // ..canvas::Stroke::default()
+                    },
+                );
+            } else {
+                frame.stroke(
+                    &Path::new(|p| {
+                        p.move_to(Point::new(first_x, y));
+                        p.line_to(Point::new(last_x, y));
+                    }),
+                    // y_stroke.clone(),
+                    canvas::Stroke {
+                        style: canvas::Style::Solid(config::GRID_COLOR),
+                        width: 1.0,
+                        line_cap: canvas::LineCap::Round,
+                        line_join: canvas::LineJoin::Round,
+                        line_dash: canvas::LineDash::default(),
+                        // ..canvas::Stroke::default()
+                    },
+                );
+            }
 
             if units == "0" {
                 frame.fill_text(Text {
                     content: "0 dBHL".into(),
                     horizontal_alignment: y_tick_h_align,
                     vertical_alignment: Vertical::Center,
-                    position: Point::new(y0_tick_x_pos, y),
+                    position: Point::new(y0_tick_x_pos + 2.0, y),
                     ..legend_text
                 });
             } else {
@@ -429,13 +447,6 @@ impl canvas::Program<Message> for Plot {
             caco_stroke.clone(),
         );
 
-        frame.fill(
-            &Path::new(|p| {
-                p.rectangle(ca_upper_left, Size::new(x_unit * 1.5, size.height));
-            }),
-            config::GRID_COLOR,
-        );
-
         frame.stroke(
             &Path::new(|p| {
                 p.move_to(ca_upper_left + Vector::new(0.0, size.height / 2.0));
@@ -454,7 +465,7 @@ impl canvas::Program<Message> for Plot {
                     p.line_to(Point::new(x, ca_upper_left.y + size.height));
                 }),
                 canvas::Stroke {
-                    style: canvas::Style::Solid(config::GRID_COLOR),
+                    style: canvas::Style::Solid(config::GRAY),
                     width: 1.0,
                     line_cap: canvas::LineCap::Round,
                     line_join: canvas::LineJoin::Round,
@@ -462,7 +473,12 @@ impl canvas::Program<Message> for Plot {
                 },
             )
         }
-
+        frame.fill(
+            &Path::new(|p| {
+                p.rectangle(ca_upper_left, Size::new(x_unit * 1.5, size.height));
+            }),
+            config::GRAY,
+        );
         frame.fill(
             &Path::new(|p| {
                 p.rectangle(
@@ -470,7 +486,7 @@ impl canvas::Program<Message> for Plot {
                     Size::new(x_unit, size.height),
                 );
             }),
-            config::GRID_COLOR,
+            config::GRAY,
         );
 
         frame.fill(
@@ -480,9 +496,8 @@ impl canvas::Program<Message> for Plot {
                     Size::new(x_unit * 2.0, size.height / 2.0),
                 );
             }),
-            config::GRID_COLOR,
+            config::GRAY,
         );
-
         frame.fill_text(Text {
             content: "CA".to_string(),
             horizontal_alignment: ca_h_align,
@@ -500,95 +515,6 @@ impl canvas::Program<Message> for Plot {
         });
 
         //////////////////////////////// bottom CA CO table //////////////////////////////////////
-
-        // let stroke = PLOT_SHAPE_STROKE;
-
-        // let dot_color = Color::from_rgb8(200, 0, 0);
-        // let ss = PLOT_SHAPE_SIZE; // shape size
-        // let ds = PLOT_DOT_SIZE;
-
-        // let y = 350.0;
-        // let mut x = 50.0;
-
-        // // draw small square as a data point example
-        // x = x + 25.0;
-        // frame.stroke(&Shape::circle(Point::new(x, y), ss), stroke.clone());
-        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-
-        // // draw an x as a data point example
-
-        // x = x + 25.0;
-        // frame.stroke(&Shape::x(Point::new(x, y), ss), stroke.clone());
-        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-
-        // // draw small triangle as a data point example
-        // x = x + 25.0;
-        // frame.stroke(&Shape::triangle(Point::new(x, y), 12.0), stroke.clone());
-        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-        // frame.stroke(
-        //     &Shape::bottom_left_arrow(Point::new(x, y), ss),
-        //     stroke.clone(),
-        // );
-
-        // // draw small circle as a data point example
-        // x = x + 25.0;
-        // frame.stroke(&Shape::square(Point::new(x, y), ss), stroke.clone());
-        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-
-        // // draw U  symbol as a data point example
-        // x = x + 25.0;
-        // frame.stroke(&Shape::u(Point::new(x, y), ss), stroke.clone());
-        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-
-        // // draw greater than symbol as a data point example
-        // x = x + 25.0;
-        // frame.stroke(&Shape::greater_than(Point::new(x, y), ss), stroke.clone());
-        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-
-        // // draw less than symbol as a data point example
-        // x = x + 25.0;
-        // frame.stroke(&Shape::less_than(Point::new(x, y), ss), stroke.clone());
-        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-
-        // // draw a small bracket ([) as a data point example
-        // x = x + 25.0;
-        // frame.stroke(&Shape::left_bracket(Point::new(x, y), ss), stroke.clone());
-        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-        // // draw a small bottom left arrow as a data point example
-        // frame.stroke(
-        //     &Shape::bottom_left_arrow(Point::new(x, y), ss),
-        //     stroke.clone(),
-        // );
-
-        // // draw the corresponding closing bracket (]) as a data point example
-        // x = x + 25.0;
-        // frame.stroke(&Shape::right_bracket(Point::new(x, y), ss), stroke.clone());
-        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-        // frame.stroke(&Shape::vt(Point::new(x, y), ss), stroke.clone());
-        // // draw a small bottom right arrow as a data point example
-        // frame.stroke(
-        //     &Shape::bottom_right_arrow(Point::new(x, y), ss),
-        //     stroke.clone(),
-        // );
-
-        // // draw asterisk as a data point example
-        // x = x + 25.0;
-        // frame.stroke(&Shape::asterisk(Point::new(x, y), ss), stroke.clone());
-        // frame.fill(&Shape::circle(Point::new(x, y), ds), dot_color);
-
-        // self.plot_data(&mut frame, &self.ear_side);
-
-        // // draw the A symbol as a data point example
-        // x = x + 25.0;
-        // frame.stroke(&Shape::a(Point::new(x, y), ss), stroke.clone());
-        // frame.fill(&Shape::circle(Point::new(x, y), ds * 0.5), dot_color);
-
-        // // draw the Z symbol as a data point example
-        // x = x + 25.0;
-        // frame.stroke(&Shape::z(Point::new(x, y), ss), stroke.clone());
-        // frame.fill(&Shape::circle(Point::new(x, y), ds * 0.5), dot_color);
-
-        // add_contour(&mut frame, rectangle, radius, space, 2.0, Color::WHITE);
 
         vec![frame.into_geometry()]
     }
@@ -989,6 +915,34 @@ impl Shape {
             p.line_to(pos + Vector::new(s * a, s));
             p.line_to(pos + Vector::new(-s * a, -s));
             p.line_to(pos + Vector::new(s * a, -s));
+        })
+    }
+
+    // the symbol for the letter S
+    pub fn s(pos: Point, size: f32) -> Path {
+        Path::new(|p| {
+            let oy = Vector::new(0., 0.);
+            let pos = pos + oy;
+
+            let r = 3.;
+            let v = Vector::new(0., -r);
+            p.move_to(pos + Vector::new(r, -r) + v);
+            p.line_to(pos + Vector::new(0., -r) + v);
+
+            p.arc(Arc {
+                center: pos + v,
+                radius: r,
+                start_angle: std::f32::consts::FRAC_PI_2,
+                end_angle: std::f32::consts::FRAC_PI_2 * 3.0,
+            });
+            p.arc(Arc {
+                center: pos + Vector::new(0., r * 2.) + v,
+                radius: r,
+                start_angle: -std::f32::consts::FRAC_PI_2,
+                end_angle: std::f32::consts::FRAC_PI_2,
+            });
+            p.move_to(pos + Vector::new(0., 3. * r) + v);
+            p.line_to(pos + Vector::new(-3., 3. * r) + v);
         })
     }
 }

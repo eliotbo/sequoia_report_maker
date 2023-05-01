@@ -3,7 +3,7 @@
 mod config;
 // mod grid;
 mod immi_plot;
-mod immitance;
+// mod immitance;
 mod legend;
 mod partners;
 mod plot;
@@ -12,7 +12,7 @@ mod tonal_tables;
 // mod modal;
 // mod partners::modal::*;
 
-use immitance::*;
+// use immitance::*;
 use partners::modal::Modal;
 use partners::{get_all_partners, get_all_succursales, modal, Partner};
 
@@ -122,8 +122,10 @@ struct VocalTable {
 pub struct IdLang {
     pub result1: String,
     pub level1: String,
+    pub list1: String,
     pub result2: String,
     pub level2: String,
+    pub list2: String,
 }
 
 #[derive(Default, Debug, Clone)]
@@ -244,12 +246,12 @@ pub enum Message {
 
     SDPRightChanged(String),
     SRPRightChanged(String),
-    ListRightChanged(String),
+
     MiscRightChanged(String),
 
     SDPLeftChanged(String),
     SRPLeftChanged(String),
-    ListLeftChanged(String),
+
     MiscLeftChanged(String),
 
     SDPFreeChanged(String),
@@ -266,16 +268,22 @@ pub enum Message {
     IdLanRes2LeftChanged(String),
     IdLanLev1LeftChanged(String),
     IdLanLev2LeftChanged(String),
+    IdLanList1LeftChanged(String),
+    IdLanList2LeftChanged(String),
 
     IdLanRes1RightChanged(String),
     IdLanRes2RightChanged(String),
     IdLanLev1RightChanged(String),
     IdLanLev2RightChanged(String),
+    IdLanList1RightChanged(String),
+    IdLanList2RightChanged(String),
 
     IdLanRes1BinChanged(String),
     IdLanRes2BinChanged(String),
     IdLanLev1BinChanged(String),
     IdLanLev2BinChanged(String),
+    IdLanList1BinChanged(String),
+    IdLanList2BinChanged(String),
 
     TympaVolumeLeftChanged(String),
     TympaPressureLeftChanged(String),
@@ -365,11 +373,12 @@ impl Application for AudioRox {
 
             Message::SDPRightChanged(value) => self.vocal_table_right.sdp = value,
             Message::SRPRightChanged(value) => self.vocal_table_right.srp = value,
-            Message::ListRightChanged(value) => self.vocal_table_right.list = value,
+
+            // Message::ListRightChanged(value) => self.vocal_table_right.list = value,
             Message::SDPLeftChanged(value) => self.vocal_table_left.sdp = value,
             Message::SRPLeftChanged(value) => self.vocal_table_left.srp = value,
-            Message::ListLeftChanged(value) => self.vocal_table_left.list = value,
 
+            // Message::ListLeftChanged(value) => self.vocal_table_left.list = value,
             Message::SDPFreeChanged(value) => self.vocal_table_binaural.sdp = value,
             Message::SRPFreeChanged(value) => self.vocal_table_binaural.srp = value,
 
@@ -387,16 +396,22 @@ impl Application for AudioRox {
             Message::IdLanRes2LeftChanged(value) => self.id_lang_left.result2 = value,
             Message::IdLanLev1LeftChanged(value) => self.id_lang_left.level1 = value,
             Message::IdLanLev2LeftChanged(value) => self.id_lang_left.level2 = value,
+            Message::IdLanList1LeftChanged(value) => self.id_lang_left.list1 = value,
+            Message::IdLanList2LeftChanged(value) => self.id_lang_left.list2 = value,
 
             Message::IdLanRes1RightChanged(value) => self.id_lang_right.result1 = value,
             Message::IdLanRes2RightChanged(value) => self.id_lang_right.result2 = value,
             Message::IdLanLev1RightChanged(value) => self.id_lang_right.level1 = value,
             Message::IdLanLev2RightChanged(value) => self.id_lang_right.level2 = value,
+            Message::IdLanList1RightChanged(value) => self.id_lang_right.list1 = value,
+            Message::IdLanList2RightChanged(value) => self.id_lang_right.list2 = value,
 
             Message::IdLanRes1BinChanged(value) => self.id_lang_bin.result1 = value,
             Message::IdLanRes2BinChanged(value) => self.id_lang_bin.result2 = value,
             Message::IdLanLev1BinChanged(value) => self.id_lang_bin.level1 = value,
             Message::IdLanLev2BinChanged(value) => self.id_lang_bin.level2 = value,
+            Message::IdLanList1BinChanged(value) => self.id_lang_bin.list1 = value,
+            Message::IdLanList2BinChanged(value) => self.id_lang_bin.list2 = value,
 
             Message::TympaVolumeLeftChanged(value) => self.tympa_left.volume = value,
             Message::TympaVolumeRightChanged(value) => self.tympa_right.volume = value,
@@ -536,7 +551,7 @@ impl Application for AudioRox {
         .align_items(Alignment::Center);
 
         let anterior_thresholds_date = row![
-            text("Date des seuils antérieurs : ")
+            text("Date seuils antérieurs (•) : ")
                 .size(16)
                 .horizontal_alignment(Horizontal::Left),
             text_input(
@@ -552,7 +567,7 @@ impl Application for AudioRox {
 
         // a checkbox for adequate rest period
         let adequate_rest_period = checkbox(
-            "Durée de repos sonore adéquate (> 16h)",
+            "Repos sonore adéquat (> 16h)",
             self.adequate_rest_period,
             Message::AdequateRestPeriodChanged,
         )
@@ -653,30 +668,45 @@ impl Application for AudioRox {
         let (clinic, succursales) = get_all_succursales(&self.partner);
 
         let header = row![
-            column![
-                text("Roxanne Bolduc")
-                    .size(30)
-                    .horizontal_alignment(Horizontal::Left),
-                text("Audiologiste")
-                    .size(20)
-                    .horizontal_alignment(Horizontal::Left),
-            ]
-            .width(Length::FillPortion(2)),
-            // .align(Alignment::Start),
-            horizontal_space(1),
+            container(
+                column![
+                    // vertical_space(10.0),
+                    // container(image::Image::new("images/logo.PNG").width(128))
+                    //     .width(Length::Fixed(96.)),
+                    text("Roxanne Bolduc")
+                        .font(iced::Font::External {
+                            name: "RoxFont",
+                            bytes: include_bytes!("../fonts/Lato-Black.ttf"),
+                        })
+                        .size(36)
+                        .horizontal_alignment(Horizontal::Left),
+                    text("Audiologiste")
+                        .size(20)
+                        .horizontal_alignment(Horizontal::Left),
+                ]
+                .align_items(Alignment::Center)
+                .width(Length::FillPortion(2))
+            )
+            .align_x(Horizontal::Left),
+            // .alignment(Alignment::Start),
+            horizontal_space(55),
             container(column![
                 text("ÉVALUATION AUDIOLOGIQUE")
-                    .size(33)
+                    .size(30)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
                 vertical_space(15.)
             ])
+            .height(Length::Fill)
+            .align_x(Horizontal::Center)
+            .align_y(Vertical::Bottom)
             .width(Length::FillPortion(3)),
             horizontal_space(1),
             // .align(Alignment::Start),
             column![
+                vertical_space(Length::Fixed(40.)),
                 container(row![
-                    text("Date de l'évaluation: ")
+                    text("Date de l'évaluation : ")
                         .size(16.0)
                         .vertical_alignment(Vertical::Center),
                     // text(format!("Date de l'évaluation: {day}/{month}/{year}")).size(14),
@@ -688,14 +718,14 @@ impl Application for AudioRox {
                 // modal
                 // Rule::horizontal(1),
                 container(column![
-                    button(text(&("Lieu de l'évaluation: ".to_owned() + &clinic)).size(16.))
+                    button(text(&("Lieu de l'évaluation : ".to_owned() + &clinic)).size(16.))
                         .on_press(Message::ShowParnerChoices)
                         .padding(0.)
                         .style(theme::Button::Custom(Box::new(CustomButtonStyle))),
                     // text("Lieu de l'évaluation: Clinique de l'Audition Bois & Associés audioprothésistes").size(14),
                     succursales
                 ])
-                .height(Length::Fixed(120.)),
+                .height(Length::Fixed(120. + 60.)),
                 // montmagny,
                 // levy,
                 vertical_space(Length::Fixed(2.)),
@@ -709,8 +739,9 @@ impl Application for AudioRox {
             // .width(Length::Fixed(400.0))
             .width(Length::FillPortion(2))
         ]
-        .align_items(Alignment::End)
+        .align_items(Alignment::Center)
         .padding([0, 5, 0, 5])
+        .height(Length::Fixed(120. + 60.))
         .width(Length::Fill);
 
         // let data1 = vec![1.0, 2.0, 3.0, 4.0, 0.0, 8.0, 7.0, 8.0, 9.0, 10.0];
@@ -846,7 +877,7 @@ impl Application for AudioRox {
         // ///////////////////////////////////// TONAL TABLES /////////////////////////////////////
 
         let method_eval = row![
-            text("Méthode d'évaluation : conditionnement ").size(15),
+            text("Méthode d'évaluation : Conditionnement ").size(15),
             horizontal_space(10.0),
             radio(
                 "Standard (Hughson-Westlake)",
@@ -959,20 +990,20 @@ impl Application for AudioRox {
         // ]
         // .spacing(6);
 
-        let open_text_input_right = text_input("", &self.vocal_misc_right)
-            .on_input(Message::MiscRightChanged)
-            .size(TABLE_MISC_SIZE)
-            .width(Length::Fill);
+        // let open_text_input_right = text_input("", &self.vocal_misc_right)
+        //     .on_input(Message::MiscRightChanged)
+        //     .size(TABLE_MISC_SIZE)
+        //     .width(Length::Fill);
 
-        let open_text_input_left = text_input("", &self.vocal_misc_left)
-            .on_input(Message::MiscLeftChanged)
-            .size(TABLE_MISC_SIZE)
-            .width(Length::Fill);
+        // let open_text_input_left = text_input("", &self.vocal_misc_left)
+        //     .on_input(Message::MiscLeftChanged)
+        //     .size(TABLE_MISC_SIZE)
+        //     .width(Length::Fill);
 
-        let open_text_input_bin = text_input("", &self.vocal_misc_bin)
-            .on_input(Message::MiscBinChanged)
-            .size(TABLE_MISC_SIZE)
-            .width(Length::Fill);
+        // let open_text_input_bin = text_input("", &self.vocal_misc_bin)
+        //     .on_input(Message::MiscBinChanged)
+        //     .size(TABLE_MISC_SIZE)
+        //     .width(Length::Fill);
 
         // let vocal_tables = row![
         //     horizontal_space(10),
@@ -995,7 +1026,7 @@ impl Application for AudioRox {
 
         let vocal_tables = row![
             horizontal_space(10),
-            container(vocal_table_right).width(Length::FillPortion(6)),
+            container(vocal_table_right).width(Length::FillPortion(4)),
             // horizontal_space(10),
             // container(vocal_lang).width(Length::FillPortion(1)),
             horizontal_space(10),
@@ -1008,7 +1039,7 @@ impl Application for AudioRox {
             // horizontal_space(10),
             // container(voice).width(Length::FillPortion(1)),
             horizontal_space(10),
-            container(vocal_table_left).width(Length::FillPortion(6)),
+            container(vocal_table_left).width(Length::FillPortion(4)),
             horizontal_space(10),
         ]
         .width(Length::Shrink)
@@ -1016,34 +1047,25 @@ impl Application for AudioRox {
 
         let id_lang_tables = row![
             horizontal_space(10),
-            column![
-                id_lang_table_right,
-                vertical_space(5),
-                open_text_input_right
-            ]
-            .width(Length::FillPortion(4)),
+            container(id_lang_table_right).width(Length::FillPortion(4)),
+            // column![
+            //     id_lang_table_right,
+            //     vertical_space(5),
+            //     open_text_input_right
+            // ]
+            // .width(Length::FillPortion(4)),
             horizontal_space(10),
-            column![id_lang_table_bin, vertical_space(5), open_text_input_bin]
-                .width(Length::FillPortion(6)),
+            container(id_lang_table_bin).width(Length::FillPortion(4)),
+            // column![id_lang_table_bin, vertical_space(5), open_text_input_bin]
+            //     .width(Length::FillPortion(6)),
             horizontal_space(10),
-            column![id_lang_table_left, vertical_space(5), open_text_input_left]
-                .width(Length::FillPortion(4)),
+            container(id_lang_table_left).width(Length::FillPortion(4)),
+            // column![id_lang_table_left, vertical_space(5), open_text_input_left]
+            //     .width(Length::FillPortion(4)),
             horizontal_space(10),
         ]
         .width(Length::Shrink)
         .align_items(Alignment::Center);
-
-        // let id_lang_tables = row![
-        //     horizontal_space(10),
-        //     id_lang_table_right,
-        //     horizontal_space(10),
-        //     id_lang_table_bin,
-        //     horizontal_space(10),
-        //     id_lang_table_left,
-        //     horizontal_space(10),
-        // ]
-        // .width(Length::Shrink)
-        // .align_items(Alignment::Center);
 
         let vocal_audiogram_content = column![
             vocal_audiogram_title_container,
@@ -1135,7 +1157,7 @@ impl Application for AudioRox {
             checkbox("Audioprothésiste", false, Message::CCChanged)
                 .size(note_vspace)
                 .text_size(note_vspace),
-            checkbox("Medecin de famille", false, Message::CCChanged)
+            checkbox("Médecin de famille", false, Message::CCChanged)
                 .size(note_vspace)
                 .text_size(note_vspace),
             checkbox("ORL", false, Message::CCChanged)
@@ -1147,11 +1169,6 @@ impl Application for AudioRox {
         ];
 
         let signature = row![
-            column![
-                vertical_space(10.0),
-                container(image::Image::new("images/ordre128.jpg").width(128))
-                    .width(Length::Fixed(96.)),
-            ],
             // column![
             //     vertical_space(10.0),
             //     container(image::Image::new("images/logo.PNG").width(128))
@@ -1161,6 +1178,11 @@ impl Application for AudioRox {
                 vertical_space(60.0),
                 Rule::horizontal(1.),
                 row![
+                    column![
+                        vertical_space(1.0),
+                        container(image::Image::new("images/ordre128.jpg").width(128))
+                            .width(Length::Fixed(65.))
+                    ],
                     text("Roxanne Bolduc  MPA,\nAudiologiste OOAQ #4182"),
                     horizontal_space(25.)
                 ],
@@ -1175,7 +1197,7 @@ impl Application for AudioRox {
             note,
             horizontal_space(25.0),
             cc,
-            horizontal_space(25.0),
+            horizontal_space(150.0),
             signature
         ]
         .align_items(Alignment::End);

@@ -3,8 +3,8 @@ use crate::plot::EarSide;
 use super::config::{
     FIRA_FONT, GRAY, RADIO_SIZE, RADIO_SPACING, RADIO_TEXT_SIZE, RADIO_TITLE_SIZE, STAP_ENTRY_SIZE,
     TABLE_BORDER_COLOR, TABLE_ENTRY_SIZE, TABLE_ENTRY_TITLE_SIZE, TABLE_TEXT_COLOR,
-    TABLE_TITLE_BG_COLOR, TABLE_TITLE_SIZE, TABLE_TITLE_TEXT_COLOR, TONAL_TABLE_COL_WIDTH,
-    VOCAL_TABLE_CONTENT_HEIGHT,
+    TABLE_TITLE_BG_COLOR, TABLE_TITLE_SIZE, TABLE_TITLE_TEXT_COLOR, TEXT_INPUT_HEIGHT,
+    TONAL_TABLE_COL_WIDTH, TYMPA_TABLE_COL_WIDTH, VOCAL_TABLE_CONTENT_HEIGHT,
 };
 
 use super::{AudioRox, IdLang, Message, Stap, Tympa};
@@ -33,6 +33,7 @@ pub struct TonalTable {
 pub enum Lang {
     French,
     English,
+    None,
 }
 impl Default for Lang {
     fn default() -> Self {
@@ -44,6 +45,7 @@ impl Default for Lang {
 pub enum IsRecorded {
     Yes,
     No,
+    None,
 }
 
 impl Default for IsRecorded {
@@ -110,9 +112,7 @@ pub fn get_message_fn(s: &str, side: EarSide) -> impl Fn(String) -> Message {
         ("SDP", EarSide::Right) => Message::SDPRightChanged,
         ("SRP", EarSide::Right) => Message::SRPRightChanged,
 
-        ("N confort\nparole", EarSide::Right) => Message::MiscRightChanged,
-
-        ("Liste", EarSide::Right) => Message::ListRightChanged,
+        ("N confort", EarSide::Right) => Message::MiscRightChanged,
 
         ("MSP", EarSide::Left) => Message::MSPLeftChanged,
         ("MSP4", EarSide::Left) => Message::MSP4LeftChanged,
@@ -120,27 +120,32 @@ pub fn get_message_fn(s: &str, side: EarSide) -> impl Fn(String) -> Message {
 
         ("SRP", EarSide::Left) => Message::SRPLeftChanged,
         ("SDP", EarSide::Left) => Message::SDPLeftChanged,
-        ("N confort\nparole", EarSide::Left) => Message::MiscLeftChanged,
-        ("Liste", EarSide::Left) => Message::ListLeftChanged,
+        ("N confort", EarSide::Left) => Message::MiscLeftChanged,
 
         ("SDP", EarSide::Free) => Message::SDPFreeChanged,
         ("SRP", EarSide::Free) => Message::SRPFreeChanged,
-        ("N confort\nparole", EarSide::Free) => Message::MiscBinChanged,
+        ("N confort", EarSide::Free) => Message::MiscBinChanged,
 
         ("IdParoleRes1", EarSide::Left) => Message::IdLanRes1LeftChanged,
         ("IdParoleRes2", EarSide::Left) => Message::IdLanRes2LeftChanged,
         ("IdParoleLev1", EarSide::Left) => Message::IdLanLev1LeftChanged,
         ("IdParoleLev2", EarSide::Left) => Message::IdLanLev2LeftChanged,
+        ("IdParoleList1", EarSide::Left) => Message::IdLanList1LeftChanged,
+        ("IdParoleList2", EarSide::Left) => Message::IdLanList2LeftChanged,
 
         ("IdParoleRes1", EarSide::Right) => Message::IdLanRes1RightChanged,
         ("IdParoleRes2", EarSide::Right) => Message::IdLanRes2RightChanged,
         ("IdParoleLev1", EarSide::Right) => Message::IdLanLev1RightChanged,
         ("IdParoleLev2", EarSide::Right) => Message::IdLanLev2RightChanged,
+        ("IdParoleList1", EarSide::Right) => Message::IdLanList1RightChanged,
+        ("IdParoleList2", EarSide::Right) => Message::IdLanList2RightChanged,
 
         ("IdParoleRes1", EarSide::Free) => Message::IdLanRes1BinChanged,
         ("IdParoleRes2", EarSide::Free) => Message::IdLanRes2BinChanged,
         ("IdParoleLev1", EarSide::Free) => Message::IdLanLev1BinChanged,
         ("IdParoleLev2", EarSide::Free) => Message::IdLanLev2BinChanged,
+        ("IdParoleList1", EarSide::Free) => Message::IdLanList1BinChanged,
+        ("IdParoleList2", EarSide::Free) => Message::IdLanList2BinChanged,
 
         ("TympaVolume", EarSide::Left) => Message::TympaVolumeLeftChanged,
         ("TympaVolume", EarSide::Right) => Message::TympaVolumeRightChanged,
@@ -185,7 +190,7 @@ pub fn make_tonal_tables(audio_rox: &AudioRox) -> (Element<Message>, Element<Mes
     let tonal_table_left = make_one_tonal_table(
         EarSide::Left,
         // "Moyennes tonales oreille gauche (dB HL)",
-        "MOYENNES TONALES - dB HL",
+        "MOYENNES DES SONS PURS - dB HL",
         &tonal_table_columns_left,
     );
 
@@ -199,7 +204,7 @@ pub fn make_tonal_tables(audio_rox: &AudioRox) -> (Element<Message>, Element<Mes
     let tonal_table_right = make_one_tonal_table(
         EarSide::Right,
         // "Moyennes tonales oreille droite (dB HL)",
-        "MOYENNES TONALES - dB HL",
+        "MOYENNES DES SONS PURS - dB HL",
         &tonal_table_columns_right,
     );
 
@@ -218,24 +223,15 @@ pub fn seuils_vocaux_tables(
     let vocal_input_table_columns_left = [
         ("SRP", &audio_rox.vocal_table_left.srp),
         ("SDP", &audio_rox.vocal_table_left.sdp),
-        ("N confort\nparole", &audio_rox.vocal_table_left.misc),
-        ("Liste", &audio_rox.vocal_table_left.list),
+        ("N confort", &audio_rox.vocal_table_left.misc),
+        // ("Liste", &audio_rox.vocal_table_left.list),
     ];
 
     let vocal_input_table_columns_right = [
         ("SRP", &audio_rox.vocal_table_right.srp),
         ("SDP", &audio_rox.vocal_table_right.sdp),
-        ("N confort\nparole", &audio_rox.vocal_table_right.misc),
-        ("Liste", &audio_rox.vocal_table_right.list),
-        // ("N Confor\nparole", &self),
+        ("N confort", &audio_rox.vocal_table_right.misc),
     ];
-
-    // let vocal_input_table_columns_binaural = [
-    //     ("SRP", &audio_rox.vocal_table_binaural.srp),
-    //     ("SDP", &audio_rox.vocal_table_binaural.sdp),
-    //     ("N confort\nparole", &audio_rox.vocal_table_binaural.misc),
-    //     // ("N Confor\nparole", &self),
-    // ];
 
     let tonal_table_left = make_one_vocal_table(
         EarSide::Left,
@@ -251,12 +247,6 @@ pub fn seuils_vocaux_tables(
         &vocal_input_table_columns_right,
     );
 
-    // let tonal_table_bin = make_one_vocal_table(
-    //     EarSide::Free,
-    //     "SEUILS VOCAUX BINAURAL - dB HL",
-    //     &vocal_input_table_columns_binaural,
-    // );
-
     let vspacing = 3;
     // a column of two checkboxes for "FR" and "ANG"
     let vocal_lang = put_in_table(
@@ -267,7 +257,7 @@ pub fn seuils_vocaux_tables(
             // horizontal_space(5.),
             radio(
                 "Fr.",
-                Lang::French,
+                Lang::None,
                 Some(audio_rox.vocal_lang),
                 Message::VocalLangChanged
             )
@@ -277,7 +267,7 @@ pub fn seuils_vocaux_tables(
             // horizontal_space(2.),
             radio(
                 "Ang.",
-                Lang::English,
+                Lang::None,
                 Some(audio_rox.vocal_lang),
                 Message::VocalLangChanged
             )
@@ -296,7 +286,7 @@ pub fn seuils_vocaux_tables(
             // horizontal_space(5.),
             radio(
                 "Nue",
-                IsRecorded::No,
+                IsRecorded::None,
                 Some(audio_rox.is_recorded),
                 Message::IsRecordedChanged
             )
@@ -307,7 +297,7 @@ pub fn seuils_vocaux_tables(
             // vertical_space(2.),
             radio(
                 "Enregistrée",
-                IsRecorded::Yes,
+                IsRecorded::None,
                 Some(audio_rox.is_recorded),
                 Message::IsRecordedChanged
             )
@@ -344,9 +334,10 @@ pub fn identification_language(
         false,
     );
 
-    let id_table_bin = make_bin_id_language_table(
+    // let id_table_bin = make_bin_id_language_table(
+    let id_table_bin = make_one_id_language_table(
         EarSide::Free,
-        "IDENTIFICATION PAROLE BINAURAL",
+        "IDENTIFICATION PAROLE - BINAURAL",
         &audio_rox.id_lang_bin,
         true,
     );
@@ -367,8 +358,8 @@ pub fn make_one_tonal_table(
         let t_in = text_input("", &variable)
             .on_input(message_fn)
             .size(TABLE_ENTRY_SIZE)
-            .width(Length::Fixed(TONAL_TABLE_COL_WIDTH))
-            .font(FIRA_FONT);
+            .width(Length::Fixed(TONAL_TABLE_COL_WIDTH));
+        // .font(FIRA_FONT);
 
         // t_in.font = ;
 
@@ -544,10 +535,59 @@ pub fn add_table_name(table_name: &str) -> Element<'static, Message> {
     table_name.into()
 }
 
+pub fn make_level_list_result(row_title_len: f32) -> Element<'static, Message> {
+    let row0_height = 25.;
+    let row0 = row![
+        container(
+            column![
+                text("dB HL").size(TABLE_ENTRY_TITLE_SIZE * 0.7),
+                text("Niveau").size(TABLE_ENTRY_TITLE_SIZE)
+            ]
+            .align_items(Alignment::Center) // .style(TABLE_TEXT_COLOR)
+                                            // .horizontal_alignment(Horizontal::Right)
+        )
+        .height(Length::Fixed(row0_height))
+        .align_x(Horizontal::Center)
+        .align_y(Vertical::Top)
+        .width(Length::Fixed(row_title_len)),
+        horizontal_space(2.0),
+        container(
+            column![
+                text(" ").size(TABLE_ENTRY_TITLE_SIZE * 0.7),
+                text("Liste").size(TABLE_ENTRY_TITLE_SIZE)
+            ]
+            .align_items(Alignment::Center) // text("\nListe").size(15) // .style(TABLE_TEXT_COLOR)
+                                            // .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
+        )
+        .height(Length::Fixed(row0_height))
+        .align_x(Horizontal::Center)
+        .align_y(Vertical::Top)
+        .width(Length::Fixed(row_title_len)),
+        horizontal_space(2.0),
+        container(
+            column![
+                text("%").size(TABLE_ENTRY_TITLE_SIZE * 0.7),
+                text("Résultat").size(TABLE_ENTRY_TITLE_SIZE)
+            ]
+            .align_items(Alignment::Center) // text("%\nRésultat")
+                                            //     // .style(TABLE_TEXT_COLOR)
+                                            //     .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
+        )
+        .height(Length::Fixed(row0_height))
+        .align_x(Horizontal::Center)
+        .align_y(Vertical::Top)
+        .width(Length::Fixed(row_title_len)),
+        horizontal_space(2.0),
+    ];
+
+    return row0.into();
+}
+
 pub fn make_one_id_language_table(
     ear_side: EarSide,
     table_name: &str,
     table_columns: &IdLang,
+
     bin: bool,
 ) -> Element<'static, Message> {
     // let mut table = Row::new();
@@ -556,30 +596,11 @@ pub fn make_one_id_language_table(
     // let message_fn = get_message_fn("IdParole", ear_side);
 
     let row_title_len = 60.0;
+    let row0 = make_level_list_result(row_title_len);
 
-    let col1 = column![
-        container(
-            text("  Niveau")
-                // .style(TABLE_TEXT_COLOR)
-                .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
-        )
-        .height(Length::Fixed(26.))
-        .align_x(Horizontal::Right)
-        .align_y(Vertical::Center)
-        .width(Length::Fixed(row_title_len)),
-        vertical_space(2.0),
-        container(
-            text("Résultat")
-                // .style(TABLE_TEXT_COLOR)
-                .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
-        )
-        .height(Length::Fixed(26.))
-        .align_x(Horizontal::Right)
-        .align_y(Vertical::Center)
-        .width(Length::Fixed(row_title_len)),
-    ];
+    // ("Liste", &audio_rox.vocal_table_right.list),
 
-    let col2 = column![
+    let row1 = row![
         container(
             text_input(
                 "",
@@ -590,18 +611,32 @@ pub fn make_one_id_language_table(
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         )
-        .height(Length::Fixed(25.)),
-        vertical_space(2.0),
+        .height(Length::Fixed(TEXT_INPUT_HEIGHT))
+        .width(Length::Fixed(TONAL_TABLE_COL_WIDTH))
+        .align_x(Horizontal::Center),
+        horizontal_space(2.0),
+        container(
+            text_input("", &table_columns.result1,)
+                .on_input(get_message_fn("IdParoleList1", ear_side))
+                .size(TABLE_ENTRY_SIZE)
+                .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+        )
+        .height(Length::Fixed(TEXT_INPUT_HEIGHT))
+        .width(Length::Fixed(TONAL_TABLE_COL_WIDTH))
+        .align_x(Horizontal::Center),
+        horizontal_space(2.0),
         container(
             text_input("", &table_columns.result1,)
                 .on_input(get_message_fn("IdParoleRes1", ear_side))
                 .size(TABLE_ENTRY_SIZE)
                 .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         )
-        .height(Length::Fixed(25.)),
+        .height(Length::Fixed(TEXT_INPUT_HEIGHT))
+        .width(Length::Fixed(TONAL_TABLE_COL_WIDTH))
+        .align_x(Horizontal::Center),
     ];
 
-    let col3 = column![
+    let row2 = row![
         container(
             text_input(
                 "",
@@ -612,151 +647,92 @@ pub fn make_one_id_language_table(
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         )
-        .height(Length::Fixed(25.)),
-        vertical_space(2.0),
+        .height(Length::Fixed(TEXT_INPUT_HEIGHT)),
+        horizontal_space(2.0),
+        container(
+            text_input("", &table_columns.result1,)
+                .on_input(get_message_fn("IdParoleList2", ear_side))
+                .size(TABLE_ENTRY_SIZE)
+                .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+        )
+        .height(Length::Fixed(TEXT_INPUT_HEIGHT)),
+        horizontal_space(2.0),
         container(
             text_input("", &table_columns.result2,)
                 .on_input(get_message_fn("IdParoleRes2", ear_side))
                 .size(TABLE_ENTRY_SIZE)
                 .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         )
-        .height(Length::Fixed(25.)),
+        .height(Length::Fixed(TEXT_INPUT_HEIGHT)),
     ];
 
-    let col4 = column![
-        container(
-            text("dB")
-                // .style(TABLE_TEXT_COLOR)
-                .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
-        )
-        .height(Length::Fixed(26.))
-        .align_x(Horizontal::Left)
-        .align_y(Vertical::Center)
-        .width(Length::Fixed(row_title_len)),
+    let mut table = column![
         vertical_space(2.0),
-        container(
-            text("%")
-                // .style(TABLE_TEXT_COLOR)
-                .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
-        )
-        .height(Length::Fixed(26.))
-        .align_x(Horizontal::Left)
-        .align_y(Vertical::Center)
-        .width(Length::Fixed(row_title_len)),
-    ];
-
-    let table = row![
-        col1,
-        horizontal_space(6.0),
-        container(col2)
-            // .align_items(Alignment::Center)
-            .style(theme::Container::Custom(Box::new(
-                ResultContainerCustomStyle,
-            )))
-            .padding(3.0),
-        horizontal_space(6.0),
-        container(col3)
-            // .align_items(Alignment::Center)
-            .style(theme::Container::Custom(Box::new(
-                ResultContainerCustomStyle,
-            )))
-            .padding(3.0),
-        horizontal_space(6.0),
-        col4
+        row0,
+        vertical_space(5.0),
+        row1,
+        // horizontal_space(6.0),
+        // container(row2)
+        //     // .align_items(Alignment::Center)
+        //     .style(theme::Container::Custom(Box::new(
+        //         ResultContainerCustomStyle,
+        //     )))
+        //     .padding(3.0),
+        // horizontal_space(6.0),
     ]
-    .height(Length::Fixed(60.));
+    .height(Length::Fixed(85.));
 
-    // let row1 = row![
-    //     // vertical_space(2.0),
-    //     container(
-    //         text("Résultat")
-    //             // .style(TABLE_TEXT_COLOR)
-    //             .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
-    //     )
-    //     .align_x(Horizontal::Right)
-    //     .width(Length::Fixed(row_title_len)),
-    //     // .width(Length::Shrink),
-    //     // .padding(3),
-    //     // container()
-    //     horizontal_space(2.0),
-    //     // .padding(3)
-    //     // .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-    //     // .align_x(Horizontal::Center),
-    //     // vertical_space(3.0),
-    //     container(
-    //         text_input("", &table_columns.result1,)
-    //             .on_input(get_message_fn("IdParoleRes1", ear_side))
-    //             .size(TABLE_ENTRY_SIZE)
-    //             .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-    //     ),
-    //     // vertical_space(1.0),
-    //     horizontal_space(15.0),
-    //     container(
-    //         text_input("", &table_columns.result2,)
-    //             .on_input(get_message_fn("IdParoleRes2", ear_side))
-    //             .size(TABLE_ENTRY_SIZE)
-    //             .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-    //     ),
-    //     horizontal_space(2.0),
-    //     text("%")
-    //         // .style(TABLE_TEXT_COLOR)
-    //         .size(TABLE_ENTRY_TITLE_SIZE)
-    //         .horizontal_alignment(Horizontal::Left)
-    // ]
-    // .width(Length::Fixed(270.0))
-    // .spacing(3)
-    // .align_items(Alignment::Center);
+    table = table.push(vertical_space(2.0));
+    table = table.push(row![
+        container(row2),
+        // .align_items(Alignment::Center)
+        // .style(theme::Container::Custom(Box::new(
+        //     ResultContainerCustomStyle,
+        // )))
+        // .padding(3.0),
+        // horizontal_space(6.0),
+        // col_units1
+    ]);
 
-    // let row2 = row![
-    //     // vertical_space(2.0),
-    //     container(
-    //         text("  Niveau")
-    //             // .style(TABLE_TEXT_COLOR)
-    //             .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
-    //     )
-    //     .align_x(Horizontal::Right)
-    //     .width(Length::Fixed(row_title_len)),
-    //     // .width(Length::Shrink),
-    //     horizontal_space(2.0),
-    //     // vertical_space(3.0),
-    //     container(
-    //         text_input(
-    //             "",
-    //             &table_columns.level1,
-    //             // get_message_fn("IdParoleLev1", ear_side)
-    //         )
-    //         .on_input(get_message_fn("IdParoleLev1", ear_side))
-    //         .size(TABLE_ENTRY_SIZE)
-    //         .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-    //     ),
-    //     // vertical_space(1.0),
-    //     horizontal_space(15.0),
-    //     container(
-    //         text_input(
-    //             "",
-    //             &table_columns.level2,
-    //             // get_message_fn("IdParoleLev2", ear_side)
-    //         )
-    //         .on_input(get_message_fn("IdParoleLev2", ear_side))
-    //         .size(TABLE_ENTRY_SIZE)
-    //         .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-    //     ),
-    //     horizontal_space(2.0),
-    //     text("dB HL")
-    //         // .style(TABLE_TEXT_COLOR)
-    //         .size(TABLE_ENTRY_TITLE_SIZE)
-    //         .horizontal_alignment(Horizontal::Left)
-    // ]
-    // .width(Length::Fixed(270.0))
-    // .spacing(3)
-    // .align_items(Alignment::Center);
+    let mut final_table = row![];
 
-    // table = table.push(row1);
-    // table = table.push(horizontal_space(Length::Fixed(10.0)));
-    // table = table.push(vertical_space(Length::Fixed(3.0)));
-    // table = table.push(row2);
+    if bin {
+        // table = table.push(
 
-    // let table_so_far = row![table].height(Length::Fixed(60.));
+        //         row5,
+        //         // container(row5)
+        //         //     .style(theme::Container::Custom(Box::new(
+        //         //         ResultContainerCustomStyle,
+        //         //     )))
+        //         //     .padding(3.0),
+        //         // horizontal_space(6.0),
+        //         // col_units2
+        //     ]
+        //     .align_items(Alignment::Center)
+        //     .height(Length::Fill),
+        // );
+
+        final_table = final_table.push(column![
+            vertical_space(53.0),
+            text("Avec lecture\nlabiale  ")
+                .size(12)
+                .horizontal_alignment(Horizontal::Center),
+        ]);
+
+        final_table = final_table.push(horizontal_space(2.0));
+
+        final_table = final_table.push(table);
+
+        final_table = final_table.push(column![
+            vertical_space(53.0),
+            // text("Avec lecture\nlabiale  "),
+            text("                       ")
+                .size(12)
+                .horizontal_alignment(Horizontal::Center),
+        ]);
+    } else {
+        final_table = final_table.push(table);
+    }
 
     let table = container(
         column![
@@ -773,202 +749,9 @@ pub fn make_one_id_language_table(
             .align_x(Horizontal::Center)
             .width(Length::Fill)
             .style(theme::Container::Custom(Box::new(TableTitleCustomStyle,))),
-            vertical_space(6.),
-            table,
-            vertical_space(7.5),
-        ]
-        .align_items(Alignment::Center),
-    )
-    .style(theme::Container::Custom(Box::new(
-        TableContainerCustomStyle,
-    )))
-    .align_x(Horizontal::Center)
-    .width(Length::FillPortion(2));
-
-    table.into()
-}
-
-pub fn make_bin_id_language_table(
-    ear_side: EarSide,
-    table_name: &str,
-    table_columns: &IdLang,
-    bin: bool,
-) -> Element<'static, Message> {
-    let mut table = Column::new();
-    // table = table.push(horizontal_space(Length::Fixed(2.0)));
-
-    // let message_fn = get_message_fn("IdParole", ear_side);
-
-    let row_title_len = 60.0;
-    let row1 = row![
-        // vertical_space(2.0),
-        container(
-            text("Résultat")
-                // .style(TABLE_TEXT_COLOR)
-                .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
-        )
-        .align_x(Horizontal::Right)
-        .width(Length::Fixed(row_title_len)),
-        // .width(Length::Shrink),
-        // .padding(3),
-        // container()
-        horizontal_space(2.0),
-        // .padding(3)
-        // .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-        // .align_x(Horizontal::Center),
-        // vertical_space(3.0),
-        container(
-            text_input("", &table_columns.result1,)
-                .on_input(get_message_fn("IdParoleRes1", ear_side))
-                .size(TABLE_ENTRY_SIZE)
-                .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-        ),
-        // // vertical_space(1.0),
-        // horizontal_space(15.0),
-        // container(
-        //     text_input("", &table_columns.result2,)
-        //         .on_input(get_message_fn("IdParoleRes2", ear_side))
-        //         .size(TABLE_ENTRY_SIZE)
-        //         .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-        // ),
-        horizontal_space(2.0),
-        text("%")
-            // .style(TABLE_TEXT_COLOR)
-            .size(TABLE_ENTRY_TITLE_SIZE)
-            .horizontal_alignment(Horizontal::Right)
-    ]
-    // .width(Length::Fixed(270.0))
-    .spacing(3)
-    .align_items(Alignment::Center);
-
-    let row2 = row![
-        // vertical_space(2.0),
-        container(
-            text("  Niveau")
-                // .style(TABLE_TEXT_COLOR)
-                .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
-        )
-        .align_x(Horizontal::Right)
-        .width(Length::Fixed(row_title_len)),
-        // .width(Length::Shrink),
-        horizontal_space(2.0),
-        // vertical_space(3.0),
-        container(
-            text_input(
-                "",
-                &table_columns.level1,
-                // get_message_fn("IdParoleLev1", ear_side)
-            )
-            .on_input(get_message_fn("IdParoleLev1", ear_side))
-            .size(TABLE_ENTRY_SIZE)
-            .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-        ),
-        // // vertical_space(1.0),
-        // horizontal_space(15.0),
-        // container(
-        //     text_input(
-        //         "",
-        //         &table_columns.level2,
-        //         // get_message_fn("IdParoleLev2", ear_side)
-        //     )
-        //     .on_input(get_message_fn("IdParoleLev2", ear_side))
-        //     .size(TABLE_ENTRY_SIZE)
-        //     .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-        // ),
-        horizontal_space(2.0),
-        text("dB HL")
-            // .style(TABLE_TEXT_COLOR)
-            .size(TABLE_ENTRY_TITLE_SIZE)
-            .horizontal_alignment(Horizontal::Right)
-    ]
-    // .width(Length::Fixed(270.0))
-    .spacing(3)
-    .align_items(Alignment::Center);
-
-    table = table.push(row1);
-    // table = table.push(horizontal_space(Length::Fixed(10.0)));
-    table = table.push(vertical_space(Length::Fixed(3.0)));
-    table = table.push(row2);
-
-    let mut table_so_far = row![
-        container(table)
-            .align_x(Horizontal::Right)
-            .width(Length::Shrink) // .style(theme::Container::Custom(Box::new(TableTitleCustomStyle,)))
-    ]
-    .height(Length::Fixed(60.));
-
-    let labial_col = row![
-        text("Avec\nlecture\nlabiale")
-            .size(12)
-            .horizontal_alignment(Horizontal::Center),
-        horizontal_space(3.0),
-        column![
-            row![
-                text_input("", &table_columns.level2,)
-                    .on_input(get_message_fn("IdParoleLev2", ear_side))
-                    .size(TABLE_ENTRY_SIZE)
-                    .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-                //
-                horizontal_space(6.0),
-                //
-                text("%")
-                    // .style(TABLE_TEXT_COLOR)
-                    .size(TABLE_ENTRY_TITLE_SIZE)
-                    .horizontal_alignment(Horizontal::Left)
-                    .width(Length::Fixed(TONAL_TABLE_COL_WIDTH))
-            ]
-            .align_items(Alignment::Center), //
-            //
-            vertical_space(Length::Fixed(3.0)),
-            //
-            row![
-                text_input("", &table_columns.level2,)
-                    .on_input(get_message_fn("IdParoleLev2", ear_side))
-                    .size(TABLE_ENTRY_SIZE)
-                    .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-                //
-                horizontal_space(6.0),
-                //
-                text("dB HL")
-                    // .style(TABLE_TEXT_COLOR)
-                    .size(TABLE_ENTRY_TITLE_SIZE)
-                    .horizontal_alignment(Horizontal::Left)
-            ]
-            .align_items(Alignment::Center)
-        ]
-    ]
-    .align_items(Alignment::Center)
-    .height(Length::Fill);
-    table_so_far = table_so_far.push(horizontal_space(20.));
-    table_so_far = table_so_far.push(
-        container(labial_col).align_x(Horizontal::Left), // .style(theme::Container::Custom(Box::new(TableTitleCustomStyle)))
-    );
-
-    //
-    // table = table.push(Rule::vertical(10));
-    // table_left = table_left.height(Length::Shrink);
-
-    // table = table.push(horizontal_space(Length::Fixed(2.0)));
-    // let table = table.height(Length::Shrink);
-
-    let table = container(
-        column![
-            container(
-                container(
-                    text(table_name)
-                        .size(TABLE_TITLE_SIZE)
-                        .style(TABLE_TITLE_TEXT_COLOR)
-                        .horizontal_alignment(Horizontal::Center)
-                )
-                .padding(3)
-            )
-            // .align_x(Ho::Center)
-            .align_x(Horizontal::Center)
-            .width(Length::Fill)
-            .style(theme::Container::Custom(Box::new(TableTitleCustomStyle,))),
-            vertical_space(6.),
-            table_so_far,
-            vertical_space(7.5),
+            vertical_space(1.),
+            final_table,
+            vertical_space(4.5),
         ]
         .align_items(Alignment::Center),
     )
@@ -1027,7 +810,7 @@ pub fn make_one_tympa_table(
             text_input("", &table_columns.volume,)
                 .on_input(get_message_fn("TympaVolume", ear_side))
                 .size(TABLE_ENTRY_SIZE)
-                .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+                .width(Length::Fixed(TYMPA_TABLE_COL_WIDTH)),
         ),
         // horizontal_space(2.0),
         // container(
@@ -1064,7 +847,7 @@ pub fn make_one_tympa_table(
             )
             .on_input(get_message_fn("TympaPressure", ear_side))
             .size(TABLE_ENTRY_SIZE)
-            .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+            .width(Length::Fixed(TYMPA_TABLE_COL_WIDTH)),
         ),
         //
         horizontal_space(10.0),
@@ -1095,7 +878,7 @@ pub fn make_one_tympa_table(
             )
             .on_input(get_message_fn("TympaCompliance", ear_side))
             .size(TABLE_ENTRY_SIZE)
-            .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+            .width(Length::Fixed(TYMPA_TABLE_COL_WIDTH)),
         ),
         //
         horizontal_space(2.0),
@@ -1165,7 +948,7 @@ pub fn make_one_stap_table(
     let row_title_len = 60.0;
     let units_len = 30.0;
 
-    let first_col_width = 80.0;
+    let first_col_width = 85.0;
     let col_width = 60.0;
     let text_input_width = col_width * 0.92;
 
@@ -1210,7 +993,7 @@ pub fn make_one_stap_table(
 
     let second_row = row![
         container(
-            text("Ipsilatéral")
+            text("Ipsilatérale")
                 // .style(TABLE_TEXT_COLOR)
                 .size(TABLE_ENTRY_TITLE_SIZE)
                 .horizontal_alignment(Horizontal::Center),
@@ -1259,7 +1042,7 @@ pub fn make_one_stap_table(
 
     let third_row = row![
         container(
-            text("Controlatéral")
+            text("Controlatérale")
                 // .style(TABLE_TEXT_COLOR)
                 .size(TABLE_ENTRY_TITLE_SIZE)
                 .horizontal_alignment(Horizontal::Center),

@@ -12,7 +12,7 @@ pub const FIRA_FONT: Font = Font::External {
 pub const MAX_DIGITS: u32 = 5;
 
 pub const WINDOW_WIDTH: u32 = 1000;
-pub const WINDOW_HEIGHT: u32 = 1294;
+pub const WINDOW_HEIGHT: u32 = 1333;
 
 pub const SECTION_TITLE_BG_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 pub const SECTION_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.02, 0.02, 0.02);
@@ -39,12 +39,14 @@ pub const TABLE_TEXT_COLOR: Color = Color::from_rgb(0.05, 0.05, 0.07);
 pub const GRAY: Color = Color::from_rgb(0.9, 0.9, 0.9);
 
 pub const TEXT_LINE_VSPACE: f32 = 20.0;
+pub const TEXT_INPUT_HEIGHT: f32 = 23.;
 
 pub const TABLE_TITLE_BG_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 pub const TABLE_BORDER_COLOR: Color = Color::from_rgb(0.5, 0.5, 0.5);
 // pub const TABLE_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.8, 0.82, 0.810);
 pub const TABLE_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.05, 0.02, 0.030);
-pub const TONAL_TABLE_COL_WIDTH: f32 = 40.0;
+pub const TONAL_TABLE_COL_WIDTH: f32 = 60.0;
+pub const TYMPA_TABLE_COL_WIDTH: f32 = 50.0;
 pub const VOCAL_TABLE_CONTENT_HEIGHT: f32 = 45.0;
 
 pub const SPACE: f32 = 1.0;
