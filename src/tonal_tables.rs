@@ -22,14 +22,16 @@ use iced::widget::{
 
 use iced::{Alignment, Element, Length};
 
-#[derive(Default)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Default, Serialize, Deserialize)]
 pub struct TonalTable {
     pub msp: String,
     pub msp4: String,
     pub fletcher: String,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Lang {
     French,
     English,
@@ -41,7 +43,7 @@ impl Default for Lang {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum IsRecorded {
     Yes,
     No,
@@ -64,7 +66,7 @@ impl container::StyleSheet for TableContainerCustomStyle {
             text_color: None,
             background: None,
             border_radius: 0.0,
-            border_width: 2.0,
+            border_width: 1.0,
             border_color: TABLE_BORDER_COLOR,
         }
     }
@@ -97,7 +99,7 @@ impl container::StyleSheet for TableTitleCustomStyle {
             background: Some(GRAY.into()),
             // background: None,
             border_radius: 0.0,
-            border_width: 2.0,
+            border_width: 1.0,
             border_color: TABLE_BORDER_COLOR,
         }
     }
@@ -536,11 +538,11 @@ pub fn add_table_name(table_name: &str) -> Element<'static, Message> {
 }
 
 pub fn make_level_list_result(row_title_len: f32) -> Element<'static, Message> {
-    let row0_height = 25.;
+    let row0_height = 29.;
     let row0 = row![
         container(
             column![
-                text("dB HL").size(TABLE_ENTRY_TITLE_SIZE * 0.7),
+                text("dB HL").size(TABLE_ENTRY_TITLE_SIZE * 0.85),
                 text("Niveau").size(TABLE_ENTRY_TITLE_SIZE)
             ]
             .align_items(Alignment::Center) // .style(TABLE_TEXT_COLOR)
@@ -553,7 +555,7 @@ pub fn make_level_list_result(row_title_len: f32) -> Element<'static, Message> {
         horizontal_space(2.0),
         container(
             column![
-                text(" ").size(TABLE_ENTRY_TITLE_SIZE * 0.7),
+                text(" ").size(TABLE_ENTRY_TITLE_SIZE * 0.85),
                 text("Liste").size(TABLE_ENTRY_TITLE_SIZE)
             ]
             .align_items(Alignment::Center) // text("\nListe").size(15) // .style(TABLE_TEXT_COLOR)
@@ -566,7 +568,7 @@ pub fn make_level_list_result(row_title_len: f32) -> Element<'static, Message> {
         horizontal_space(2.0),
         container(
             column![
-                text("%").size(TABLE_ENTRY_TITLE_SIZE * 0.7),
+                text("%").size(TABLE_ENTRY_TITLE_SIZE * 0.85),
                 text("Résultat").size(TABLE_ENTRY_TITLE_SIZE)
             ]
             .align_items(Alignment::Center) // text("%\nRésultat")
@@ -616,7 +618,7 @@ pub fn make_one_id_language_table(
         .align_x(Horizontal::Center),
         horizontal_space(2.0),
         container(
-            text_input("", &table_columns.result1,)
+            text_input("", &table_columns.list1,)
                 .on_input(get_message_fn("IdParoleList1", ear_side))
                 .size(TABLE_ENTRY_SIZE)
                 .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
@@ -650,7 +652,7 @@ pub fn make_one_id_language_table(
         .height(Length::Fixed(TEXT_INPUT_HEIGHT)),
         horizontal_space(2.0),
         container(
-            text_input("", &table_columns.result1,)
+            text_input("", &table_columns.list2,)
                 .on_input(get_message_fn("IdParoleList2", ear_side))
                 .size(TABLE_ENTRY_SIZE)
                 .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
@@ -713,9 +715,9 @@ pub fn make_one_id_language_table(
         // );
 
         final_table = final_table.push(column![
-            vertical_space(53.0),
+            vertical_space(57.0),
             text("Avec lecture\nlabiale  ")
-                .size(12)
+                .size(14)
                 .horizontal_alignment(Horizontal::Center),
         ]);
 
@@ -797,7 +799,7 @@ pub fn make_one_tympa_table(
                     .horizontal_alignment(Horizontal::Center),
                 text("ml")
                     // .style(TABLE_TEXT_COLOR)
-                    .size(TABLE_ENTRY_TITLE_SIZE * 0.7)
+                    .size(TABLE_ENTRY_TITLE_SIZE * 0.9)
                     .horizontal_alignment(Horizontal::Center)
             ]
             .align_items(Alignment::Center)
@@ -831,7 +833,7 @@ pub fn make_one_tympa_table(
                     .horizontal_alignment(Horizontal::Center),
                 text("daPa")
                     // .style(TABLE_TEXT_COLOR)
-                    .size(TABLE_ENTRY_TITLE_SIZE * 0.7)
+                    .size(TABLE_ENTRY_TITLE_SIZE * 0.9)
                     .horizontal_alignment(Horizontal::Center)
             ]
             .align_items(Alignment::Center)
@@ -861,7 +863,7 @@ pub fn make_one_tympa_table(
                     .horizontal_alignment(Horizontal::Center),
                 text("ml")
                     // .style(TABLE_TEXT_COLOR)
-                    .size(TABLE_ENTRY_TITLE_SIZE * 0.7)
+                    .size(TABLE_ENTRY_TITLE_SIZE * 0.9)
                     .horizontal_alignment(Horizontal::Center)
             ]
             .align_items(Alignment::Center)

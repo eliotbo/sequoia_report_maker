@@ -13,7 +13,9 @@ use super::Message;
 
 use crate::config::TEXT_LINE_VSPACE;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Partner {
     Harmonie(Harmonie),
     Bois(Bois),
@@ -28,7 +30,7 @@ impl Default for Partner {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Bois {
     Montmagny,
     Levy,
@@ -41,7 +43,7 @@ impl Default for Bois {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Harmonie {
     JeanGauvin,
     None,
@@ -53,7 +55,7 @@ impl Default for Harmonie {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Prevost {
     Quebec,
     Malbaie,
@@ -67,7 +69,7 @@ impl Default for Prevost {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Aures {
     Quebec,
     Beaupre,
@@ -126,6 +128,7 @@ pub fn get_all_succursales(partner: &Partner) -> (String, Element<Message>) {
     let vspace = 1.5;
     let clinic_vspace = 1.5;
     let clinic_name_size = 14.;
+    let text_size = 15;
 
     let (clinic, succursales) = match partner {
         Partner::Bois(_) => {
@@ -140,7 +143,7 @@ pub fn get_all_succursales(partner: &Partner) -> (String, Element<Message>) {
                 Message::PartnerChanged,
             )
             .size(12)
-            .text_size(14);
+            .text_size(text_size);
 
             let levis = radio(
                 "5500 Bd Guillaume-Couture suite 111, Lévis, QC G6V 4Z2, 418-837-3626",
@@ -149,7 +152,7 @@ pub fn get_all_succursales(partner: &Partner) -> (String, Element<Message>) {
                 Message::PartnerChanged,
             )
             .size(12)
-            .text_size(14);
+            .text_size(text_size);
 
             (clinic, column![montmagny, vertical_space(vspace), levis])
         }
@@ -166,7 +169,7 @@ pub fn get_all_succursales(partner: &Partner) -> (String, Element<Message>) {
                 Message::PartnerChanged,
             )
             .size(12)
-            .text_size(14);
+            .text_size(text_size);
 
             (clinic, column![jean_gauvin])
         }
@@ -181,7 +184,7 @@ pub fn get_all_succursales(partner: &Partner) -> (String, Element<Message>) {
                 Message::PartnerChanged,
             )
             .size(12)
-            .text_size(14);
+            .text_size(text_size);
 
             let malbaie = radio(
                 "342 Rue St Étienne, La Malbaie, QC G5A 1M7. 1 (800) 363-5617",
@@ -191,7 +194,7 @@ pub fn get_all_succursales(partner: &Partner) -> (String, Element<Message>) {
                 Message::PartnerChanged,
             )
             .size(12)
-            .text_size(14);
+            .text_size(text_size);
 
             let baie_st_paul = radio(
                 "5 Rue Boivin bureau 208, Baie-Saint-Paul, QC. 1 (800) 363-5617",
@@ -201,7 +204,7 @@ pub fn get_all_succursales(partner: &Partner) -> (String, Element<Message>) {
                 Message::PartnerChanged,
             )
             .size(12)
-            .text_size(14);
+            .text_size(text_size);
 
             (
                 clinic,

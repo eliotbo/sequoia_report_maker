@@ -83,7 +83,7 @@ impl canvas::Program<Message> for ImmitPlot {
 
         let legend_text = Text {
             color: config::AXIS_LABEL_COLOR,
-            size: 13.0,
+            size: 15.0,
             ..Text::default()
         };
 
@@ -182,7 +182,7 @@ impl canvas::Program<Message> for ImmitPlot {
                     horizontal_alignment: Horizontal::Left,
                     vertical_alignment: Vertical::Bottom,
                     position: Point::new(
-                        x + 12.0,
+                        x + 14.0,
                         space - PLOT_TICK_LABEL_SPACE + PLOT_Y_OFFSET_START,
                     ),
                     // size: 10.0,

@@ -223,7 +223,7 @@ impl canvas::Program<Message> for Plot {
 
         let mut first_x = x_offset + space;
         // let mut last_x = first_x + plot_width - PLOT_LEGEMD_SPACE;
-        let mut last_x = (WINDOW_WIDTH as f32 - LEGEND_WIDTH) / 2.0 - PLOT_LEGEMD_SPACE * 2.;
+        let mut last_x = (WINDOW_WIDTH as f32 - LEGEND_WIDTH) / 2.0 - PLOT_LEGEMD_SPACE * 2. - 5.0;
 
         let mut db_x_position = first_x - PLOT_TICK_LABEL_SPACE + 10.0;
         let mut db_halign = Horizontal::Right;
@@ -243,7 +243,7 @@ impl canvas::Program<Message> for Plot {
         let mut ca_label_x = first_x - PLOT_TICK_LABEL_SPACE;
 
         if let EarSide::Left = self.ear_side {
-            first_x = PLOT_LEGEMD_SPACE;
+            first_x = PLOT_LEGEMD_SPACE - 6.0;
             last_x = first_x + plot_width - x_unit * 0.6;
 
             y_tick_x_pos = last_x + PLOT_TICK_LABEL_SPACE;
@@ -324,7 +324,7 @@ impl canvas::Program<Message> for Plot {
                     content: "0 dBHL".into(),
                     horizontal_alignment: y_tick_h_align,
                     vertical_alignment: Vertical::Center,
-                    position: Point::new(y0_tick_x_pos + 2.0, y),
+                    position: Point::new(y0_tick_x_pos + 0.0, y),
                     ..legend_text
                 });
             } else {
@@ -465,7 +465,7 @@ impl canvas::Program<Message> for Plot {
                     p.line_to(Point::new(x, ca_upper_left.y + size.height));
                 }),
                 canvas::Stroke {
-                    style: canvas::Style::Solid(config::GRAY),
+                    style: canvas::Style::Solid(config::GRID_COLOR),
                     width: 1.0,
                     line_cap: canvas::LineCap::Round,
                     line_join: canvas::LineJoin::Round,

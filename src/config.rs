@@ -11,10 +11,11 @@ pub const FIRA_FONT: Font = Font::External {
 };
 pub const MAX_DIGITS: u32 = 5;
 
-pub const WINDOW_WIDTH: u32 = 1000;
-pub const WINDOW_HEIGHT: u32 = 1333;
+pub const WINDOW_WIDTH: u32 = 1117; // 1000
+pub const WINDOW_HEIGHT: u32 = 1431; //1333
 
 pub const SECTION_TITLE_BG_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
+pub const SECTION_TITLE_HORIZONTAL_SPACE: f32 = 3.0;
 pub const SECTION_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.02, 0.02, 0.02);
 
 pub const SECTION_SEPARATOR_SPACE: f32 = 15.0;
@@ -27,7 +28,7 @@ pub const TABLE_MISC_SIZE: f32 = 16.0;
 pub const STAP_ENTRY_SIZE: f32 = 8.0;
 
 pub const IMMIT_CANVAS_WIDTH: f32 = 210.0;
-pub const IMMIT_CANVAS_HEIGHT: f32 = 165.0;
+pub const IMMIT_CANVAS_HEIGHT: f32 = 175.0;
 
 pub const DEFAULT_TEXT_INPUT_CONTENT_SIZE: f32 = 12.0;
 pub const DEFAULT_TEXT_SIZE: f32 = 16.0;
@@ -36,7 +37,7 @@ pub const TABLE_TEXT_COLOR: Color = Color::from_rgb(0.05, 0.05, 0.07);
 // pub const TABLE_SPACING: f32 = 4.0;
 // pub const TABLE_BACKGROUND_COLOR: Color = Color::from_rgb(0.4, 0.4, 0.4);
 
-pub const GRAY: Color = Color::from_rgb(0.9, 0.9, 0.9);
+pub const GRAY: Color = Color::from_rgb(0.98, 0.98, 0.98);
 
 pub const TEXT_LINE_VSPACE: f32 = 20.0;
 pub const TEXT_INPUT_HEIGHT: f32 = 23.;
@@ -71,8 +72,8 @@ pub const LEGEND_TEXT_COLOR: Color = Color::from_rgb(0.05, 0.05, 0.05);
 pub const LEGEND_SYMBOL_STROKE_COLOR: Color = Color::from_rgb(0.4, 0.4, 0.4);
 
 pub const PLOT_SPACE: f32 = 10.0;
-pub const PLOT_LEGEMD_SPACE: f32 = 6.0;
-pub const PLOT_CANVAS_HEIGHT: f32 = 418.0;
+pub const PLOT_LEGEMD_SPACE: f32 = 10.0;
+pub const PLOT_CANVAS_HEIGHT: f32 = 460.0;
 pub const PLOT_CANVAS_WIDTH: f32 = 435.0;
 pub const PLOT_X_OFFSET_START: f32 = 37.0;
 pub const PLOT_X_OFFSET_END: f32 = 35.0;
@@ -81,13 +82,13 @@ pub const PLOT_Y_OFFSET_START: f32 = 16.0;
 pub const PLOT_Y_OFFSET_END: f32 = 75.0;
 pub const PLOT_DOT_SIZE: f32 = 5.0;
 pub const PLOT_SHAPE_SIZE: f32 = 10.0;
-pub const PLOT_TICK_LABEL_SPACE: f32 = 5.0;
-pub const PLOT_TICK_SIZE: f32 = 25.0;
+pub const PLOT_TICK_LABEL_SPACE: f32 = 8.0;
+pub const PLOT_TICK_SIZE: f32 = 28.0;
 pub const PLOT_CA_CO_Y_SPACE: f32 = 12.0;
 pub const PLOT_X_AXIS: [isize; 8] = [0, 125, 250, 500, 1000, 2000, 4000, 8000];
 pub const PLOT_Y_AXIS: [isize; 14] = [-10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120];
 
-pub const IM_PLOT_TICK_SIZE: f32 = 28.0;
+pub const IM_PLOT_TICK_SIZE: f32 = 30.0;
 pub const IM_PLOT_X_OFFSET: f32 = 24.0;
 
 pub const PLOT_SHAPE_STROKE: canvas::Stroke = canvas::Stroke {
@@ -170,7 +171,7 @@ impl container::StyleSheet for TitleContainerCustomStyle {
             text_color: Some(SECTION_TITLE_TEXT_COLOR),
             background: Some(GRAY.into()),
             border_radius: 25.0,
-            border_width: 0.0,
+            border_width: 1.0,
             border_color: Color::from_rgb(0.5, 0.25, 0.25),
         }
     }
