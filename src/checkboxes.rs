@@ -24,7 +24,7 @@ pub struct CheckBex {
     srp: String,
 }
 
-// #[derive(Debug, Clone)]
+// #[derive(Debug, Clone)] 
 // pub enum Message {
 //     DefaultChecked(bool),
 //     CustomChecked(bool),
