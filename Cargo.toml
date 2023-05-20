@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 iced = { version = "0.9", features = ["canvas", "tokio", "debug", "image"] }
-iced_native = { version = "0.10.1" }
+iced_native = { version = "0.10.3" }
 iced_graphics = { version = "0.8.0" }
 # iced = { path = "iced", features = ["canvas", "tokio", "debug"] }
 

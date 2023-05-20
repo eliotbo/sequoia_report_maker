@@ -18,6 +18,7 @@ use crate::Message;
 pub struct Legend {
     space: f32,
     corner_radius: f32,
+    icon_positions: LegendLRPositions,
 }
 
 impl Default for Legend {
@@ -25,8 +26,144 @@ impl Default for Legend {
         Self {
             space: SPACE,
             corner_radius: CORNER_RADIUS,
+            icon_positions: LegendLRPositions::default(),
         }
     }
+}
+
+pub enum Side {
+    Left,
+    Right,
+}
+
+
+pub enum LegendIcon {
+    ANonMasque,
+    AMasque,
+    OMasque,
+    ONonMasque,
+    Inconfort,
+    ChampLibre,
+    AA,
+    PasDeReponse,
+    Vibrotactile,
+    Insufficient,
+}
+
+
+#[derive( Debug)]
+pub struct LegendLRPositions {
+    l: LegendPos,
+    r: LegendPos,
+}
+
+impl Default for LegendLRPositions {
+    fn default() -> Self {
+
+        let xl = 21.0;
+        let xr = 197.0;
+
+        let y0 = 46.05;
+        let y1 = 160.05;
+        let y2 = 250.55;
+        let vs = 19.;
+
+        // v += vs / 2.0;
+        // let z = 7.0;
+        // let zz = Point::new(xl + 0.5 * 10., v - 0.4 * 10. - z);
+        LegendLRPositions { 
+            l: LegendPos { 
+                sa_not_masked: Point { x: xl, y: y0 }, 
+                sa_masked: Point { x: xl, y: y0 + vs }, 
+                sa_discomfort: Point { x: xl, y: y0 + 2. * vs }, // y: 84.05 }, 
+                sa_champs_libre: Point { x: xl, y: y0 + 3. * vs }, //y: 103.05 }, 
+                sa_aa: Point { x: xl, y: y0 + 4. * vs }, // y: 122.05 }, 
+                so_not_masked: Point { x: xl, y: y1 }, // y: 160.05 }, 
+                so_masked: Point { x: xl, y: y1 + vs }, // y: 179.05 }, 
+                
+                other_no_response: Point { x: xl, y: y1 + 2. * vs }, // y: 207.55 }, 
+                other_no_vibro: Point { x: xl, y: y1 + 3. * vs }, //y: 226.55 }, 
+                other_insufficient: Point { x: xl, y: y2 }, // y: y1 + 2. * vs }, // y: 250.55 } 
+            }, 
+  
+            r: LegendPos { 
+                sa_not_masked: Point { x: xr, y: y0 }, 
+                sa_masked: Point { x: xr, y: y0 + vs }, 
+                sa_discomfort: Point { x: xr, y: y0 + 2.*vs }, 
+                sa_champs_libre: Point { x: xr, y: y0 + 3.*vs }, 
+                sa_aa: Point { x: xr, y: y0 + 4. * vs }, 
+                so_masked: Point { x: xr, y: y1}, 
+                so_not_masked: Point { x: xr, y: y1 + vs }, 
+                other_no_response: Point { x: xr, y: y1 + 2. * vs }, 
+                other_no_vibro: Point { x: xr, y: y1 + 3. * vs }, 
+                other_insufficient: Point { x: xr, y: y2 } } 
+                
+        }
+        //     r: LegendPos { 
+        //         sa_not_masked: Point { x: xr, y: 46.05 }, 
+        //         sa_masked: Point { x: xr, y: 65.05 }, 
+        //         sa_discomfort: Point { x: xr, y: 84.05 }, 
+        //         sa_champs_libre: Point { x: xr, y: 103.05 }, 
+        //         sa_aa: Point { x: xr, y: 122.05 }, 
+        //         so_masked: Point { x: xr, y: 179.05 }, 
+        //         so_not_masked: Point { x: xr, y: 160.05 }, 
+        //         other_no_response: Point { x: xr, y: 207.55 }, 
+        //         other_no_vibro: Point { x: xr, y: 226.55 }, 
+        //         other_insufficient: Point { x: xr, y: 250.55 } } 
+                
+        // }
+
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct LegendPos {
+    sa_not_masked: Point,
+    sa_masked: Point,
+    sa_discomfort: Point,
+    sa_champs_libre: Point,
+    sa_aa: Point, 
+    so_masked: Point,
+    so_not_masked: Point,
+    other_no_response: Point,
+    other_no_vibro: Point,
+    other_insufficient: Point,
+}
+
+ impl LegendLRPositions {
+    pub fn get_icon_under_cursor(&self, cursor: Point) -> Option<bool> {
+     
+        let mut lv = vec![
+            (self.l.sa_not_masked, Side::Left, LegendIcon::ANonMasque),
+            (self.l.sa_masked, Side::Left,  LegendIcon::AMasque),
+            (self.l.sa_discomfort, Side::Left,  LegendIcon::Inconfort),
+            (self.l.sa_champs_libre, Side::Left,  LegendIcon::ChampLibre),
+            (self.l.sa_aa, Side::Left,  LegendIcon::AA),
+            (self.l.so_masked, Side::Left,  LegendIcon::OMasque),
+            (self.l.so_not_masked, Side::Left,  LegendIcon::ONonMasque),
+            (self.l.other_insufficient, Side::Left,  LegendIcon::Insufficient),
+            (self.l.other_no_response, Side::Left,  LegendIcon::PasDeReponse),
+            (self.l.other_no_vibro, Side::Left,  LegendIcon::Vibrotactile),
+        ];
+
+        let mut rv = vec![
+            (self.r.sa_not_masked, Side::Right,LegendIcon::ANonMasque),
+            (self.r.sa_masked, Side::Right,  LegendIcon::AMasque),
+            (self.r.sa_discomfort, Side::Right,  LegendIcon::Inconfort),
+            (self.r.sa_champs_libre, Side::Right, LegendIcon::ChampLibre),
+            (self.r.sa_aa, Side::Right, LegendIcon::AA),
+            (self.r.so_masked, Side::Right, LegendIcon::OMasque),
+            (self.r.so_not_masked, Side::Right, LegendIcon::ONonMasque),
+            (self.r.other_insufficient, Side::Right, LegendIcon::Insufficient),
+            (self.r.other_no_response, Side::Right, LegendIcon::PasDeReponse),
+            (self.r.other_no_vibro, Side::Right, LegendIcon::Vibrotactile),
+        ];
+
+        lv.append(&mut rv);
+
+        return None;
+    }
+
 }
 
 impl canvas::Program<Message> for Legend {
@@ -116,6 +253,8 @@ impl canvas::Program<Message> for Legend {
         };
         frame.fill_text(droit.clone());
 
+
+
         let gauche = Text {
             content: "GAUCHE".to_string(),
             color: LEGEND_TEXT_COLOR,
@@ -167,20 +306,30 @@ impl canvas::Program<Message> for Legend {
             position: Point::new(center_h, v),
             ..legend_text
         });
-        frame.stroke(&Shape::circle(Point::new(lx, v), ss), symbol_stroke.clone());
-        frame.stroke(&Shape::x(Point::new(rx, v), ss), symbol_stroke.clone());
+
+        let mut rl_pos = LegendLRPositions::default();
+        
+
+        frame.stroke(&Shape::circle(rl_pos.l.sa_not_masked, ss), symbol_stroke.clone());
+        frame.stroke(&Shape::x(rl_pos.r.sa_not_masked, ss), symbol_stroke.clone());
+        
+
 
         v += vs;
+        
         frame.fill_text(Text {
             content: "Masqué".to_string(),
             position: Point::new(center_h, v),
             ..legend_text
         });
-        frame.stroke(&Shape::square(Point::new(rx, v), ss), symbol_stroke.clone());
+
+        
+        frame.stroke(&Shape::square(rl_pos.r.sa_masked, ss), symbol_stroke.clone());
         frame.stroke(
-            &Shape::triangle(Point::new(lx, v), ss),
+            &Shape::triangle(rl_pos.l.sa_masked, ss),
             symbol_stroke.clone(),
         );
+
 
         v += vs;
         frame.fill_text(Text {
@@ -188,8 +337,10 @@ impl canvas::Program<Message> for Legend {
             position: Point::new(center_h, v),
             ..legend_text
         });
-        frame.stroke(&Shape::u(Point::new(rx, v), ss), symbol_stroke.clone());
-        frame.stroke(&Shape::u(Point::new(lx, v), ss), symbol_stroke.clone());
+        frame.stroke(&Shape::u(rl_pos.r.sa_discomfort, ss), symbol_stroke.clone());
+        frame.stroke(&Shape::u(rl_pos.l.sa_discomfort, ss), symbol_stroke.clone());
+
+
 
         v += vs;
         // let oy = Vector::new(ss * 0.7, -ss);
@@ -198,8 +349,11 @@ impl canvas::Program<Message> for Legend {
             position: Point::new(center_h, v),
             ..legend_text
         });
-        frame.stroke(&Shape::s(Point::new(lx, v), ss), symbol_stroke.clone());
-        frame.stroke(&Shape::s(Point::new(rx, v), ss), symbol_stroke.clone());
+        frame.stroke(&Shape::s(rl_pos.l.sa_champs_libre, ss), symbol_stroke.clone());
+        frame.stroke(&Shape::s(rl_pos.r.sa_champs_libre, ss), symbol_stroke.clone());
+
+
+
 
         v += vs;
         let oy = Vector::new(ss * 0.7, -ss);
@@ -208,8 +362,10 @@ impl canvas::Program<Message> for Legend {
             position: Point::new(center_h, v),
             ..legend_text
         });
-        frame.stroke(&Shape::a(Point::new(lx, v), ss), symbol_stroke.clone());
-        frame.stroke(&Shape::a(Point::new(rx, v), ss), symbol_stroke.clone());
+        frame.stroke(&Shape::a(rl_pos.l.sa_aa, ss), symbol_stroke.clone());
+        frame.stroke(&Shape::a(rl_pos.r.sa_aa, ss), symbol_stroke.clone());
+
+
 
         v += 1.0 * vs;
         let seuil_osseux = Text {
@@ -246,13 +402,16 @@ impl canvas::Program<Message> for Legend {
             ..legend_text
         });
         frame.stroke(
-            &Shape::less_than(Point::new(lx, v), ss),
+            &Shape::less_than(rl_pos.l.so_not_masked, ss),
             symbol_stroke.clone(),
         );
         frame.stroke(
-            &Shape::greater_than(Point::new(rx, v), ss),
+            &Shape::greater_than(rl_pos.r.so_not_masked, ss),
             symbol_stroke.clone(),
         );
+
+
+
 
         v += vs;
         frame.fill_text(Text {
@@ -261,13 +420,14 @@ impl canvas::Program<Message> for Legend {
             ..legend_text
         });
         frame.stroke(
-            &Shape::left_bracket(Point::new(lx, v), ss),
+            &Shape::left_bracket(rl_pos.l.so_masked, ss),
             symbol_stroke.clone(),
         );
         frame.stroke(
-            &Shape::right_bracket(Point::new(rx, v), ss),
+            &Shape::right_bracket(rl_pos.r.so_masked, ss),
             symbol_stroke.clone(),
         );
+
 
         v += 1.0 * vs;
         let seuil_osseux = Text {
@@ -301,6 +461,8 @@ impl canvas::Program<Message> for Legend {
 
         v += vs / 2.0;
         let z = 7.0;
+        let dxy = Vector::new(ss * 0.7, -ss - 4.0);
+
         frame.fill_text(Text {
             content: "Pas de réponse".to_string(),
             position: Point::new(center_h, v),
@@ -315,6 +477,7 @@ impl canvas::Program<Message> for Legend {
             symbol_stroke.clone(),
         );
 
+
         v += vs;
         frame.fill_text(Text {
             content: "Vibrotactile".to_string(),
@@ -322,7 +485,7 @@ impl canvas::Program<Message> for Legend {
             ..legend_text
         });
 
-        let dxy = Vector::new(ss * 0.7, -ss - 4.0);
+        
         frame.stroke(
             &Shape::vt(Point::new(lx - 0.0, v) - dxy, ss),
             symbol_stroke.clone(),
@@ -331,6 +494,7 @@ impl canvas::Program<Message> for Legend {
             &&Shape::vt(Point::new(rx + 0.3, v) - dxy, ss),
             symbol_stroke.clone(),
         );
+
 
         v += vs + 5.0;
         let oy = Vector::new(ss * 0.7, -ss);
@@ -347,6 +511,9 @@ impl canvas::Program<Message> for Legend {
             &Shape::asterisk(Point::new(rx, v) - oy, ss),
             symbol_stroke.clone(),
         );
+
+
+
 
         // frame.stroke(
         //     &Shape::asterisk(Point::new(lx - 2.0, v) - dxy, ss),

@@ -56,16 +56,19 @@ use iced::widget::canvas;
 use iced::widget::canvas::event::{self, Event};
 use iced::widget::canvas::path::Builder;
 use iced::widget::canvas::{Cache, Canvas, Cursor, Frame, Geometry, Path, Text};
-use iced::widget::{
+use iced::widget::{Column, scrollable,
     self, button, checkbox, column, container, container::Appearance, horizontal_space, pick_list,
     radio, row, slider, text, text_input, vertical_space, Container, Row, Rule,
 };
 use iced::window;
+use iced::widget::scrollable::{ Properties, Scrollbar, Scroller};
 use iced::{
     subscription, Alignment, Application, Color, Command, Element, Length, Point, Rectangle,
     Settings, Size, Subscription,
 };
 use std::time::{Duration, Instant};
+
+
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Validity {
@@ -1451,7 +1454,15 @@ impl Application for AudioRox {
                 .on_blur(Message::HidePartnerChoices)
                 .into()
         } else {
-            final_content.into()
+            // let final_element: Element<Message> = column![final_content];
+            let final_element: Column<Message> = column![final_content];
+
+            scrollable(final_element)
+            .vertical_scroll( Properties::new()
+            .width(10)
+            .margin(0)
+            .scroller_width(10),
+            ).into()
         }
     }
 

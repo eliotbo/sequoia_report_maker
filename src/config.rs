@@ -12,7 +12,7 @@ pub const FIRA_FONT: Font = Font::External {
 pub const MAX_DIGITS: u32 = 5;
 
 pub const WINDOW_WIDTH: u32 = 1117; // 1000
-pub const WINDOW_HEIGHT: u32 = 1431; //1333
+pub const WINDOW_HEIGHT: u32 = 800; //1333
 
 pub const SECTION_TITLE_BG_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 pub const SECTION_TITLE_HORIZONTAL_SPACE: f32 = 3.0;
