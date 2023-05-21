@@ -4,13 +4,14 @@ use iced::theme::Theme;
 
 use iced::widget::canvas;
 
-use iced::widget::canvas::{Canvas, Cursor, Text};
+use iced::widget::canvas::{Canvas, Cursor, Path, Text};
+use iced::widget::canvas::event::{self, Event};
 
-use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
+use iced::{mouse, Color, Element, Length, Point, Rectangle, Size, Vector};
 
-use crate::config::{
+use crate::config::{LEGEND_SELECT_STROKE,
     CORNER_RADIUS, GRAY, LEGEND_BORDER_COLOR, LEGEND_HEIGHT, LEGEND_SYMBOL_STROKE_COLOR,
-    LEGEND_TEXT_COLOR, LEGEND_TITLES_COLOR, LEGEND_WIDTH, LEGEND_Y_OFFSET_START, SPACE,
+    LEGEND_TEXT_COLOR, LEGEND_TITLES_COLOR, LEGEND_WIDTH, LEGEND_Y_OFFSET_START, SPACE, ICON_SIZE
 };
 use crate::plot::{add_contour, Shape};
 use crate::Message;
@@ -31,12 +32,13 @@ impl Default for Legend {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
 pub enum Side {
     Left,
     Right,
 }
 
-
+#[derive(Copy, Clone, Debug)]
 pub enum LegendIcon {
     ANonMasque,
     AMasque,
@@ -65,7 +67,12 @@ impl Default for LegendLRPositions {
 
         let y0 = 46.05;
         let y1 = 160.05;
-        let y2 = 250.55;
+        let y2 = 207.05;
+        let y3 = 250.55;
+
+        let dx = 5.;
+        let dy = ICON_SIZE / 2.;
+
         let vs = 19.;
 
         // v += vs / 2.0;
@@ -81,9 +88,9 @@ impl Default for LegendLRPositions {
                 so_not_masked: Point { x: xl, y: y1 }, // y: 160.05 }, 
                 so_masked: Point { x: xl, y: y1 + vs }, // y: 179.05 }, 
                 
-                other_no_response: Point { x: xl, y: y1 + 2. * vs }, // y: 207.55 }, 
-                other_no_vibro: Point { x: xl, y: y1 + 3. * vs }, //y: 226.55 }, 
-                other_insufficient: Point { x: xl, y: y2 }, // y: y1 + 2. * vs }, // y: 250.55 } 
+                other_no_response: Point { x: xl + dx, y: y2 - dy}, // y: 207.55 }, 
+                other_no_vibro: Point { x: xl, y: y2 + vs }, //y: 226.55 }, 
+                other_insufficient: Point { x: xl, y: y3 }, // y: y1 + 2. * vs }, // y: 250.55 } 
             }, 
   
             r: LegendPos { 
@@ -94,9 +101,9 @@ impl Default for LegendLRPositions {
                 sa_aa: Point { x: xr, y: y0 + 4. * vs }, 
                 so_masked: Point { x: xr, y: y1}, 
                 so_not_masked: Point { x: xr, y: y1 + vs }, 
-                other_no_response: Point { x: xr, y: y1 + 2. * vs }, 
-                other_no_vibro: Point { x: xr, y: y1 + 3. * vs }, 
-                other_insufficient: Point { x: xr, y: y2 } } 
+                other_no_response: Point { x: xr - dx, y: y2 - dy }, 
+                other_no_vibro: Point { x: xr, y: y2 + vs }, 
+                other_insufficient: Point { x: xr, y: y3 } } 
                 
         }
         //     r: LegendPos { 
@@ -131,7 +138,7 @@ pub struct LegendPos {
 }
 
  impl LegendLRPositions {
-    pub fn get_icon_under_cursor(&self, cursor: Point) -> Option<bool> {
+    pub fn get_icon_under_cursor(&self, cursor: Point) -> Option<(Side, LegendIcon, Point)> {
      
         let mut lv = vec![
             (self.l.sa_not_masked, Side::Left, LegendIcon::ANonMasque),
@@ -161,17 +168,44 @@ pub struct LegendPos {
 
         lv.append(&mut rv);
 
+        for (pos, side, icon) in lv.iter() {
+            // println!("{:?}", pos);
+            let top_left = *pos - Vector::new(ICON_SIZE / 2.0, ICON_SIZE / 2.);
+
+            let start_rect = Rectangle::new(top_left, Size::new(ICON_SIZE, ICON_SIZE));
+
+            if start_rect.contains(cursor) {
+                return Some((*side, *icon, top_left))
+                
+            } 
+        }
+
         return None;
     }
 
 }
 
+
+pub struct Interaction {
+    left: Option<(LegendIcon, Point)>,
+    right: Option<(LegendIcon, Point)>,
+}
+
+impl Default for Interaction {
+    fn default() -> Self {
+        Interaction {
+            left: None,
+            right: None,
+        }
+    }
+}
+
 impl canvas::Program<Message> for Legend {
-    type State = ();
+    type State = Interaction;
 
     fn draw(
         &self,
-        _interaction: &(),
+        state: &Interaction,
         _theme: &Theme,
         bounds: Rectangle,
         _cursor: Cursor,
@@ -469,11 +503,14 @@ impl canvas::Program<Message> for Legend {
             ..legend_text
         });
         frame.stroke(
-            &Shape::bottom_left_arrow(Point::new(lx + 0.5 * ss, v - 0.4 * ss - z), ss),
+            // &Shape::bottom_left_arrow(Point::new(lx + 0.5 * ss, v - 0.4 * ss - z), ss),
+            &Shape::bottom_left_arrow(rl_pos.l.other_no_response, ss),
+
             symbol_stroke.clone(),
         );
         frame.stroke(
-            &&Shape::bottom_right_arrow(Point::new(rx - 0.5 * ss, v - 0.4 * ss - z), ss),
+            // &&Shape::bottom_right_arrow(Point::new(rx - 0.5 * ss, v - 0.4 * ss - z), ss),
+            &Shape::bottom_right_arrow(rl_pos.r.other_no_response, ss),
             symbol_stroke.clone(),
         );
 
@@ -531,7 +568,70 @@ impl canvas::Program<Message> for Legend {
         let rectangle = Rectangle::new(Point::new(0., 0.), legend_rect_size);
         add_contour(&mut frame, rectangle, 6.0, space, 2.0, LEGEND_BORDER_COLOR);
 
+        let b = ICON_SIZE / 2.;
+        let size = Size::new(2. * b, 2. * b);
+        if let Some((_, pos)) = state.left {
+            frame.stroke(
+                &Path::rectangle(pos, size),
+                LEGEND_SELECT_STROKE.clone(),
+            );
+        }
+        if let Some((_, pos)) = state.right {
+            frame.stroke(
+                &Path::rectangle(pos, size),
+                LEGEND_SELECT_STROKE.clone(),
+            );
+        }
+
+
         vec![frame.into_geometry()]
+    }
+
+    fn update(
+        &self,
+        state: &mut Interaction,
+        event: Event, 
+        bounds: Rectangle,
+        cursor: Cursor,
+    ) -> (event::Status, Option<Message>) {
+        let cursor_in_bounds: bool = cursor.is_over(&bounds);
+
+
+        // a click or a scroll outside the track window has not effect
+        let cursor_position = if let Some(pos) = cursor.position_from(bounds.position()) {
+            pos
+        } else {
+            return (event::Status::Ignored, None);
+        };
+
+
+        if !cursor_in_bounds {
+            match event {
+                Event::Mouse(mouse::Event::ButtonPressed(_))
+                | Event::Mouse(mouse::Event::WheelScrolled { .. }) => {
+                    return (event::Status::Ignored, None);
+                }
+                _ => {}
+            }
+        }
+
+        match event {
+            Event::Mouse(mouse::Event::ButtonPressed(_)) => {
+                if let Some((g1, g2, pos)) = self.icon_positions.get_icon_under_cursor(cursor_position) {
+                    println!("{:?}, {:?}", g1, g2);
+                    if let Side::Left = g1 {
+                        state.left = Some((g2, pos));
+                    }
+                    if let Side::Right = g1 {
+                        state.right = Some((g2, pos));
+                    }
+                    
+                }
+            }
+            _ => {}
+        }
+
+        return (event::Status::Ignored, None);
     }
 }
 

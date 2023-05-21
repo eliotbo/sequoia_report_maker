@@ -11,6 +11,8 @@ pub const FIRA_FONT: Font = Font::External {
 };
 pub const MAX_DIGITS: u32 = 5;
 
+pub const ICON_SIZE: f32 = 16.0;
+
 pub const WINDOW_WIDTH: u32 = 1117; // 1000
 pub const WINDOW_HEIGHT: u32 = 800; //1333
 
@@ -99,6 +101,22 @@ pub const PLOT_SHAPE_STROKE: canvas::Stroke = canvas::Stroke {
         a: 0.83,
     }),
     width: 1.25,
+    line_cap: canvas::LineCap::Round,
+    line_join: canvas::LineJoin::Round,
+    line_dash: canvas::LineDash {
+        segments: &[],
+        offset: 0,
+    },
+};
+
+pub const LEGEND_SELECT_STROKE: canvas::Stroke = canvas::Stroke {
+    style: canvas::Style::Solid(Color {
+        r: 0.83,
+        g: 0.5,
+        b: 0.5,
+        a: 0.5,
+    }),
+    width: 3.0,
     line_cap: canvas::LineCap::Round,
     line_join: canvas::LineJoin::Round,
     line_dash: canvas::LineDash {

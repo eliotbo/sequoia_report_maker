@@ -70,7 +70,7 @@ use std::time::{Duration, Instant};
 
 
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)] 
 pub enum Validity {
     Good,
     Medium,
