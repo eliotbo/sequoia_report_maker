@@ -1,8 +1,11 @@
+use serde::{Deserialize, Serialize};
+
+
 use iced::alignment::{Horizontal, Vertical};
 
 use iced::theme::Theme;
 
-use iced::widget::{canvas, container};
+use iced::widget::{canvas};
 
 use iced::widget::canvas::path::{Arc, Builder};
 use iced::widget::canvas::{Cache, Canvas, Cursor, Path, Text};
@@ -11,9 +14,9 @@ use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::config::{
     self, CORNER_RADIUS, LEGEND_WIDTH, PLOT_CANVAS_HEIGHT, PLOT_CANVAS_WIDTH, PLOT_CA_CO_Y_SPACE,
-    PLOT_DASH, PLOT_DOT_SIZE, PLOT_LEGEMD_SPACE, PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE, PLOT_SPACE,
-    PLOT_TICK_LABEL_SPACE, PLOT_TICK_SIZE, PLOT_X_AXIS, PLOT_X_OFFSET_END, PLOT_X_OFFSET_START,
-    PLOT_Y_AXIS, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START, SPACE, TABLE_BORDER_COLOR, WINDOW_HEIGHT,
+    PLOT_DASH, PLOT_LEGEMD_SPACE, PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE, PLOT_SPACE,
+    PLOT_TICK_LABEL_SPACE, PLOT_TICK_SIZE, PLOT_X_AXIS, PLOT_X_OFFSET_START,
+    PLOT_Y_AXIS, PLOT_Y_OFFSET_START, SPACE, 
     WINDOW_WIDTH,
 };
 use crate::Message;
@@ -21,17 +24,27 @@ use crate::Message;
 const NUM_X_TICKS: usize = 7;
 const NUM_Y_TICKS: usize = 14;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum EarSide {
     Right,
     Left,
     Free,
 }
-
+#[derive( Serialize, Deserialize)]
 enum Conduction {
     Bone,
     Air,
 }
+
+
+#[derive(Default, Serialize, Deserialize)]
+pub struct PlotInfo {
+    data: Vec<f32>,
+    top_left: Vec<f32>,
+    bottom_right: Vec<f32>,
+    size: Vec<f32>,
+}
+
 
 pub struct Plot {
     data: Vec<f32>,
@@ -213,20 +226,20 @@ impl canvas::Program<Message> for Plot {
         };
 
         let mut y = 0.;
-        let y_stroke = canvas::Stroke {
-            style: canvas::Style::Solid(config::GRID_COLOR),
-            width: 1.0,
-            line_cap: canvas::LineCap::Round,
-            line_join: canvas::LineJoin::Round,
-            ..canvas::Stroke::default()
-        };
+        // let y_stroke = canvas::Stroke {
+        //     style: canvas::Style::Solid(config::GRID_COLOR),
+        //     width: 1.0,
+        //     line_cap: canvas::LineCap::Round,
+        //     line_join: canvas::LineJoin::Round,
+        //     ..canvas::Stroke::default()
+        // };
 
         let mut first_x = x_offset + space;
         // let mut last_x = first_x + plot_width - PLOT_LEGEMD_SPACE;
         let mut last_x = (WINDOW_WIDTH as f32 - LEGEND_WIDTH) / 2.0 - PLOT_LEGEMD_SPACE * 2. - 5.0;
 
-        let mut db_x_position = first_x - PLOT_TICK_LABEL_SPACE + 10.0;
-        let mut db_halign = Horizontal::Right;
+        // let mut db_x_position = first_x - PLOT_TICK_LABEL_SPACE + 10.0;
+        // let mut db_halign = Horizontal::Right;
 
         let mut hz_x_position = last_x + 3.0;
         let mut hz_halign = Horizontal::Right;
@@ -250,8 +263,8 @@ impl canvas::Program<Message> for Plot {
             y0_tick_x_pos = y_tick_x_pos;
             y_tick_h_align = Horizontal::Left;
 
-            db_x_position = last_x + PLOT_TICK_LABEL_SPACE;
-            db_halign = Horizontal::Left;
+            // db_x_position = last_x + PLOT_TICK_LABEL_SPACE;
+            // db_halign = Horizontal::Left;
 
             hz_x_position = last_x - 5.0;
             hz_halign = Horizontal::Left;

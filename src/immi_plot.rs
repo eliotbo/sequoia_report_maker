@@ -2,45 +2,41 @@ use iced::alignment::{Horizontal, Vertical};
 
 use iced::theme::Theme;
 
-use iced::widget::{canvas, container};
+use iced::widget::{canvas};
 
-use iced::widget::canvas::path::{Arc, Builder};
-use iced::widget::canvas::{Cache, Canvas, Cursor, Path, Text};
+// use iced::widget::canvas::path::{Arc, Builder};
+use iced::widget::canvas::{ Canvas, Cursor, Path, Text};
 
-use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
+use iced::{ Element, Length, Point, Rectangle};
 
 use crate::config::{
-    self, CORNER_RADIUS, IMMIT_CANVAS_HEIGHT, IMMIT_CANVAS_WIDTH, IM_PLOT_TICK_SIZE,
-    IM_PLOT_X_OFFSET, PLOT_CANVAS_HEIGHT, PLOT_CANVAS_WIDTH, PLOT_CA_CO_Y_SPACE, PLOT_DASH,
-    PLOT_DOT_SIZE, PLOT_SHAPE_SIZE, PLOT_SHAPE_STROKE, PLOT_TICK_LABEL_SPACE, PLOT_X_AXIS,
-    PLOT_X_OFFSET_END, PLOT_X_OFFSET_START, PLOT_Y_AXIS, PLOT_Y_OFFSET_END, PLOT_Y_OFFSET_START,
-    SPACE,
+    self, IMMIT_CANVAS_HEIGHT, IMMIT_CANVAS_WIDTH, IM_PLOT_TICK_SIZE,
+    IM_PLOT_X_OFFSET,  
+     PLOT_TICK_LABEL_SPACE, 
+    PLOT_Y_OFFSET_START,
+
 };
 use crate::Message;
 
-pub struct ImmitPlot {
-    v1: f32,
-    v2: f32,
-    w1: f32,
-    w2: f32,
-}
 
-impl Default for ImmitPlot {
-    fn default() -> Self {
-        Self {
-            v1: 0.0,
-            v2: 0.0,
-            w1: 0.0,
-            w2: 0.0,
-        }
-    }
-}
+pub struct ImmitPlot;
 
-impl ImmitPlot {
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
+// impl Default for ImmitPlot {
+//     fn default() -> Self {
+//         Self {
+//             v1: 0.0,
+//             v2: 0.0,
+//             w1: 0.0,
+//             w2: 0.0,
+//         }
+//     }
+// }
+
+// impl ImmitPlot {
+//     pub fn new() -> Self {
+//         Self::default()
+//     }
+// }
 
 #[derive(Debug, Clone)]
 pub enum Interaction {
@@ -87,7 +83,7 @@ impl canvas::Program<Message> for ImmitPlot {
             ..Text::default()
         };
 
-        let mut y = 0.;
+        let mut y: f32 ;
         let y_stroke = canvas::Stroke {
             style: canvas::Style::Solid(config::GRID_COLOR),
             width: 1.0,
@@ -99,16 +95,16 @@ impl canvas::Program<Message> for ImmitPlot {
         let first_x = x_offset + space;
         let last_x = first_x + plot_width;
 
-        let db_x_position = first_x - PLOT_TICK_LABEL_SPACE + 10.0;
-        let db_halign = Horizontal::Right;
+        // let db_x_position = first_x - PLOT_TICK_LABEL_SPACE + 10.0;
+        // let db_halign = Horizontal::Right;
 
-        let hz_x_position = last_x;
-        let hz_halign = Horizontal::Right;
+        // let hz_x_position = last_x;
+        // let hz_halign = Horizontal::Right;
 
         let y_tick_x_pos = first_x - PLOT_TICK_LABEL_SPACE;
         let y_tick_h_align = Horizontal::Right;
 
-        let y1 = plot_height + PLOT_CA_CO_Y_SPACE;
+        // let y1 = plot_height + PLOT_CA_CO_Y_SPACE;
 
         // frame.fill_text(Text {
         //     content: "ml".to_string(),
@@ -174,7 +170,7 @@ impl canvas::Program<Message> for ImmitPlot {
                 }),
                 x_stroke.clone(),
             );
-            let mut content = format!("{}", x_axis[x_usize] as f32 / 1.0);
+            let content = format!("{}", x_axis[x_usize] as f32 / 1.0);
 
             if x_axis[x_usize] == 200 {
                 frame.fill_text(Text {
@@ -213,7 +209,7 @@ impl canvas::Program<Message> for ImmitPlot {
 }
 
 pub fn im_plot<'a>() -> Element<'a, Message> {
-    let plotter = ImmitPlot::new();
+    let plotter = ImmitPlot;
     // Element::new(Plot::new(data))
     let can = Canvas::new(plotter)
         // .width(Length::Fill)

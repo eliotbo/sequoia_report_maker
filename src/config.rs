@@ -1,22 +1,22 @@
-use iced::{Color, Font, Size};
+use iced::{Color};
 
-use iced::theme::{self, Theme};
+use iced::theme::{Theme};
 
 use iced::widget::container;
 use iced::widget::{button, canvas};
 
-pub const FIRA_FONT: Font = Font::External {
-    name: "Icons",
-    bytes: include_bytes!("../fonts/FiraCode-Regular.ttf"),
-};
-pub const MAX_DIGITS: u32 = 5;
+// pub const FIRA_FONT: Font = Font::External {
+//     name: "Icons",
+//     bytes: include_bytes!("../fonts/FiraCode-Regular.ttf"),
+// };
+// pub const MAX_DIGITS: u32 = 5;
 
 pub const ICON_SIZE: f32 = 16.0;
 
 pub const WINDOW_WIDTH: u32 = 1117; // 1000
 pub const WINDOW_HEIGHT: u32 = 800; //1333
 
-pub const SECTION_TITLE_BG_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
+// pub const SECTION_TITLE_BG_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 pub const SECTION_TITLE_HORIZONTAL_SPACE: f32 = 3.0;
 pub const SECTION_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.02, 0.02, 0.02);
 
@@ -26,8 +26,8 @@ pub const SPACE_BELOW_SECTION_TITLE: f32 = 8.0;
 pub const TABLE_ENTRY_TITLE_SIZE: f32 = 16.;
 pub const TABLE_ENTRY_SIZE: f32 = 18.;
 pub const TABLE_TITLE_SIZE: f32 = 18.;
-pub const TABLE_MISC_SIZE: f32 = 16.0;
-pub const STAP_ENTRY_SIZE: f32 = 8.0;
+// pub const TABLE_MISC_SIZE: f32 = 16.0;
+// pub const STAP_ENTRY_SIZE: f32 = 8.0;
 
 pub const IMMIT_CANVAS_WIDTH: f32 = 210.0;
 pub const IMMIT_CANVAS_HEIGHT: f32 = 175.0;
@@ -35,7 +35,7 @@ pub const IMMIT_CANVAS_HEIGHT: f32 = 175.0;
 pub const DEFAULT_TEXT_INPUT_CONTENT_SIZE: f32 = 12.0;
 pub const DEFAULT_TEXT_SIZE: f32 = 16.0;
 
-pub const TABLE_TEXT_COLOR: Color = Color::from_rgb(0.05, 0.05, 0.07);
+// pub const TABLE_TEXT_COLOR: Color = Color::from_rgb(0.05, 0.05, 0.07);
 // pub const TABLE_SPACING: f32 = 4.0;
 // pub const TABLE_BACKGROUND_COLOR: Color = Color::from_rgb(0.4, 0.4, 0.4);
 
@@ -44,7 +44,7 @@ pub const GRAY: Color = Color::from_rgb(0.98, 0.98, 0.98);
 pub const TEXT_LINE_VSPACE: f32 = 20.0;
 pub const TEXT_INPUT_HEIGHT: f32 = 23.;
 
-pub const TABLE_TITLE_BG_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
+// pub const TABLE_TITLE_BG_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 pub const TABLE_BORDER_COLOR: Color = Color::from_rgb(0.5, 0.5, 0.5);
 // pub const TABLE_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.8, 0.82, 0.810);
 pub const TABLE_TITLE_TEXT_COLOR: Color = Color::from_rgb(0.05, 0.02, 0.030);
@@ -65,10 +65,10 @@ pub const RADIO_TEXT_SIZE: f32 = 16.0;
 
 pub const LEGEND_HEIGHT: f32 = 275.0;
 pub const LEGEND_WIDTH: f32 = 218.0;
-pub const LEGEND_Y_OFFSET_START: f32 = 15.0;
+// pub const LEGEND_Y_OFFSET_START: f32 = 15.0;
 pub const LEGEND_BOTTOM_SPACE: f32 = 5.0;
 pub const LEGEND_TITLES_COLOR: Color = Color::from_rgb(0.05, 0.05, 0.05);
-pub const LEGEND_TITLES_BG_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
+// pub const LEGEND_TITLES_BG_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 pub const LEGEND_BORDER_COLOR: Color = Color::from_rgb(0.5, 0.5, 0.5);
 pub const LEGEND_TEXT_COLOR: Color = Color::from_rgb(0.05, 0.05, 0.05);
 pub const LEGEND_SYMBOL_STROKE_COLOR: Color = Color::from_rgb(0.4, 0.4, 0.4);
@@ -78,11 +78,11 @@ pub const PLOT_LEGEMD_SPACE: f32 = 10.0;
 pub const PLOT_CANVAS_HEIGHT: f32 = 460.0;
 pub const PLOT_CANVAS_WIDTH: f32 = 435.0;
 pub const PLOT_X_OFFSET_START: f32 = 37.0;
-pub const PLOT_X_OFFSET_END: f32 = 35.0;
+// pub const PLOT_X_OFFSET_END: f32 = 35.0;
 // pub const FIRST_X_RIGHT_PLOT: f32 =
 pub const PLOT_Y_OFFSET_START: f32 = 16.0;
-pub const PLOT_Y_OFFSET_END: f32 = 75.0;
-pub const PLOT_DOT_SIZE: f32 = 5.0;
+// pub const PLOT_Y_OFFSET_END: f32 = 75.0;
+// pub const PLOT_DOT_SIZE: f32 = 5.0;
 pub const PLOT_SHAPE_SIZE: f32 = 10.0;
 pub const PLOT_TICK_LABEL_SPACE: f32 = 8.0;
 pub const PLOT_TICK_SIZE: f32 = 28.0;
@@ -124,6 +124,23 @@ pub const LEGEND_SELECT_STROKE: canvas::Stroke = canvas::Stroke {
         offset: 0,
     },
 };
+
+pub const LEGEND_SELECT_MODIFIER_STROKE: canvas::Stroke = canvas::Stroke {
+    style: canvas::Style::Solid(Color {
+        r: 0.5,
+        g: 0.83,
+        b: 0.5,
+        a: 0.5,
+    }),
+    width: 3.0,
+    line_cap: canvas::LineCap::Round,
+    line_join: canvas::LineJoin::Round,
+    line_dash: canvas::LineDash {
+        segments: &[],
+        offset: 0,
+    },
+};
+
 
 pub const PLOT_DASH: canvas::LineDash = canvas::LineDash {
     segments: &[8., 5.],

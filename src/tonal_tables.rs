@@ -1,9 +1,9 @@
 use crate::plot::EarSide;
 
 use super::config::{
-    FIRA_FONT, GRAY, RADIO_SIZE, RADIO_SPACING, RADIO_TEXT_SIZE, RADIO_TITLE_SIZE, STAP_ENTRY_SIZE,
-    TABLE_BORDER_COLOR, TABLE_ENTRY_SIZE, TABLE_ENTRY_TITLE_SIZE, TABLE_TEXT_COLOR,
-    TABLE_TITLE_BG_COLOR, TABLE_TITLE_SIZE, TABLE_TITLE_TEXT_COLOR, TEXT_INPUT_HEIGHT,
+    GRAY, RADIO_SIZE, RADIO_SPACING, RADIO_TEXT_SIZE,
+    TABLE_BORDER_COLOR, TABLE_ENTRY_SIZE, TABLE_ENTRY_TITLE_SIZE, 
+  TABLE_TITLE_SIZE, TABLE_TITLE_TEXT_COLOR, TEXT_INPUT_HEIGHT,
     TONAL_TABLE_COL_WIDTH, TYMPA_TABLE_COL_WIDTH, VOCAL_TABLE_CONTENT_HEIGHT,
 };
 
@@ -13,7 +13,7 @@ use iced::alignment::{Horizontal, Vertical};
 // use iced_native::widget::Container;
 
 use iced::theme::{self, Theme};
-use iced::Renderer;
+
 
 use iced::widget::{
     column, container, container::Appearance, horizontal_space, radio, row, text, text_input,
@@ -39,7 +39,7 @@ pub enum Lang {
 }
 impl Default for Lang {
     fn default() -> Self {
-        Lang::French
+        Lang::None
     }
 }
 
@@ -52,7 +52,7 @@ pub enum IsRecorded {
 
 impl Default for IsRecorded {
     fn default() -> Self {
-        IsRecorded::No
+        IsRecorded::None
     }
 }
 
@@ -259,7 +259,7 @@ pub fn seuils_vocaux_tables(
             // horizontal_space(5.),
             radio(
                 "Fr.",
-                Lang::None,
+                Lang::French,
                 Some(audio_rox.vocal_lang),
                 Message::VocalLangChanged
             )
@@ -269,7 +269,7 @@ pub fn seuils_vocaux_tables(
             // horizontal_space(2.),
             radio(
                 "Ang.",
-                Lang::None,
+                Lang::English,
                 Some(audio_rox.vocal_lang),
                 Message::VocalLangChanged
             )
@@ -288,7 +288,7 @@ pub fn seuils_vocaux_tables(
             // horizontal_space(5.),
             radio(
                 "Nue",
-                IsRecorded::None,
+                IsRecorded::No,
                 Some(audio_rox.is_recorded),
                 Message::IsRecordedChanged
             )
@@ -299,7 +299,7 @@ pub fn seuils_vocaux_tables(
             // vertical_space(2.),
             radio(
                 "Enregistrée",
-                IsRecorded::None,
+                IsRecorded::Yes,
                 Some(audio_rox.is_recorded),
                 Message::IsRecordedChanged
             )
@@ -843,7 +843,7 @@ pub fn make_one_tympa_table(
         //
         container(
             text_input(
-                "",
+                "    \u{2014}",
                 &table_columns.pressure,
                 // get_message_fn("TympaPressure", ear_side)
             )
@@ -874,7 +874,7 @@ pub fn make_one_tympa_table(
         //
         container(
             text_input(
-                "",
+                "    \u{2014}",
                 &table_columns.compliance,
                 // get_message_fn("TympaCompliance", ear_side)
             )
@@ -947,8 +947,8 @@ pub fn make_one_stap_table(
 
     // let message_fn = get_message_fn("IdParole", ear_side);
 
-    let row_title_len = 60.0;
-    let units_len = 30.0;
+    // let row_title_len = 60.0;
+    // let units_len = 30.0;
 
     let first_col_width = 85.0;
     let col_width = 60.0;

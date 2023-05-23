@@ -7,18 +7,19 @@ use iced::widget::canvas;
 use iced::widget::canvas::{Canvas, Cursor, Path, Text};
 use iced::widget::canvas::event::{self, Event};
 
-use iced::{mouse, Color, Element, Length, Point, Rectangle, Size, Vector};
+use iced::{mouse,  Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::config::{LEGEND_SELECT_STROKE,
-    CORNER_RADIUS, GRAY, LEGEND_BORDER_COLOR, LEGEND_HEIGHT, LEGEND_SYMBOL_STROKE_COLOR,
-    LEGEND_TEXT_COLOR, LEGEND_TITLES_COLOR, LEGEND_WIDTH, LEGEND_Y_OFFSET_START, SPACE, ICON_SIZE
+     GRAY, LEGEND_BORDER_COLOR, LEGEND_HEIGHT, LEGEND_SYMBOL_STROKE_COLOR,
+    LEGEND_TEXT_COLOR, LEGEND_TITLES_COLOR, LEGEND_WIDTH, SPACE, ICON_SIZE,
+    LEGEND_SELECT_MODIFIER_STROKE
 };
 use crate::plot::{add_contour, Shape};
 use crate::Message;
 
 pub struct Legend {
     space: f32,
-    corner_radius: f32,
+    // corner_radius: f32,
     icon_positions: LegendLRPositions,
 }
 
@@ -26,7 +27,7 @@ impl Default for Legend {
     fn default() -> Self {
         Self {
             space: SPACE,
-            corner_radius: CORNER_RADIUS,
+            // corner_radius: CORNER_RADIUS, 
             icon_positions: LegendLRPositions::default(),
         }
     }
@@ -34,8 +35,10 @@ impl Default for Legend {
 
 #[derive(Copy, Clone, Debug)]
 pub enum Side {
-    Left,
-    Right,
+    LeftShape,
+    RightShape,
+    LeftModifier,
+    RightModifier,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -47,6 +50,7 @@ pub enum LegendIcon {
     Inconfort,
     ChampLibre,
     AA,
+    
     PasDeReponse,
     Vibrotactile,
     Insufficient,
@@ -132,6 +136,7 @@ pub struct LegendPos {
     sa_aa: Point, 
     so_masked: Point,
     so_not_masked: Point,
+
     other_no_response: Point,
     other_no_vibro: Point,
     other_insufficient: Point,
@@ -140,30 +145,36 @@ pub struct LegendPos {
  impl LegendLRPositions {
     pub fn get_icon_under_cursor(&self, cursor: Point) -> Option<(Side, LegendIcon, Point)> {
      
+        let dv  = Vector::new(ICON_SIZE/2. + 3.0, ICON_SIZE/2. + 2.);
+        
         let mut lv = vec![
-            (self.l.sa_not_masked, Side::Left, LegendIcon::ANonMasque),
-            (self.l.sa_masked, Side::Left,  LegendIcon::AMasque),
-            (self.l.sa_discomfort, Side::Left,  LegendIcon::Inconfort),
-            (self.l.sa_champs_libre, Side::Left,  LegendIcon::ChampLibre),
-            (self.l.sa_aa, Side::Left,  LegendIcon::AA),
-            (self.l.so_masked, Side::Left,  LegendIcon::OMasque),
-            (self.l.so_not_masked, Side::Left,  LegendIcon::ONonMasque),
-            (self.l.other_insufficient, Side::Left,  LegendIcon::Insufficient),
-            (self.l.other_no_response, Side::Left,  LegendIcon::PasDeReponse),
-            (self.l.other_no_vibro, Side::Left,  LegendIcon::Vibrotactile),
+            (self.l.sa_not_masked, Side::LeftShape, LegendIcon::ANonMasque),
+            (self.l.sa_masked, Side::LeftShape,  LegendIcon::AMasque),
+            (self.l.sa_discomfort, Side::LeftShape,  LegendIcon::Inconfort),
+            (self.l.sa_champs_libre, Side::LeftShape,  LegendIcon::ChampLibre),
+            (self.l.sa_aa, Side::LeftShape,  LegendIcon::AA),
+            (self.l.so_masked, Side::LeftShape,  LegendIcon::OMasque),
+            (self.l.so_not_masked, Side::LeftShape,  LegendIcon::ONonMasque),
+            
+            (self.l.other_no_response + dv, Side::LeftModifier,  LegendIcon::PasDeReponse),
+            (self.l.other_no_vibro, Side::LeftModifier,  LegendIcon::Vibrotactile),
+            (self.l.other_insufficient, Side::LeftModifier,  LegendIcon::Insufficient),
         ];
 
+        let dv  = Vector::new(ICON_SIZE/2. + 3.0, ICON_SIZE/2. + 2.);
+        
         let mut rv = vec![
-            (self.r.sa_not_masked, Side::Right,LegendIcon::ANonMasque),
-            (self.r.sa_masked, Side::Right,  LegendIcon::AMasque),
-            (self.r.sa_discomfort, Side::Right,  LegendIcon::Inconfort),
-            (self.r.sa_champs_libre, Side::Right, LegendIcon::ChampLibre),
-            (self.r.sa_aa, Side::Right, LegendIcon::AA),
-            (self.r.so_masked, Side::Right, LegendIcon::OMasque),
-            (self.r.so_not_masked, Side::Right, LegendIcon::ONonMasque),
-            (self.r.other_insufficient, Side::Right, LegendIcon::Insufficient),
-            (self.r.other_no_response, Side::Right, LegendIcon::PasDeReponse),
-            (self.r.other_no_vibro, Side::Right, LegendIcon::Vibrotactile),
+            (self.r.sa_not_masked, Side::RightShape,LegendIcon::ANonMasque),
+            (self.r.sa_masked, Side::RightShape,  LegendIcon::AMasque),
+            (self.r.sa_discomfort, Side::RightShape,  LegendIcon::Inconfort),
+            (self.r.sa_champs_libre, Side::RightShape, LegendIcon::ChampLibre),
+            (self.r.sa_aa, Side::RightShape, LegendIcon::AA),
+            (self.r.so_masked, Side::RightShape, LegendIcon::OMasque),
+            (self.r.so_not_masked, Side::RightShape, LegendIcon::ONonMasque),
+           
+            (self.r.other_no_response + dv, Side::RightModifier, LegendIcon::PasDeReponse),
+            (self.r.other_no_vibro, Side::RightModifier, LegendIcon::Vibrotactile),
+            (self.r.other_insufficient, Side::RightModifier, LegendIcon::Insufficient),
         ];
 
         lv.append(&mut rv);
@@ -187,15 +198,19 @@ pub struct LegendPos {
 
 
 pub struct Interaction {
-    left: Option<(LegendIcon, Point)>,
-    right: Option<(LegendIcon, Point)>,
+    left_shape: Option<(LegendIcon, Point)>,
+    right_shape: Option<(LegendIcon, Point)>,
+    left_modifier: Option<(LegendIcon, Point)>,
+    right_modifier: Option<(LegendIcon, Point)>,
 }
 
 impl Default for Interaction {
     fn default() -> Self {
         Interaction {
-            left: None,
-            right: None,
+            left_shape: None,
+            right_shape: None,
+            left_modifier: None,
+            right_modifier : None,      
         }
     }
 }
@@ -213,17 +228,17 @@ impl canvas::Program<Message> for Legend {
         let mut frame = canvas::Frame::new(bounds.size());
 
         let space = self.space;
-        let radius = self.corner_radius;
+        // let radius = self.corner_radius;
 
         // let legend_text_color = Color::from_rgb(0.05, 0.05, 0.05);
 
-        let stroke = canvas::Stroke {
-            style: canvas::Style::Solid(LEGEND_TEXT_COLOR),
-            width: 2.0,
-            line_cap: canvas::LineCap::Round,
-            line_join: canvas::LineJoin::Round,
-            ..canvas::Stroke::default()
-        };
+        // let stroke = canvas::Stroke {
+        //     style: canvas::Style::Solid(LEGEND_TEXT_COLOR),
+        //     width: 2.0,
+        //     line_cap: canvas::LineCap::Round,
+        //     line_join: canvas::LineJoin::Round,
+        //     ..canvas::Stroke::default()
+        // };
 
         let symbol_stroke = canvas::Stroke {
             style: canvas::Style::Solid(LEGEND_SYMBOL_STROKE_COLOR),
@@ -341,7 +356,7 @@ impl canvas::Program<Message> for Legend {
             ..legend_text
         });
 
-        let mut rl_pos = LegendLRPositions::default();
+        let rl_pos = LegendLRPositions::default();
         
 
         frame.stroke(&Shape::circle(rl_pos.l.sa_not_masked, ss), symbol_stroke.clone());
@@ -390,7 +405,7 @@ impl canvas::Program<Message> for Legend {
 
 
         v += vs;
-        let oy = Vector::new(ss * 0.7, -ss);
+        // let oy = Vector::new(ss * 0.7, -ss);
         frame.fill_text(Text {
             content: "Avec appareil auditif".to_string(),
             position: Point::new(center_h, v),
@@ -494,7 +509,7 @@ impl canvas::Program<Message> for Legend {
         // frame.fill_text(gauche);
 
         v += vs / 2.0;
-        let z = 7.0;
+        // let z = 7.0;
         let dxy = Vector::new(ss * 0.7, -ss - 4.0);
 
         frame.fill_text(Text {
@@ -505,7 +520,6 @@ impl canvas::Program<Message> for Legend {
         frame.stroke(
             // &Shape::bottom_left_arrow(Point::new(lx + 0.5 * ss, v - 0.4 * ss - z), ss),
             &Shape::bottom_left_arrow(rl_pos.l.other_no_response, ss),
-
             symbol_stroke.clone(),
         );
         frame.stroke(
@@ -570,19 +584,31 @@ impl canvas::Program<Message> for Legend {
 
         let b = ICON_SIZE / 2.;
         let size = Size::new(2. * b, 2. * b);
-        if let Some((_, pos)) = state.left {
+        if let Some((_, pos)) = state.left_shape {
             frame.stroke(
                 &Path::rectangle(pos, size),
                 LEGEND_SELECT_STROKE.clone(),
             );
         }
-        if let Some((_, pos)) = state.right {
+        if let Some((_, pos)) = state.right_shape {
             frame.stroke(
                 &Path::rectangle(pos, size),
                 LEGEND_SELECT_STROKE.clone(),
             );
         }
-
+        if let Some((_, pos)) = state.left_modifier {
+            frame.stroke(
+                &Path::rectangle(pos, size),
+                LEGEND_SELECT_MODIFIER_STROKE.clone(),
+            );
+        }
+        if let Some((_, pos)) = state.right_modifier {
+            frame.stroke(
+                &Path::rectangle(pos, size),
+                LEGEND_SELECT_MODIFIER_STROKE.clone(),
+            );
+        }
+        
 
         vec![frame.into_geometry()]
     }
@@ -617,13 +643,21 @@ impl canvas::Program<Message> for Legend {
 
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(_)) => {
-                if let Some((g1, g2, pos)) = self.icon_positions.get_icon_under_cursor(cursor_position) {
-                    println!("{:?}, {:?}", g1, g2);
-                    if let Side::Left = g1 {
-                        state.left = Some((g2, pos));
-                    }
-                    if let Side::Right = g1 {
-                        state.right = Some((g2, pos));
+                if let Some((side, icon, pos)) = self.icon_positions.get_icon_under_cursor(cursor_position) {
+                    println!("{:?}, {:?}", side, icon);
+                    match side {
+                        Side::LeftShape => {
+                            state.left_shape = Some((icon, pos));
+                        }
+                        Side::RightShape => {
+                            state.right_shape = Some((icon, pos));
+                        }
+                        Side::LeftModifier => {
+                            state.left_modifier = Some((icon, pos));
+                        }
+                        Side::RightModifier => {
+                            state.right_modifier = Some((icon, pos));
+                        }
                     }
                     
                 }

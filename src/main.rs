@@ -1,7 +1,7 @@
 //! by John Conway. It leverages a `Canvas` together with other widgets.
 
 use serde::{Deserialize, Serialize};
-use serde_json::Result;
+// use serde_json::Result;
 use std::fs::File;
 use std::io::Write;
 // mod checkboxes;
@@ -18,55 +18,52 @@ mod tonal_tables;
 // mod partners::modal::*;
 
 // use immitance::*;
-use partners::modal::Modal;
+// use partners::modal::Modal;
 use partners::{get_all_partners, get_all_succursales, modal, Partner};
 
 use tonal_tables::{
-    get_message_fn, identification_language, make_tonal_tables, seuils_vocaux_tables, stap, tympa,
-    IsRecorded, Lang, TableContainerCustomStyle, TableTitleCustomStyle, TonalTable,
+     identification_language, make_tonal_tables, seuils_vocaux_tables, stap, tympa,
+    IsRecorded, Lang,   TonalTable,
 };
 // use checkboxes::{Transductor, Validity};
 // use grid::Grid;
 use config::{
     CustomButtonStyle, LegendCustomStyle, TitleContainerCustomStyle,
     DEFAULT_TEXT_INPUT_CONTENT_SIZE, DEFAULT_TEXT_SIZE, IMMIT_CANVAS_WIDTH, LEGEND_BOTTOM_SPACE,
-    LEGEND_WIDTH, MAX_DIGITS, RADIO_SIZE, RADIO_SPACING, RADIO_TEXT_SIZE, RADIO_TITLE_SIZE,
-    SECTION_SEPARATOR_SPACE, SECTION_TITLE_BG_COLOR, SECTION_TITLE_HORIZONTAL_SPACE,
-    SECTION_TITLE_TEXT_COLOR, SPACE_BELOW_SECTION_TITLE, TABLE_MISC_SIZE, TEXT_LINE_VSPACE,
+    LEGEND_WIDTH,  RADIO_SIZE, RADIO_SPACING, RADIO_TEXT_SIZE, RADIO_TITLE_SIZE,
+    SECTION_SEPARATOR_SPACE,  SECTION_TITLE_HORIZONTAL_SPACE,
+     SPACE_BELOW_SECTION_TITLE,  TEXT_LINE_VSPACE,
     WINDOW_HEIGHT, WINDOW_WIDTH,
 };
 use immi_plot::im_plot;
-use legend::{draw_legend, Legend};
-use plot::{plot, EarSide, Plot, Shape};
-use preset::Preset;
+use legend::{draw_legend};
+use plot::{plot, EarSide, Plot, PlotInfo, Shape};
 
-use chrono;
-use chrono::Datelike;
 
-use image::{ImageBuffer, Rgba};
-use std::path::PathBuf;
+// use chrono;
+// use chrono::Datelike;
+
+
 
 use iced::alignment::{Horizontal, Vertical};
 // use iced::event::{self, Event};
 use iced::executor;
-use iced::keyboard::{self, KeyCode, Modifiers};
+use iced::keyboard::{self, Modifiers};
 use iced::theme::{self, Theme};
-use iced::time;
-use iced::widget::canvas;
-use iced::widget::canvas::event::{self, Event};
-use iced::widget::canvas::path::Builder;
-use iced::widget::canvas::{Cache, Canvas, Cursor, Frame, Geometry, Path, Text};
+
+use iced::widget::canvas::event;
+
 use iced::widget::{Column, scrollable,
-    self, button, checkbox, column, container, container::Appearance, horizontal_space, pick_list,
-    radio, row, slider, text, text_input, vertical_space, Container, Row, Rule,
+    self, button, checkbox, column, container, horizontal_space,
+    radio, row, text, text_input, vertical_space, Rule,
 };
 use iced::window;
-use iced::widget::scrollable::{ Properties, Scrollbar, Scroller};
+use iced::widget::scrollable::{ Properties};
 use iced::{
-    subscription, Alignment, Application, Color, Command, Element, Length, Point, Rectangle,
-    Settings, Size, Subscription,
+    subscription, Alignment, Application, Command, Element, Length,
+    Settings, Subscription,
 };
-use std::time::{Duration, Instant};
+// use std::time::{Duration, Instant};
 
 
 
@@ -206,8 +203,9 @@ pub struct CC {
     pub patient: bool,
     pub audioprothesiste: bool,
     pub family_doctor: bool,
-    pub ORL: bool,
+    pub orl: bool,
     pub other: bool,
+    pub readapt: bool,
 }
 
 impl Default for CC {
@@ -216,8 +214,9 @@ impl Default for CC {
             patient: false,
             audioprothesiste: false,
             family_doctor: false,
-            ORL: false,
+            orl: false,
             other: false,
+            readapt: false,
         }
     }
 }
@@ -270,6 +269,9 @@ pub struct AudioRox {
     is_recorded: IsRecorded,
 
     cc: CC,
+
+    plot_right: PlotInfo,
+    plot_left: PlotInfo,
 }
 
 impl AudioRox {
@@ -299,6 +301,9 @@ impl AudioRox {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    LegendShapeSelected(Shape),
+    LegendModifierSelected(Shape),
+
     SaveFile,
     LoadFile,
 
@@ -310,6 +315,7 @@ pub enum Message {
     CCFamilyDocChanged(bool),
     CCORLChanged(bool),
     CCOtherChanged(bool),
+    CCReadapt(bool),
 
     PartnerChanged(Partner),
     AdequateRestPeriodChanged(bool),
@@ -425,6 +431,9 @@ impl Application for AudioRox {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
+            Message::LegendModifierSelected(value) => {}
+            Message::LegendShapeSelected(value) => {}
+
             Message::LoadFile => {
                 // Perform your save operation here
                 // println!("S key is pressed");
@@ -454,8 +463,10 @@ impl Application for AudioRox {
             Message::CCPatientChanged(value) => self.cc.patient = value,
             Message::CCAudioProChanged(value) => self.cc.audioprothesiste = value,
             Message::CCFamilyDocChanged(value) => self.cc.family_doctor = value,
-            Message::CCORLChanged(value) => self.cc.ORL = value,
+            Message::CCORLChanged(value) => self.cc.orl = value,
             Message::CCOtherChanged(value) => self.cc.other = value,
+            Message::CCReadapt(value) => self.cc.readapt = value,
+            
 
             Message::PartnerChanged(value) => self.partner = value,
 
@@ -745,7 +756,7 @@ impl Application for AudioRox {
 
         // a checkbox for adequate rest period
         let adequate_rest_period = checkbox(
-            "Repos sonore adéquat (> 16h)",
+            "Repos sonore inadéquat (< 16h)",
             self.adequate_rest_period,
             Message::AdequateRestPeriodChanged,
         )
@@ -834,11 +845,11 @@ impl Application for AudioRox {
         // .size(12)
         // .text_size(14);
 
-        let current_date = chrono::Utc::now().date_naive();
+        // let current_date = chrono::Utc::now().date_naive();
         // println!("{}", current_date.year());
-        let year = current_date.year();
-        let day = current_date.day();
-        let month = current_date.month();
+        // let year = current_date.year();
+        // let day = current_date.day();
+        // let month = current_date.month();
 
         let (clinic, succursales) = get_all_succursales(&self.partner);
 
@@ -1361,7 +1372,13 @@ impl Application for AudioRox {
             )
             .size(note_vspace)
             .text_size(note_vspace),
-            checkbox("ORL", self.cc.ORL, Message::CCORLChanged)
+            checkbox(
+                "Centre de réadaptation",
+                self.cc.readapt,
+                Message::CCReadapt
+            ).size(note_vspace)
+            .text_size(note_vspace),
+            checkbox("ORL", self.cc.orl, Message::CCORLChanged)
                 .size(note_vspace)
                 .text_size(note_vspace),
             checkbox(

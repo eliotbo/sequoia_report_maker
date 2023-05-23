@@ -1,13 +1,12 @@
 use iced::widget::{
-    self, button, column, container, horizontal_space, radio, row, text, vertical_space, Rule,
+    column, container,  radio, vertical_space, Rule,
 };
 use iced::{
-    executor, keyboard, subscription, theme, Alignment, Application, Command, Element, Event,
-    Length, Settings, Subscription,
+Element
 };
 
-use iced::{event, mouse, overlay, Color, Point, Rectangle, Size};
-use iced_native;
+// use iced::{event, mouse, overlay, Color, Point, Rectangle, Size};
+// use iced_native;
 
 use super::Message;
 
@@ -126,8 +125,8 @@ pub fn get_all_partners(partner: &Partner) -> Element<Message> {
 
 pub fn get_all_succursales(partner: &Partner) -> (String, Element<Message>) {
     let vspace = 1.5;
-    let clinic_vspace = 1.5;
-    let clinic_name_size = 14.;
+    // let clinic_vspace = 1.5;
+    // let clinic_name_size = 14.;
     let text_size = 15;
 
     let (clinic, succursales) = match partner {
@@ -277,7 +276,7 @@ pub mod modal {
     use iced_native::widget::{self, Tree};
     use iced_native::{
         event, layout, mouse, overlay, renderer, Clipboard, Color, Element, Event, Layout, Length,
-        Point, Rectangle, Shell, Size, Vector, Widget,
+        Point, Rectangle, Shell, Size, Widget,
     };
 
     /// A widget that centers a modal element over some base element
