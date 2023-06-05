@@ -27,6 +27,7 @@ from cairosvg import svg2pdf
 from reportlab.pdfgen import canvas
 from PyPDF2 import PdfWriter, PdfReader
 
+
 ############################################################
 # Procedure for create a local environment, and running this code in Windows 10
 # python - m venv env
@@ -66,3 +67,5 @@ output.add_page(page1)
 # Write the output PDF
 with open("output4.pdf", "wb") as outputStream:
     output.write(outputStream)
+
+
