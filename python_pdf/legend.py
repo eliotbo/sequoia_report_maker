@@ -423,7 +423,7 @@ class Legend:
             dwg.add(dwg.text(line, insert=(x, y + dy), font_size="16px", text_anchor=text_anchor, font_family="Lato, Fira Code, sans-serif", fill=config.gray))
 
 
-    def draw_legend(self, dwg, bounds, top_left, unused_symbols=None):
+    def draw_legend(self, dwg, bounds, top_left, unused_symbols=[]):
         bounds_width = bounds["width"]
         bounds_height = bounds["height"]
         top = top_left["top"]
@@ -439,7 +439,7 @@ class Legend:
         self.draw_text(dwg, "GAUCHE", left + bounds_width - self.space - 4.0, v, 'end')
 
         v += 1 * self.ss - 1.0
-        dwg.add(dwg.rect(insert=(left, v), size=(bounds_width, 3 * self.ss - 1.0), fill=config.super_light_gray, stroke='none'))
+        dwg.add(dwg.rect(insert=(left, v), size=(bounds_width, 25), fill=config.super_light_gray, stroke='none'))
         v += 2 * self.ss - 1.0
         self.draw_text(dwg, "SEUIL AÉRIEN", left + bounds_width / 2.0, v, "middle")
         
@@ -470,7 +470,7 @@ class Legend:
 
 
         v += 1 * self.ss - 1.0
-        dwg.add(dwg.rect(insert=(left, v), size=(bounds_width, 3 * self.ss - 1.0), fill=config.super_light_gray, stroke='none'))
+        dwg.add(dwg.rect(insert=(left, v+1), size=(bounds_width, 25), fill=config.super_light_gray, stroke='none'))
         v += 2 * self.ss - 1.0
         self.draw_text(dwg, "SEUIL OSSEUX", left + bounds_width / 2.0, v, "middle")
 
@@ -516,7 +516,61 @@ class Legend:
 
         height = v - top - 5
 
-        dwg.add(dwg.rect(insert=(left, top), size=(bounds_width, height), rx=10, ry=10, fill='none', stroke=config.gray, stroke_width=1.5))
+        dwg.add(dwg.rect(insert=(left, top), size=(bounds_width, height), rx=0, ry=0, fill='none', stroke=config.gray, stroke_width=1.5))
+
+        top2 = top + height + 10
+        mid = left + bounds_width / 2.0
+        height2 = 300
+
+
+        v = top2 + 20
+
+        validity = "Bonne"
+        dwg.add(dwg.rect(insert=(left, v - 15), size=(bounds_width, 18), fill=config.super_light_gray, stroke='none'))
+        self.draw_text(dwg, f"VALIDITÉ", mid, v, "middle")
+        v = v + 18
+        self.draw_text(dwg, f"{validity}",  mid, v, "middle")
+
+        v = v + 23
+        ecouteurs = "Supra et intra"
+        dwg.add(dwg.rect(insert=(left, v - 15), size=(bounds_width, 18), fill=config.super_light_gray, stroke='none'))
+        self.draw_text(dwg, f"ÉCOUTEURS", mid, v, "middle")
+        v = v + 18
+        self.draw_text(dwg, f"{ecouteurs}",  mid, v, "middle")
+
+        v = v + 23
+        method = "standard (Hughson-Westlake)"
+        dwg.add(dwg.rect(insert=(left, v - 15), size=(bounds_width, 18), fill=config.super_light_gray, stroke='none'))
+        self.draw_text(dwg, f"MÉTHODE D'ÉVALUATION", mid, v, "middle")
+        v = v + 15
+        self.draw_text(dwg, f"{method}",  mid, v, "middle")
+
+        v = v + 23
+        audiometer = "AD629"
+        dwg.add(dwg.rect(insert=(left, v - 15), size=(bounds_width, 18), fill=config.super_light_gray, stroke='none'))
+        self.draw_text(dwg, f"AUDIOMÈTRE", mid, v, "middle")
+        v = v + 18
+        self.draw_text(dwg, f"{audiometer}",  mid, v, "middle")
+
+        v = v + 23
+        date_anterieur = "01-01-2021"
+        dwg.add(dwg.rect(insert=(left, v - 15), size=(bounds_width, 18), fill=config.super_light_gray, stroke='none'))
+        self.draw_text(dwg, f"DATE SEUILS ANTÉRIEURS", mid, v, "middle")
+        v = v + 18
+        self.draw_text(dwg, f"{date_anterieur}",  mid, v, "middle")
+
+        v = v + 23
+        repos_sonore = "Oui"
+        dwg.add(dwg.rect(insert=(left, v - 15), size=(bounds_width, 18), fill=config.super_light_gray, stroke='none'))
+        self.draw_text(dwg, f"REPOS SONORE ADÉQUAT", mid, v, "middle")
+        v = v + 18
+        self.draw_text(dwg, f"{repos_sonore}",  mid, v, "middle")
+
+        v = v + 40
+        self.draw_text(dwg, f"Normes ANSI S3 en vigueur", mid, v, "middle")
+
+        
+        dwg.add(dwg.rect(insert=(left, top2), size=(bounds_width, height2), rx=0, ry=0, fill='none', stroke=config.gray, stroke_width=1.5))
 
 
 

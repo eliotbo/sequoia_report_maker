@@ -260,7 +260,8 @@ for pos, func in zip(positions, functions):
     dwg = add_red_disk(dwg, pos)
 
 legend = lg.Legend()
-unused_symbols = ["Inconfort", "Surassourdissement ou\nmasque insuffisant", "Masqué "]
+# unused_symbols = ["Inconfort", "Surassourdissement ou\nmasque insuffisant", "Masqué "]
+unused_symbols = []
 dwg = legend.draw_legend(dwg, {"width": 250, "height": 800}, {"top": 60, "left": 645}, unused_symbols)
 
 
