@@ -1,13 +1,14 @@
 use iced::alignment::{Horizontal, Vertical};
 
-use iced::theme::Theme;
+// use iced::theme::Theme;
 
 use iced::widget::{canvas};
 
 // use iced::widget::canvas::path::{Arc, Builder};
-use iced::widget::canvas::{ Canvas, Cursor, Path, Text};
+use iced::widget::canvas::{ Canvas, Path, Text};
+use iced::mouse;
 
-use iced::{ Element, Length, Point, Rectangle};
+use iced::{ Element, Length, Point, Rectangle, Renderer, Theme};
 
 use crate::config::{
     self, IMMIT_CANVAS_HEIGHT, IMMIT_CANVAS_WIDTH, IM_PLOT_TICK_SIZE,
@@ -49,17 +50,19 @@ impl Default for Interaction {
     }
 }
 
-impl canvas::Program<Message> for ImmitPlot {
+impl canvas::Program<Message, Renderer> for ImmitPlot {
     type State = Interaction;
 
     fn draw(
         &self,
-        _interaction: &Interaction,
+        // _interaction: &Interaction,
+        _state: &Self::State,
+        renderer: &Renderer,
         _theme: &Theme,
         bounds: Rectangle,
-        _cursor: Cursor,
+        _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
-        let mut frame = canvas::Frame::new(bounds.size());
+        let mut frame = canvas::Frame::new(renderer, bounds.size());
 
         let space = 2.0;
 
@@ -79,7 +82,8 @@ impl canvas::Program<Message> for ImmitPlot {
 
         let legend_text = Text {
             color: config::AXIS_LABEL_COLOR,
-            size: 15.0,
+            size: 13.0,
+            font: config::DEFAULT_FONT,
             ..Text::default()
         };
 

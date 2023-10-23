@@ -65,7 +65,7 @@ impl container::StyleSheet for TableContainerCustomStyle {
         container::Appearance {
             text_color: None,
             background: None,
-            border_radius: 0.0,
+            border_radius: 0.0.into(),
             border_width: 1.0,
             border_color: TABLE_BORDER_COLOR,
         }
@@ -81,7 +81,7 @@ impl container::StyleSheet for ResultContainerCustomStyle {
         container::Appearance {
             text_color: None,
             background: None,
-            border_radius: 2.0,
+            border_radius: 2.0.into(),
             border_width: 1.2,
             border_color: TABLE_BORDER_COLOR,
         }
@@ -98,7 +98,7 @@ impl container::StyleSheet for TableTitleCustomStyle {
             text_color: None, //Some(Color::from_rgb(0.05, 0.05, 0.02)),
             background: Some(GRAY.into()),
             // background: None,
-            border_radius: 0.0,
+            border_radius: 0.0.into(),
             border_width: 1.0,
             border_color: TABLE_BORDER_COLOR,
         }
@@ -538,7 +538,7 @@ pub fn add_table_name(table_name: &str) -> Element<'static, Message> {
 }
 
 pub fn make_level_list_result(row_title_len: f32) -> Element<'static, Message> {
-    let row0_height = 29.;
+    let row0_height = 29. * 1.3;
     let row0 = row![
         container(
             column![
@@ -548,7 +548,7 @@ pub fn make_level_list_result(row_title_len: f32) -> Element<'static, Message> {
             .align_items(Alignment::Center) // .style(TABLE_TEXT_COLOR)
                                             // .horizontal_alignment(Horizontal::Right)
         )
-        .height(Length::Fixed(row0_height))
+        .height(Length::Fixed(row0_height ))
         .align_x(Horizontal::Center)
         .align_y(Vertical::Top)
         .width(Length::Fixed(row_title_len)),
@@ -671,7 +671,7 @@ pub fn make_one_id_language_table(
     let mut table = column![
         vertical_space(2.0),
         row0,
-        vertical_space(5.0),
+        vertical_space(3.0),
         row1,
         // horizontal_space(6.0),
         // container(row2)
@@ -682,7 +682,7 @@ pub fn make_one_id_language_table(
         //     .padding(3.0),
         // horizontal_space(6.0),
     ]
-    .height(Length::Fixed(85.));
+    .height(Length::Fixed(93.));
 
     table = table.push(vertical_space(2.0));
     table = table.push(row![

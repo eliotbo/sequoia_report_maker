@@ -1,18 +1,20 @@
 use iced::alignment::{Horizontal, Vertical};
 
-use iced::theme::Theme;
+// use iced::theme::Theme;
 
 use iced::widget::canvas;
 
-use iced::widget::canvas::{Canvas, Cursor, Path, Text};
+use iced::widget::canvas::{Canvas, Path, Text};
 use iced::widget::canvas::event::{self, Event};
 
-use iced::{mouse,  Element, Length, Point, Rectangle, Size, Vector};
+
+
+use iced::{mouse, Theme, Renderer, Element, Length, Point, Rectangle, Size, Vector};
 
 use crate::config::{LEGEND_SELECT_STROKE,
      GRAY, LEGEND_BORDER_COLOR, LEGEND_HEIGHT, LEGEND_SYMBOL_STROKE_COLOR,
     LEGEND_TEXT_COLOR, LEGEND_TITLES_COLOR, LEGEND_WIDTH, SPACE, ICON_SIZE,
-    LEGEND_SELECT_MODIFIER_STROKE
+    LEGEND_SELECT_MODIFIER_STROKE, self
 };
 use crate::plot::{add_contour, Shape};
 use crate::Message;
@@ -220,12 +222,14 @@ impl canvas::Program<Message> for Legend {
 
     fn draw(
         &self,
-        state: &Interaction,
+        state: &Self::State,
+        renderer: &Renderer,
+
         _theme: &Theme,
         bounds: Rectangle,
-        _cursor: Cursor,
+        _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
-        let mut frame = canvas::Frame::new(bounds.size());
+        let mut frame = canvas::Frame::new(renderer, bounds.size());
 
         let space = self.space;
         // let radius = self.corner_radius;
@@ -298,6 +302,7 @@ impl canvas::Program<Message> for Legend {
             position: Point::new(space + 4.0, v),
             horizontal_alignment: Horizontal::Left,
             vertical_alignment: Vertical::Center,
+            font: config::DEFAULT_FONT,
             ..Text::default()
         };
         frame.fill_text(droit.clone());
@@ -311,6 +316,7 @@ impl canvas::Program<Message> for Legend {
             position: Point::new(bounds.width - space - 4.0, v),
             horizontal_alignment: Horizontal::Right,
             vertical_alignment: Vertical::Center,
+            font: config::DEFAULT_FONT,
             ..Text::default()
         };
 
@@ -324,6 +330,7 @@ impl canvas::Program<Message> for Legend {
             position: Point::new(center_h, v),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
+            font: config::DEFAULT_FONT,
             ..Text::default()
         };
 
@@ -332,9 +339,9 @@ impl canvas::Program<Message> for Legend {
 
         frame.fill(
             &rect_path_seuil,
-            canvas::Fill {
+            canvas::fill::Fill {
                 style: canvas::Style::Solid(GRAY),
-                rule: canvas::FillRule::NonZero,
+                rule: canvas::fill::Rule::NonZero,
             },
         );
 
@@ -346,6 +353,7 @@ impl canvas::Program<Message> for Legend {
             size: 16.0,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
+            font: config::DEFAULT_FONT,
             ..Text::default()
         };
 
@@ -424,6 +432,7 @@ impl canvas::Program<Message> for Legend {
             position: Point::new(center_h, v),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
+            font: config::DEFAULT_FONT,
             ..Text::default()
         };
         let rect_path_seuil =
@@ -433,7 +442,7 @@ impl canvas::Program<Message> for Legend {
             &rect_path_seuil,
             canvas::Fill {
                 style: canvas::Style::Solid(GRAY),
-                rule: canvas::FillRule::NonZero,
+                rule: canvas::fill::Rule::NonZero,
             },
         );
         frame.fill_text(seuil_osseux);
@@ -486,6 +495,7 @@ impl canvas::Program<Message> for Legend {
             position: Point::new(center_h, v),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
+            font: config::DEFAULT_FONT,
             ..Text::default()
         };
         let rect_path_seuil = canvas::Path::rectangle(
@@ -497,7 +507,7 @@ impl canvas::Program<Message> for Legend {
             &rect_path_seuil,
             canvas::Fill {
                 style: canvas::Style::Solid(GRAY),
-                rule: canvas::FillRule::NonZero,
+                rule: canvas::fill::Rule::NonZero,
             },
         );
         frame.fill_text(seuil_osseux);
@@ -618,9 +628,9 @@ impl canvas::Program<Message> for Legend {
         state: &mut Interaction,
         event: Event, 
         bounds: Rectangle,
-        cursor: Cursor,
+        cursor: mouse::Cursor,
     ) -> (event::Status, Option<Message>) {
-        let cursor_in_bounds: bool = cursor.is_over(&bounds);
+        let cursor_in_bounds: bool = cursor.is_over(bounds);
 
 
         // a click or a scroll outside the track window has not effect

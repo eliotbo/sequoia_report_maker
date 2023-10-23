@@ -33,7 +33,7 @@ use config::{
     LEGEND_WIDTH,  RADIO_SIZE, RADIO_SPACING, RADIO_TEXT_SIZE, RADIO_TITLE_SIZE,
     SECTION_SEPARATOR_SPACE,  SECTION_TITLE_HORIZONTAL_SPACE,
      SPACE_BELOW_SECTION_TITLE,  TEXT_LINE_VSPACE,
-    WINDOW_HEIGHT, WINDOW_WIDTH,
+    WINDOW_HEIGHT, WINDOW_WIDTH
 };
 use immi_plot::im_plot;
 use legend::{draw_legend};
@@ -46,6 +46,7 @@ use plot::{plot, EarSide, Plot, PlotInfo, Shape};
 
 
 use iced::alignment::{Horizontal, Vertical};
+use iced::font::{self, Font};
 // use iced::event::{self, Event};
 use iced::executor;
 use iced::keyboard::{self, Modifiers};
@@ -57,8 +58,9 @@ use iced::widget::{Column, scrollable,
     self, button, checkbox, column, container, horizontal_space,
     radio, row, text, text_input, vertical_space, Rule,
 };
-use iced::window;
 use iced::widget::scrollable::{ Properties};
+
+use iced::window;
 use iced::{
     subscription, Alignment, Application, Command, Element, Length,
     Settings, Subscription,
@@ -110,8 +112,13 @@ impl Default for Transductor {
 pub fn main() -> iced::Result {
     env_logger::builder().format_timestamp(None).init();
 
+    let default_font = config::DEFAULT_FONT;
+
     AudioRox::run(Settings {
         antialiasing: true,
+
+        default_font,
+
         window: window::Settings {
             position: window::Position::Centered,
             size: (WINDOW_WIDTH, WINDOW_HEIGHT),
@@ -299,8 +306,21 @@ impl AudioRox {
     }
 }
 
+fn load_fonts() -> iced::Command<Message> {
+    iced::Command::batch([
+        iced::font::load(include_bytes!("../fonts/Roboto-Medium.ttf").as_slice())
+            .map(Message::FontLoaded),
+            font::load(include_bytes!("../fonts/FiraSans-Light.ttf").as_slice())
+            .map(Message::FontLoaded),
+            font::load(include_bytes!("../fonts/Lato-Bold.ttf").as_slice())
+            .map(Message::FontLoaded),
+    ])
+}
+
 #[derive(Debug, Clone)]
 pub enum Message {
+    FontLoaded(Result<(), font::Error>),
+
     LegendShapeSelected(Shape),
     LegendModifierSelected(Shape),
 
@@ -409,11 +429,17 @@ pub enum Message {
     None,
 }
 
+
+
+
+
 impl Application for AudioRox {
     type Message = Message;
     type Theme = Theme;
     type Executor = executor::Default;
     type Flags = ();
+
+    
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
         (
@@ -421,7 +447,8 @@ impl Application for AudioRox {
                 speed: 5,
                 ..Self::default()
             },
-            Command::none(),
+            
+            load_fonts(),
         )
     }
 
@@ -431,6 +458,7 @@ impl Application for AudioRox {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
+            Message::FontLoaded(_) => (),
             Message::LegendModifierSelected(value) => {}
             Message::LegendShapeSelected(value) => {}
 
@@ -853,6 +881,8 @@ impl Application for AudioRox {
 
         let (clinic, succursales) = get_all_succursales(&self.partner);
 
+
+
         let header = row![
             horizontal_space(50.0),
             container(
@@ -861,19 +891,16 @@ impl Application for AudioRox {
                     // container(image::Image::new("images/logo.PNG").width(128))
                     //     .width(Length::Fixed(96.)),
                     text("Roxanne Bolduc")
-                        .font(iced::Font::External {
-                            name: "RoxFont",
-                            bytes: include_bytes!("../fonts/Lato-Bold.ttf"),
-                        })
-                        .size(36)
+                        .font(config::FIRA)
+                        .size(30)
                         .horizontal_alignment(Horizontal::Left),
                     text("Audiologiste")
                         .size(20)
                         .horizontal_alignment(Horizontal::Left),
                 ]
                 .align_items(Alignment::Center)
-                .width(Length::FillPortion(2))
-            )
+                
+            ).width(Length::FillPortion(2))
             .align_x(Horizontal::Left),
             // .alignment(Alignment::Start),
             horizontal_space(45),
@@ -914,6 +941,7 @@ impl Application for AudioRox {
                     succursales
                 ])
                 .height(Length::Fixed(120. + 60.)),
+                
                 // montmagny,
                 // levy,
                 vertical_space(Length::Fixed(2.)),
@@ -1474,12 +1502,12 @@ impl Application for AudioRox {
             // let final_element: Element<Message> = column![final_content];
             let final_element: Column<Message> = column![final_content];
 
-            scrollable(final_element)
-            .vertical_scroll( Properties::new()
-            .width(10)
-            .margin(0)
-            .scroller_width(10),
-            ).into()
+            scrollable(final_element).into()
+            // .vertical_scroll( Properties::new()
+            // .width(10)
+            // .margin(0)
+            // .scroller_width(10),
+            // ).into()
         }
     }
 
@@ -1501,12 +1529,12 @@ pub fn make_title(title: &str) -> Element<Message> {
         .align_y(Vertical::Center),
         container(
             text(title)
-                .size(30)
+                .size(24)
                 .horizontal_alignment(Horizontal::Center)
         )
         .width(Length::FillPortion(1))
         .align_x(Horizontal::Center)
-        .align_y(Vertical::Bottom),
+        .align_y(Vertical::Top),
         container(
             text("OREILLE GAUCHE")
                 .size(22)

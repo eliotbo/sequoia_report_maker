@@ -1,3 +1,5 @@
+
+
 use iced::{Color};
 
 
@@ -5,12 +7,60 @@ use iced::theme::{Theme};
 
 use iced::widget::container;
 use iced::widget::{button, canvas};
+use iced::font::{self, Font};
+// use iced::font::{self, Font};
+
 
 // pub const FIRA_FONT: Font = Font::External {
 //     name: "Icons",
 //     bytes: include_bytes!("../fonts/FiraCode-Regular.ttf"),
 // };
 // pub const MAX_DIGITS: u32 = 5;
+
+// pub const ROXFONT: Font = Font::with_name("Lato-Bold");
+// pub const FIRA: Font = Font::with_name("FiraCode-Light");
+// pub const ROBOTO: Font = Font::with_name("Roboto-Medium");
+
+pub const DEFAULT_FONT: Font =  iced::font::Font {
+//     family: iced::font::Family::Name("Fira Sans"),
+//     weight: iced::font::Weight::Light,
+//     monospaced: false,
+//     stretch: iced::font::Stretch::Normal,
+//     // style: iced::font::Style::Normal,
+
+
+    family: iced::font::Family::Name("Lato"),
+    weight: iced::font::Weight::Normal,
+    monospaced: false,
+    stretch: iced::font::Stretch::Normal,
+    // style: iced::font::Style::Normal,
+};
+
+pub const FIRA: Font = iced::font::Font {
+    family: iced::font::Family::Name("Fira Sans"),
+    weight: iced::font::Weight::Bold,
+    monospaced: false,
+    stretch: iced::font::Stretch::Normal,
+    // style: iced::font::Style::Normal,
+};
+
+pub const LATO: Font = iced::font::Font {
+    family: iced::font::Family::Name("Lato"),
+    weight: iced::font::Weight::Bold,
+    monospaced: false,
+    stretch: iced::font::Stretch::Normal,
+    // style: iced::font::Style::Normal,
+};
+
+
+pub const ROBOTO: Font = iced::font::Font {
+    family: iced::font::Family::Name("Roboto"),
+    weight: iced::font::Weight::Bold,
+    monospaced: false,
+    stretch: iced::font::Stretch::Normal,
+    // style: iced::font::Style::Normal,
+};
+
 
 pub const ICON_SIZE: f32 = 16.0;
 
@@ -206,7 +256,7 @@ impl container::StyleSheet for TitleContainerCustomStyle {
         container::Appearance {
             text_color: Some(SECTION_TITLE_TEXT_COLOR),
             background: Some(GRAY.into()),
-            border_radius: 25.0,
+            border_radius: 25.0.into(),
             border_width: 1.0,
             border_color: Color::from_rgb(0.5, 0.25, 0.25),
         }
@@ -221,7 +271,7 @@ impl container::StyleSheet for LegendCustomStyle {
         container::Appearance {
             text_color: Some(LEGEND_TEXT_COLOR),
             background: None,
-            border_radius: 6.0,
+            border_radius: 6.0.into(),
             border_width: 2.0,
             border_color: LEGEND_BORDER_COLOR,
         }

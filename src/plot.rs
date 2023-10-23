@@ -3,14 +3,15 @@ use serde::{Deserialize, Serialize};
 
 use iced::alignment::{Horizontal, Vertical};
 
-use iced::theme::Theme;
+// use iced::theme::Theme;
 
 use iced::widget::{canvas};
+use iced::mouse::Cursor;
 
 use iced::widget::canvas::path::{Arc, Builder};
-use iced::widget::canvas::{Cache, Canvas, Cursor, Path, Text};
+use iced::widget::canvas::{Cache, Canvas,  Path, Text};
 
-use iced::{Color, Element, Length, Point, Rectangle, Size, Vector};
+use iced::{mouse, Color, Renderer, Element, Length, Point, Rectangle, Size, Vector, Theme};
 
 use crate::config::{
     self, CORNER_RADIUS, LEGEND_WIDTH, PLOT_CANVAS_HEIGHT, PLOT_CANVAS_WIDTH, PLOT_CA_CO_Y_SPACE,
@@ -190,12 +191,13 @@ impl canvas::Program<Message> for Plot {
 
     fn draw(
         &self,
-        _interaction: &Interaction,
+        state: &Self::State,
+        renderer: &Renderer,
         _theme: &Theme,
         bounds: Rectangle,
-        _cursor: Cursor,
+        _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
-        let mut frame = canvas::Frame::new(bounds.size());
+        let mut frame = canvas::Frame::new(renderer, bounds.size());
 
         let space = self.space;
 
@@ -219,9 +221,13 @@ impl canvas::Program<Message> for Plot {
         let y_unit = PLOT_TICK_SIZE;
         let x_unit = PLOT_TICK_SIZE;
 
+
+
+
         let legend_text = Text {
             color: config::AXIS_LABEL_COLOR,
             size: 16.0,
+            font: config::DEFAULT_FONT,
             ..Text::default()
         };
 
