@@ -5,27 +5,32 @@ use iced::{
 Element
 };
 
+use iced::widget::{button, text,  Container};
+use iced::Length;
+use iced::theme::{self, Theme};
+
+
 // use iced::{event, mouse, overlay, Color, Point, Rectangle, Size};
 // use iced_native;
 
 use super::Message;
 
-use crate::config::TEXT_LINE_VSPACE;
+use crate::config::{CustomButtonStyle, TEXT_LINE_VSPACE};
 
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Partner {
+pub enum PartnerAndSuccursale {
     Harmonie(Harmonie),
     Bois(Bois),
     Prevost(Prevost),
-    Aures(Aures),
+    Autres(Autres),
     None,
 }
 
-impl Default for Partner {
+impl Default for PartnerAndSuccursale {
     fn default() -> Self {
-        Partner::None
+        PartnerAndSuccursale::None
     }
 }
 
@@ -69,24 +74,24 @@ impl Default for Prevost {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Aures {
+pub enum Autres {
     Quebec,
     Beaupre,
     BaieStPaul,
     None,
 }
 
-impl Default for Aures {
+impl Default for Autres {
     fn default() -> Self {
-        Aures::None
+        Autres::None
     }
 }
 
-pub fn get_all_partners(partner: &Partner) -> Element<Message> {
+pub fn get_all_partners(partner: &PartnerAndSuccursale) -> Element<Message> {
     let size = 16;
     let harmonie = radio(
         "Harmonie",
-        Partner::Harmonie(Harmonie::None),
+        PartnerAndSuccursale::Harmonie(Harmonie::None),
         Some(*partner),
         Message::PartnerChanged,
     )
@@ -95,7 +100,7 @@ pub fn get_all_partners(partner: &Partner) -> Element<Message> {
 
     let bois = radio(
         "Bois",
-        Partner::Bois(Bois::None),
+        PartnerAndSuccursale::Bois(Bois::None),
         Some(*partner),
         Message::PartnerChanged,
     )
@@ -104,7 +109,7 @@ pub fn get_all_partners(partner: &Partner) -> Element<Message> {
 
     let prevost = radio(
         "Prévost",
-        Partner::Prevost(Prevost::None),
+        PartnerAndSuccursale::Prevost(Prevost::None),
         Some(*partner),
         Message::PartnerChanged,
     )
@@ -113,7 +118,7 @@ pub fn get_all_partners(partner: &Partner) -> Element<Message> {
 
     let aures = radio(
         "Aures",
-        Partner::Aures(Aures::None),
+        PartnerAndSuccursale::Autres(Autres::None),
         Some(*partner),
         Message::PartnerChanged,
     )
@@ -123,84 +128,179 @@ pub fn get_all_partners(partner: &Partner) -> Element<Message> {
     column![harmonie, bois, prevost, aures].spacing(2.0).into()
 }
 
-pub fn get_all_succursales(partner: &Partner) -> (String, Element<Message>) {
+pub fn get_chosen_succursale(partner: &PartnerAndSuccursale) -> (String, String) {
+    let vspace = 1.5;
+    // let clinic_vspace = 1.5;
+    // let clinic_name_size = 14.;
+    let text_size = 15;
+
+     match partner {
+        PartnerAndSuccursale::Bois(succursale) => {
+            let clinic = "Clinique de l'audition Bois et Associés audioprothésistes";
+
+            let succursale_string = match succursale {
+                Bois::Montmagny => "83 Bd Taché O, Montmagny, QC G5V 3A6, 418-248-7077",
+                Bois::Levy => "5500 Bd Guillaume-Couture suite 111, Lévis, QC G6V 4Z2, 418-837-3626",
+                Bois::None => "",
+            };
+
+            (clinic.into(), succursale_string.into())
+            
+        }
+        PartnerAndSuccursale::Harmonie(succursale) => {
+            let clinic = "Harmonie Audition - Myriam Brunel Audioprothésiste";
+
+            let succursale_string = match succursale {
+                Harmonie::JeanGauvin => "790 Rte Jean-Gauvin local 230, Québec City, Quebec G1X 0B6. (418) 476-1455",
+                _ => "",
+            };
+
+            (clinic.into(), succursale_string.into())
+        }
+        PartnerAndSuccursale::Prevost(succursale) => {
+            let clinic = "Prévost Audioprothésistes";
+
+            let succursale_string = match succursale {
+                Prevost::Quebec => "1000 Ch Ste-Foy bureau 201, Québec City, Quebec G1S 2L6. (418) 688-1430",
+                Prevost::Malbaie => "342 Rue St Étienne, La Malbaie, QC G5A 1M7. 1 (800) 363-5617",
+                Prevost::BaieStPaul => "5 Rue Boivin bureau 208, Baie-Saint-Paul, QC. 1 (800) 363-5617",
+                Prevost::None => "",
+            };
+
+            (clinic.into(), succursale_string.into())
+        }
+
+        _ => {
+            (
+                "".into(),
+                "".into()
+            )
+        }
+    }
+
+
+}
+
+
+
+pub fn make_succursale_element(partner: &PartnerAndSuccursale) -> Container<'_,Message> {
+    let (mut clinic, succursale) = get_chosen_succursale(partner);
+    let mut suc_element: Element<'_,Message> = text(succursale).to_owned().size(14).into();
+
+    if clinic == "" {
+
+        let vspace = TEXT_LINE_VSPACE;
+        suc_element = 
+            column![
+                vertical_space(vspace),
+                Rule::horizontal(0),
+                vertical_space(vspace),
+                Rule::horizontal(0),
+                vertical_space(vspace),
+                Rule::horizontal(1),
+                vertical_space(vspace),
+                Rule::horizontal(1)
+            ].into()
+        
+    }
+
+
+
+    let location = container(column![
+        button(text(&("Lieu de l'évaluation : ".to_owned() + &clinic)).size(18.))
+            .on_press(Message::ShowParnerChoices)
+            .padding(0.)
+            .style(theme::Button::Custom(Box::new(CustomButtonStyle))),
+        // text("Lieu de l'évaluation: Clinique de l'Audition Bois & Associés audioprothésistes").size(14),
+        // text(succursale).to_owned().size(14)
+        suc_element
+    ])
+    .height(Length::Fixed(120. + 60.));
+
+    location.into()
+}
+
+
+pub fn get_all_succursales(partner: &PartnerAndSuccursale) -> (String, Element<Message>) {
     let vspace = 1.5;
     // let clinic_vspace = 1.5;
     // let clinic_name_size = 14.;
     let text_size = 15;
 
     let (clinic, succursales) = match partner {
-        Partner::Bois(_) => {
-            // let clinic = text("Clinique de l'audition Bois et Associés audioprothésistes")
-            //     .size(clinic_name_size);
-            let clinic = "Clinique de l'audition Bois et Associés audioprothésistes";
+        PartnerAndSuccursale::Bois(_) => {
 
-            let montmagny = radio(
-                "83 Bd Taché O, Montmagny, QC G5V 3A6, 418-248-7077",
-                Partner::Bois(Bois::Montmagny),
+            let (clinic, montmagny) = get_chosen_succursale(&PartnerAndSuccursale::Bois(Bois::Montmagny));
+
+
+            let suc1 = radio(
+                montmagny,
+                PartnerAndSuccursale::Bois(Bois::Montmagny),
                 Some(*partner),
-                Message::PartnerChanged,
+                Message::SuccursaleChanged,
             )
             .size(12)
             .text_size(text_size);
 
-            let levis = radio(
-                "5500 Bd Guillaume-Couture suite 111, Lévis, QC G6V 4Z2, 418-837-3626",
-                Partner::Bois(Bois::Levy),
+            let (_, levis) = get_chosen_succursale(&PartnerAndSuccursale::Bois(Bois::Montmagny));
+
+            let suc2 = radio(
+                levis,
+                PartnerAndSuccursale::Bois(Bois::Levy),
                 Some(*partner),
-                Message::PartnerChanged,
+                Message::SuccursaleChanged,
             )
             .size(12)
             .text_size(text_size);
 
-            (clinic, column![montmagny, vertical_space(vspace), levis])
+            (clinic, column![suc1, vertical_space(vspace), suc2])
         }
-        Partner::Harmonie(_) => {
-            // let clinic =
-            //     text("Harmonie Audition - Myriam Brunel Audioprothésiste").size(clinic_name_size);
-            let clinic = "Harmonie Audition - Myriam Brunel Audioprothésiste";
+        PartnerAndSuccursale::Harmonie(_) => {
+            let (clinic, jean_gauving) = get_chosen_succursale(&PartnerAndSuccursale::Harmonie(Harmonie::JeanGauvin));
 
-            let jean_gauvin = radio(
-                "790 Rte Jean-Gauvin local 230, Québec City, Quebec G1X 0B6. (418) 476-1455",
-                Partner::Harmonie(Harmonie::JeanGauvin),
-                // Harmonie::JeanGauvin,
+
+            let suc1 = radio(
+                jean_gauving,
+                PartnerAndSuccursale::Harmonie(Harmonie::JeanGauvin),
                 Some(*partner),
-                Message::PartnerChanged,
+                Message::SuccursaleChanged,
             )
             .size(12)
             .text_size(text_size);
 
-            (clinic, column![jean_gauvin])
+            (clinic, column![suc1])
         }
-        Partner::Prevost(_) => {
-            // let clinic = text("Prévost Audioprothésistes").size(clinic_name_size);
-            let clinic = "Prévost Audioprothésistes";
-            let quebec = radio(
-                "1000 Ch Ste-Foy bureau 201, Québec City, Quebec G1S 2L6. (418) 688-1430",
-                Partner::Prevost(Prevost::Quebec),
-                // Prevost::Quebec,
+        PartnerAndSuccursale::Prevost(_) => {
+            let (clinic, quebec) = get_chosen_succursale(&PartnerAndSuccursale::Prevost(Prevost::Quebec));
+
+            let suc1 = radio(
+                quebec,
+                PartnerAndSuccursale::Prevost(Prevost::Quebec),
+
                 Some(*partner),
-                Message::PartnerChanged,
+                Message::SuccursaleChanged,
             )
             .size(12)
             .text_size(text_size);
 
-            let malbaie = radio(
-                "342 Rue St Étienne, La Malbaie, QC G5A 1M7. 1 (800) 363-5617",
-                // Prevost::Malbaie,
-                Partner::Prevost(Prevost::Malbaie),
+            let (_, malbaie) = get_chosen_succursale(&PartnerAndSuccursale::Prevost(Prevost::Malbaie));
+
+            let suc2 = radio(
+                malbaie,
+                PartnerAndSuccursale::Prevost(Prevost::Malbaie),
                 Some(*partner),
-                Message::PartnerChanged,
+                Message::SuccursaleChanged,
             )
             .size(12)
             .text_size(text_size);
 
-            let baie_st_paul = radio(
-                "5 Rue Boivin bureau 208, Baie-Saint-Paul, QC. 1 (800) 363-5617",
-                // Prevost::BaieStPaul,
-                Partner::Prevost(Prevost::BaieStPaul),
+            let (_, baie_st_paul) = get_chosen_succursale(&PartnerAndSuccursale::Prevost(Prevost::BaieStPaul));
+
+            let suc3 = radio(
+                baie_st_paul,
+                PartnerAndSuccursale::Prevost(Prevost::BaieStPaul),
                 Some(*partner),
-                Message::PartnerChanged,
+                Message::SuccursaleChanged,
             )
             .size(12)
             .text_size(text_size);
@@ -208,11 +308,11 @@ pub fn get_all_succursales(partner: &Partner) -> (String, Element<Message>) {
             (
                 clinic,
                 column![
-                    quebec,
+                    suc1,
                     vertical_space(vspace),
-                    malbaie,
+                    suc2,
                     vertical_space(vspace),
-                    baie_st_paul
+                    suc3
                 ],
             )
         }
@@ -253,7 +353,7 @@ pub fn get_all_succursales(partner: &Partner) -> (String, Element<Message>) {
         _ => {
             let vspace = TEXT_LINE_VSPACE;
             (
-                "",
+                "".into(),
                 column![
                     vertical_space(vspace),
                     Rule::horizontal(0),

@@ -19,7 +19,7 @@ mod tonal_tables;
 
 // use immitance::*;
 // use partners::modal::Modal;
-use partners::{get_all_partners, get_all_succursales, modal, Partner};
+use partners::{get_all_partners, get_all_succursales, modal, PartnerAndSuccursale};
 
 use tonal_tables::{
      identification_language, make_tonal_tables, seuils_vocaux_tables, stap, tympa,
@@ -116,6 +116,7 @@ pub fn main() -> iced::Result {
 
     AudioRox::run(Settings {
         antialiasing: true,
+
 
         default_font,
 
@@ -228,16 +229,30 @@ impl Default for CC {
     }
 }
 
+#[derive( Serialize, Deserialize)]
+pub enum Modals {
+    None,
+    Partner,
+    Succursale,
+}
+
+impl Default for Modals {
+    fn default() -> Self {
+        Modals::None
+    }
+}
+
 #[derive(Default, Serialize, Deserialize)]
 pub struct AudioRox {
     show_partner_choices: bool,
+    succursale_overlay_menu: Modals,
     is_playing: bool,
     queued_ticks: usize,
     speed: usize,
     next_speed: Option<usize>,
     version: usize,
 
-    partner: Partner,
+    partner: PartnerAndSuccursale,
 
     default_checkbox: bool,
     custom_checkbox: bool,
@@ -282,11 +297,7 @@ pub struct AudioRox {
 }
 
 impl AudioRox {
-    fn hide_partner_choices(&mut self) {
-        self.show_partner_choices = false;
-        // self.email.clear();
-        // self.password.clear();
-    }
+
 
     fn save_to_file(&self, filename: &str) -> std::io::Result<()> {
         let data = self;
@@ -328,7 +339,8 @@ pub enum Message {
     LoadFile,
 
     ShowParnerChoices,
-    HidePartnerChoices,
+    ShowSuccursaleChoices,
+    HideSuccursaleMenu,
 
     CCPatientChanged(bool),
     CCAudioProChanged(bool),
@@ -337,7 +349,8 @@ pub enum Message {
     CCOtherChanged(bool),
     CCReadapt(bool),
 
-    PartnerChanged(Partner),
+    PartnerChanged(PartnerAndSuccursale),
+    SuccursaleChanged(PartnerAndSuccursale),
     AdequateRestPeriodChanged(bool),
     AnteriorThresholdDateChanged(String),
     AudiometerNameChanged(String),
@@ -496,14 +509,29 @@ impl Application for AudioRox {
             Message::CCReadapt(value) => self.cc.readapt = value,
             
 
-            Message::PartnerChanged(value) => self.partner = value,
+            Message::PartnerChanged(value) =>  {
+                self.partner = value;
+                self.succursale_overlay_menu = Modals::Succursale;
+            }
+
+            Message::SuccursaleChanged(value) =>  {
+                self.partner = value;
+                println!("succursale changed : {:?}", self.partner );
+                self.succursale_overlay_menu = Modals::Succursale;
+            }
 
             Message::ShowParnerChoices => {
-                self.show_partner_choices = true;
+                // self.show_partner_choices = true;
+                self.succursale_overlay_menu = Modals::Partner;
                 return widget::focus_next();
             }
-            Message::HidePartnerChoices => {
-                self.hide_partner_choices();
+            Message::ShowSuccursaleChoices => {
+                // self.show_partner_choices = true;
+                self.succursale_overlay_menu = Modals::Succursale;
+                return widget::focus_next();
+            }
+            Message::HideSuccursaleMenu => {
+                self.succursale_overlay_menu = Modals::None;
             }
 
             Message::AdequateRestPeriodChanged(value) => self.adequate_rest_period = value,
@@ -881,6 +909,8 @@ impl Application for AudioRox {
 
         let (clinic, succursales) = get_all_succursales(&self.partner);
 
+        let succursale = partners::make_succursale_element(&self.partner);
+
 
 
         let header = row![
@@ -932,14 +962,16 @@ impl Application for AudioRox {
                 vertical_space(Length::Fixed(20.)),
                 // modal
                 // Rule::horizontal(1),
-                container(column![
-                    button(text(&("Lieu de l'évaluation : ".to_owned() + &clinic)).size(18.))
-                        .on_press(Message::ShowParnerChoices)
-                        .padding(0.)
-                        .style(theme::Button::Custom(Box::new(CustomButtonStyle))),
-                    // text("Lieu de l'évaluation: Clinique de l'Audition Bois & Associés audioprothésistes").size(14),
-                    succursales
-                ])
+
+                // container(column![
+                //     button(text(&("Lieu de l'évaluation : ".to_owned() + &clinic)).size(18.))
+                //         .on_press(Message::ShowParnerChoices)
+                //         .padding(0.)
+                //         .style(theme::Button::Custom(Box::new(CustomButtonStyle))),
+                //     // text("Lieu de l'évaluation: Clinique de l'Audition Bois & Associés audioprothésistes").size(14),
+                //     succursales
+                // ])
+                succursale
                 .height(Length::Fixed(120. + 60.)),
                 
                 // montmagny,
@@ -1479,13 +1511,14 @@ impl Application for AudioRox {
             // .height(Length::Fill)
             ;
 
-        if self.show_partner_choices {
+        if let Modals::Partner = self.succursale_overlay_menu {
+            
             let modal_content = container(
                 column![
                     text("Partenaire").size(24),
                     column![
                         get_all_partners(&self.partner),
-                        button(text("OK")).on_press(Message::HidePartnerChoices),
+                        button(text("OK")).on_press(Message::ShowSuccursaleChoices),
                     ]
                     .spacing(15)
                 ]
@@ -1496,7 +1529,28 @@ impl Application for AudioRox {
             .style(theme::Container::Box);
 
             modal::Modal::new(final_content, modal_content)
-                .on_blur(Message::HidePartnerChoices)
+                .on_blur(Message::HideSuccursaleMenu)
+                .into()
+        } else if let Modals::Succursale = self.succursale_overlay_menu {
+            let modal_content = container(
+                column![
+                    text("Succursale").size(24),
+                    column![
+                        // get_all_partners(&self.partner),
+                        get_all_succursales(&self.partner).1,
+                        // get_all_partners(&self.succursales),
+                        button(text("OK")).on_press(Message::HideSuccursaleMenu),
+                    ]
+                    .spacing(15)
+                ]
+                .spacing(5),
+            )
+            .width(300)
+            .padding(10)
+            .style(theme::Container::Box);
+
+            modal::Modal::new(final_content, modal_content)
+                .on_blur(Message::HideSuccursaleMenu)
                 .into()
         } else {
             // let final_element: Element<Message> = column![final_content];
