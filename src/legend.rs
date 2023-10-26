@@ -1,7 +1,5 @@
 use iced::alignment::{Horizontal, Vertical};
 
-// use iced::theme::Theme;
-
 use iced::widget::canvas;
 
 use iced::widget::canvas::{Canvas, Path, Text};
@@ -21,7 +19,6 @@ use crate::Message;
 
 pub struct Legend {
     space: f32,
-    // corner_radius: f32,
     icon_positions: LegendLRPositions,
 }
 
@@ -29,7 +26,6 @@ impl Default for Legend {
     fn default() -> Self {
         Self {
             space: SPACE,
-            // corner_radius: CORNER_RADIUS, 
             icon_positions: LegendLRPositions::default(),
         }
     }
@@ -81,9 +77,6 @@ impl Default for LegendLRPositions {
 
         let vs = 19.;
 
-        // v += vs / 2.0;
-        // let z = 7.0;
-        // let zz = Point::new(xl + 0.5 * 10., v - 0.4 * 10. - z);
         LegendLRPositions { 
             l: LegendPos { 
                 sa_not_masked: Point { x: xl, y: y0 }, 
@@ -112,19 +105,7 @@ impl Default for LegendLRPositions {
                 other_insufficient: Point { x: xr, y: y3 } } 
                 
         }
-        //     r: LegendPos { 
-        //         sa_not_masked: Point { x: xr, y: 46.05 }, 
-        //         sa_masked: Point { x: xr, y: 65.05 }, 
-        //         sa_discomfort: Point { x: xr, y: 84.05 }, 
-        //         sa_champs_libre: Point { x: xr, y: 103.05 }, 
-        //         sa_aa: Point { x: xr, y: 122.05 }, 
-        //         so_masked: Point { x: xr, y: 179.05 }, 
-        //         so_not_masked: Point { x: xr, y: 160.05 }, 
-        //         other_no_response: Point { x: xr, y: 207.55 }, 
-        //         other_no_vibro: Point { x: xr, y: 226.55 }, 
-        //         other_insufficient: Point { x: xr, y: 250.55 } } 
-                
-        // }
+
 
     }
 }
@@ -232,17 +213,6 @@ impl canvas::Program<Message> for Legend {
         let mut frame = canvas::Frame::new(renderer, bounds.size());
 
         let space = self.space;
-        // let radius = self.corner_radius;
-
-        // let legend_text_color = Color::from_rgb(0.05, 0.05, 0.05);
-
-        // let stroke = canvas::Stroke {
-        //     style: canvas::Style::Solid(LEGEND_TEXT_COLOR),
-        //     width: 2.0,
-        //     line_cap: canvas::LineCap::Round,
-        //     line_join: canvas::LineJoin::Round,
-        //     ..canvas::Stroke::default()
-        // };
 
         let symbol_stroke = canvas::Stroke {
             style: canvas::Style::Solid(LEGEND_SYMBOL_STROKE_COLOR),
@@ -263,33 +233,6 @@ impl canvas::Program<Message> for Legend {
 
         // vertical space
         let vs = 2. * ss - 1.0;
-
-        // let legend_rect = Point::new(0.0, config::PLOT_Y_OFFSET_START + config::SPACE);
-        // let rectangle = Rectangle::new(Point::ORIGIN, bounds.size());
-
-        // let rect_path = canvas::Path::rectangle(Point::ORIGIN, bounds.size());
-
-        // frame.fill(
-        //     &rect_path,
-        //     canvas::Fill {
-        //         style: canvas::Style::Solid(Color::from_rgb(0.05, 0.05, 0.045)),
-        //         rule: canvas::FillRule::NonZero,
-        //     },
-        // );
-        // let legend_rect_start = Point::new(0.0, LEGEND_Y_OFFSET_START);
-        // let legend_rect_size = Size::new(bounds.width, bounds.height - PLOT_Y_OFFSET_START  );
-
-        // let rect_path = canvas::Path::rectangle(legend_rect_start, legend_rect_size);
-
-        // frame.fill(
-        //     &rect_path,
-        //     canvas::Fill {
-        //         style: canvas::Style::Solid(Color::from_rgb(0.7, 0.7, 0.7)),
-        //         rule: canvas::FillRule::NonZero,
-        //     },
-        // );
-        // here
-        // frame.stroke(&Shape::circle(Point::new(lx, v), ss), stroke.clone());
 
         let center_h = bounds.width / 2.0;
 
@@ -447,11 +390,6 @@ impl canvas::Program<Message> for Legend {
         );
         frame.fill_text(seuil_osseux);
 
-        // // v += vs;
-        // droit.position = Point::new(space + 4.0, v);
-        // gauche.position = Point::new(bounds.width - space - 4.0, v);
-        // frame.fill_text(droit.clone());
-        // frame.fill_text(gauche.clone());
 
         v += vs;
         frame.fill_text(Text {
@@ -512,14 +450,7 @@ impl canvas::Program<Message> for Legend {
         );
         frame.fill_text(seuil_osseux);
 
-        // // v += vs;
-        // droit.position = Point::new(space + 4.0, v);
-        // gauche.position = Point::new(bounds.width - space - 4.0, v);
-        // frame.fill_text(droit);
-        // frame.fill_text(gauche);
-
         v += vs / 2.0;
-        // let z = 7.0;
         let dxy = Vector::new(ss * 0.7, -ss - 4.0);
 
         frame.fill_text(Text {
@@ -528,12 +459,10 @@ impl canvas::Program<Message> for Legend {
             ..legend_text
         });
         frame.stroke(
-            // &Shape::bottom_left_arrow(Point::new(lx + 0.5 * ss, v - 0.4 * ss - z), ss),
             &Shape::bottom_left_arrow(rl_pos.l.other_no_response, ss),
             symbol_stroke.clone(),
         );
         frame.stroke(
-            // &&Shape::bottom_right_arrow(Point::new(rx - 0.5 * ss, v - 0.4 * ss - z), ss),
             &Shape::bottom_right_arrow(rl_pos.r.other_no_response, ss),
             symbol_stroke.clone(),
         );
@@ -581,19 +510,6 @@ impl canvas::Program<Message> for Legend {
         );
 
 
-
-
-        // frame.stroke(
-        //     &Shape::asterisk(Point::new(lx - 2.0, v) - dxy, ss),
-        //     symbol_stroke.clone(),
-        // );
-        // frame.stroke(
-        //     &&Shape::asterisk(Point::new(rx + 2.3, v) - dxy, ss),
-        //     symbol_stroke.clone(),
-        // );
-
-        // v += vs;
-        // println!("v = {}", v);
 
         let legend_rect_size = Size::new(bounds.width, bounds.height);
         let rectangle = Rectangle::new(Point::new(0., 0.), legend_rect_size);

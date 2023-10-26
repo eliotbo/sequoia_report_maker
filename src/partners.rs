@@ -1,17 +1,12 @@
 use iced::widget::{
     column, container,  radio, vertical_space, Rule,
 };
-use iced::{
-Element
-};
+use iced::Element;
 
 use iced::widget::{button, text,  Container};
 use iced::Length;
-use iced::theme::{self, Theme};
+use iced::theme;
 
-
-// use iced::{event, mouse, overlay, Color, Point, Rectangle, Size};
-// use iced_native;
 
 use super::Message;
 
@@ -129,10 +124,7 @@ pub fn get_all_partners(partner: &PartnerAndSuccursale) -> Element<Message> {
 }
 
 pub fn get_chosen_succursale(partner: &PartnerAndSuccursale) -> (String, String) {
-    let vspace = 1.5;
-    // let clinic_vspace = 1.5;
-    // let clinic_name_size = 14.;
-    let text_size = 15;
+
 
      match partner {
         PartnerAndSuccursale::Bois(succursale) => {
@@ -184,7 +176,7 @@ pub fn get_chosen_succursale(partner: &PartnerAndSuccursale) -> (String, String)
 
 
 pub fn make_succursale_element(partner: &PartnerAndSuccursale) -> Container<'_,Message> {
-    let (mut clinic, succursale) = get_chosen_succursale(partner);
+    let ( clinic, succursale) = get_chosen_succursale(partner);
     let mut suc_element: Element<'_,Message> = text(succursale).to_owned().size(14).into();
 
     if clinic == "" {
@@ -317,39 +309,7 @@ pub fn get_all_succursales(partner: &PartnerAndSuccursale) -> (String, Element<M
             )
         }
 
-        // Partner::Aures(_) => {
-        //     let quebec = radio(
-        //         "1363 Av. Maguire Bureau 202, Québec, QC G1T 1Z2. (581) 491-6363",
-        //         // Aures::Quebec,
-        //         Partner::Aures(Aures::Quebec),
-        //         Some(*partner),
-        //         Message::PartnerChanged,
-        //     )
-        //     .size(12)
-        //     .text_size(14);
 
-        //     let beaupre = radio(
-        //         "175 Bd du Beau Pré, Beaupré, QC G0A 1E0. (418) 702-1721",
-        //         // Aures::Beaupre,
-        //         Partner::Aures(Aures::Beaupre),
-        //         Some(*partner),
-        //         Message::PartnerChanged,
-        //     )
-        //     .size(12)
-        //     .text_size(14);
-
-        //     let baie_st_paul = radio(
-        //         "4 Rue du Moulin Local 101, Baie-Saint-Paul, QC G3Z 2R8. (418) 760 - 8521",
-        //         // Aures::BaieStPaul,
-        //         Partner::Aures(Aures::BaieStPaul),
-        //         Some(*partner),
-        //         Message::PartnerChanged,
-        //     )
-        //     .size(12)
-        //     .text_size(14);
-
-        //     column![quebec, beaupre, baie_st_paul]
-        // }
         _ => {
             let vspace = TEXT_LINE_VSPACE;
             (
@@ -372,12 +332,6 @@ pub fn get_all_succursales(partner: &PartnerAndSuccursale) -> (String, Element<M
 }
 
 pub mod modal {
-    // use iced_native::alignment::Alignment;
-    // use iced_native::widget::{self, Tree};
-    // use iced_native::{
-    //     event, layout, mouse, overlay, renderer, Clipboard, Color, Element, Event, Layout, Length,
-    //     Point, Rectangle, Shell, Size, Widget,
-    // };
 
     use iced::advanced::layout::{self, Layout};
     use iced::advanced::overlay;
@@ -388,7 +342,7 @@ pub mod modal {
     use iced::event;
     use iced::mouse;
     use iced::{
-        BorderRadius, Color, Element, Event, Length, Point, Rectangle, Size,
+        Color, Element, Event, Length, Point, Rectangle, Size,
     };
 
     /// A widget that centers a modal element over some base element

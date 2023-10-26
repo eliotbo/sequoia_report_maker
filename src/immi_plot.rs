@@ -22,22 +22,7 @@ use crate::Message;
 
 pub struct ImmitPlot;
 
-// impl Default for ImmitPlot {
-//     fn default() -> Self {
-//         Self {
-//             v1: 0.0,
-//             v2: 0.0,
-//             w1: 0.0,
-//             w2: 0.0,
-//         }
-//     }
-// }
 
-// impl ImmitPlot {
-//     pub fn new() -> Self {
-//         Self::default()
-//     }
-// }
 
 #[derive(Debug, Clone)]
 pub enum Interaction {
@@ -55,7 +40,6 @@ impl canvas::Program<Message, Renderer> for ImmitPlot {
 
     fn draw(
         &self,
-        // _interaction: &Interaction,
         _state: &Self::State,
         renderer: &Renderer,
         _theme: &Theme,
@@ -99,36 +83,9 @@ impl canvas::Program<Message, Renderer> for ImmitPlot {
         let first_x = x_offset + space;
         let last_x = first_x + plot_width;
 
-        // let db_x_position = first_x - PLOT_TICK_LABEL_SPACE + 10.0;
-        // let db_halign = Horizontal::Right;
-
-        // let hz_x_position = last_x;
-        // let hz_halign = Horizontal::Right;
-
         let y_tick_x_pos = first_x - PLOT_TICK_LABEL_SPACE;
         let y_tick_h_align = Horizontal::Right;
 
-        // let y1 = plot_height + PLOT_CA_CO_Y_SPACE;
-
-        // frame.fill_text(Text {
-        //     content: "ml".to_string(),
-        //     horizontal_alignment: db_halign,
-        //     vertical_alignment: Vertical::Bottom,
-        //     position: Point::new(db_x_position - 10.0, space + y_offset0 - 15.0),
-        //     ..legend_text
-        // });
-
-        // frame.fill_text(Text {
-        //     content: "Hz".to_string(),
-        //     horizontal_alignment: hz_halign,
-        //     vertical_alignment: Vertical::Bottom,
-        //     // position: Point::new(space + 15.0, (num_y_ticks as f32) * y_unit + 0.0 + y_offset),
-        //     position: Point::new(
-        //         hz_x_position,
-        //         space + PLOT_Y_OFFSET_START - PLOT_TICK_LABEL_SPACE,
-        //     ),
-        //     ..legend_text
-        // });
 
         // add grid to the plot frame
         for y_usize in 0..(y_axis.len()) {
@@ -194,11 +151,6 @@ impl canvas::Program<Message, Renderer> for ImmitPlot {
                 continue;
             }
 
-            // if x_axis[x_usize] == 200 {
-            //     content = "200".into();
-            //     println!("here");
-            // }
-
             frame.fill_text(Text {
                 content,
                 horizontal_alignment: Horizontal::Center,
@@ -214,13 +166,10 @@ impl canvas::Program<Message, Renderer> for ImmitPlot {
 
 pub fn im_plot<'a>() -> Element<'a, Message> {
     let plotter = ImmitPlot;
-    // Element::new(Plot::new(data))
     let can = Canvas::new(plotter)
-        // .width(Length::Fill)
         .width(Length::Fixed(IMMIT_CANVAS_WIDTH))
         .height(Length::Fixed(IMMIT_CANVAS_HEIGHT));
 
     let element = Element::new(can);
-    // let element = container(can).into();
     element
 }

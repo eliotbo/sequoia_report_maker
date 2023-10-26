@@ -361,9 +361,7 @@ pub fn make_one_tonal_table(
             .on_input(message_fn)
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(TONAL_TABLE_COL_WIDTH));
-        // .font(FIRA_FONT);
 
-        // t_in.font = ;
 
         let entry = row![
             container(
@@ -372,9 +370,6 @@ pub fn make_one_tonal_table(
                     .size(TABLE_ENTRY_TITLE_SIZE)
             ),
             horizontal_space(2.0),
-            // .padding(3)
-            // .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-            // .align_x(Horizontal::Center),
             t_in,
             horizontal_space(6.0)
         ]
@@ -382,10 +377,8 @@ pub fn make_one_tonal_table(
 
         table = table.push(entry);
         table = table.push(horizontal_space(Length::Fixed(3.0)));
-        // table = table.push(Rule::vertical(10));
-        // table_left = table_left.height(Length::Shrink);
     }
-    // let table = table.height(Length::Shrink);
+
 
     let table = table
         .spacing(3)
@@ -403,7 +396,6 @@ pub fn make_one_tonal_table(
                 )
                 .padding(3)
             )
-            // .align_x(Ho::Center)
             .align_x(Horizontal::Center)
             .width(Length::Fill)
             .style(theme::Container::Custom(Box::new(TableTitleCustomStyle,))),
@@ -432,11 +424,7 @@ pub fn make_one_vocal_table(
 
     for (s, variable) in table_columns.iter() {
         let message_fn = get_message_fn(s, ear_side);
-        // let txt = if *s == "" {
-        //     ""
-        // } else {
-        //     ""
-        // };
+
         let entry = row![
             container(
                 text(*s)
@@ -445,9 +433,6 @@ pub fn make_one_vocal_table(
                     .horizontal_alignment(Horizontal::Right)
             ),
             horizontal_space(3.0),
-            // .padding(3)
-            // .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
-            // .align_x(Horizontal::Center),
             text_input("", &variable)
                 .on_input(message_fn)
                 .size(TABLE_ENTRY_SIZE)
@@ -458,16 +443,8 @@ pub fn make_one_vocal_table(
 
         table = table.push(entry);
         table = table.push(horizontal_space(Length::Fixed(2.0)));
-        // table = table.push(Rule::vertical(10));
-        // table_left = table_left.height(Length::Shrink);
     }
     table = table.push(horizontal_space(Length::Fixed(2.0)));
-    // table = table.push(
-    //     text("Liste")
-    //         .size(TABLE_ENTRY_TITLE_SIZE)
-    //         .horizontal_alignment(Horizontal::Left),
-    // );
-    // let table = table.height(Length::Shrink);
 
     let table = table
         .spacing(3)
@@ -475,21 +452,6 @@ pub fn make_one_vocal_table(
         .align_items(Alignment::Center);
 
     let table = put_in_table(table_name, table.into());
-
-    // container(
-    //     column![
-    //         add_table_name(table_name),
-    //         vertical_space(6.),
-    //         table,
-    //         vertical_space(7.5),
-    //     ]
-    //     .align_items(Alignment::Center),
-    // )
-    // .style(theme::Container::Custom(Box::new(
-    //     TableContainerCustomStyle,
-    // )))
-    // .align_x(Horizontal::Center)
-    // .width(Length::FillPortion(2));
 
     table.into()
 }
@@ -501,11 +463,9 @@ pub fn put_in_table(
     let table = container(
         column![
             add_table_name(table_name),
-            // vertical_space(6.),
             container(content)
                 .align_y(Vertical::Center)
                 .height(VOCAL_TABLE_CONTENT_HEIGHT),
-            // vertical_space(7.5),
         ]
         .align_items(Alignment::Center),
     )
@@ -519,7 +479,6 @@ pub fn put_in_table(
 }
 
 pub fn add_table_name(table_name: &str) -> Element<'static, Message> {
-    // container::Container<Message, Renderer<Theme>> {
     let table_name = container(
         container(
             text(table_name)
@@ -529,7 +488,6 @@ pub fn add_table_name(table_name: &str) -> Element<'static, Message> {
         )
         .padding(3),
     )
-    // .align_x(Ho::Center)
     .align_x(Horizontal::Center)
     .width(Length::Fill)
     .style(theme::Container::Custom(Box::new(TableTitleCustomStyle)));
@@ -545,8 +503,7 @@ pub fn make_level_list_result(row_title_len: f32) -> Element<'static, Message> {
                 text("dB HL").size(TABLE_ENTRY_TITLE_SIZE * 0.85),
                 text("Niveau").size(TABLE_ENTRY_TITLE_SIZE)
             ]
-            .align_items(Alignment::Center) // .style(TABLE_TEXT_COLOR)
-                                            // .horizontal_alignment(Horizontal::Right)
+            .align_items(Alignment::Center) 
         )
         .height(Length::Fixed(row0_height ))
         .align_x(Horizontal::Center)
@@ -558,8 +515,7 @@ pub fn make_level_list_result(row_title_len: f32) -> Element<'static, Message> {
                 text(" ").size(TABLE_ENTRY_TITLE_SIZE * 0.85),
                 text("Liste").size(TABLE_ENTRY_TITLE_SIZE)
             ]
-            .align_items(Alignment::Center) // text("\nListe").size(15) // .style(TABLE_TEXT_COLOR)
-                                            // .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
+            .align_items(Alignment::Center) 
         )
         .height(Length::Fixed(row0_height))
         .align_x(Horizontal::Center)
@@ -571,9 +527,7 @@ pub fn make_level_list_result(row_title_len: f32) -> Element<'static, Message> {
                 text("%").size(TABLE_ENTRY_TITLE_SIZE * 0.85),
                 text("Résultat").size(TABLE_ENTRY_TITLE_SIZE)
             ]
-            .align_items(Alignment::Center) // text("%\nRésultat")
-                                            //     // .style(TABLE_TEXT_COLOR)
-                                            //     .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
+            .align_items(Alignment::Center)
         )
         .height(Length::Fixed(row0_height))
         .align_x(Horizontal::Center)
@@ -592,15 +546,11 @@ pub fn make_one_id_language_table(
 
     bin: bool,
 ) -> Element<'static, Message> {
-    // let mut table = Row::new();
-    // table = table.push(horizontal_space(Length::Fixed(2.0)));
 
-    // let message_fn = get_message_fn("IdParole", ear_side);
 
     let row_title_len = 60.0;
     let row0 = make_level_list_result(row_title_len);
 
-    // ("Liste", &audio_rox.vocal_table_right.list),
 
     let tih_height1 = TEXT_INPUT_HEIGHT * 1.5;
     let tih_height2 = TEXT_INPUT_HEIGHT * 1.;
@@ -610,7 +560,6 @@ pub fn make_one_id_language_table(
             text_input(
                 "",
                 &table_columns.level1,
-                // get_message_fn("IdParoleLev1", ear_side)
             )
             .on_input(get_message_fn("IdParoleLev1", ear_side))
             .size(TABLE_ENTRY_SIZE)
@@ -647,7 +596,6 @@ pub fn make_one_id_language_table(
             text_input(
                 "",
                 &table_columns.level2,
-                // get_message_fn("IdParoleLev1", ear_side)
             )
             .on_input(get_message_fn("IdParoleLev2", ear_side))
             .size(TABLE_ENTRY_SIZE)
@@ -675,52 +623,16 @@ pub fn make_one_id_language_table(
     let  table = column![
         vertical_space(2.0),
         row0,
-        // vertical_space(3.0),
         container(row1).height(Length::Shrink),
         vertical_space(3.0),
         container(row2).height(Length::Shrink),
-        // horizontal_space(6.0),
-        // container(row2)
-        //     // .align_items(Alignment::Center)
-        //     .style(theme::Container::Custom(Box::new(
-        //         ResultContainerCustomStyle,
-        //     )))
-        //     .padding(3.0),
-        // horizontal_space(6.0),
-    ]
-    // .height(Length::Fixed(140.));
-    .height(Length::Fixed(110.0));
 
-    // // table = table.push(vertical_space(2.0));
-    // table = table.push(row![
-    //     container(row2),
-    //     // .align_items(Alignment::Center)
-    //     // .style(theme::Container::Custom(Box::new(
-    //     //     ResultContainerCustomStyle,
-    //     // )))
-    //     // .padding(3.0),
-    //     // horizontal_space(6.0),
-    //     // col_units1
-    // ]);
+    ]
+    .height(Length::Fixed(110.0));
 
     let mut final_table = row![];
 
     if bin {
-        // table = table.push(
-
-        //         row5,
-        //         // container(row5)
-        //         //     .style(theme::Container::Custom(Box::new(
-        //         //         ResultContainerCustomStyle,
-        //         //     )))
-        //         //     .padding(3.0),
-        //         // horizontal_space(6.0),
-        //         // col_units2
-        //     ]
-        //     .align_items(Alignment::Center)
-        //     .height(Length::Fill),
-        // );
-
         final_table = final_table.push(column![
             vertical_space(57.0),
             text("Avec lecture\nlabiale  ")
@@ -734,7 +646,6 @@ pub fn make_one_id_language_table(
 
         final_table = final_table.push(column![
             vertical_space(53.0),
-            // text("Avec lecture\nlabiale  "),
             text("                       ")
                 .size(12)
                 .horizontal_alignment(Horizontal::Center),
@@ -754,7 +665,6 @@ pub fn make_one_id_language_table(
                 )
                 .padding(3)
             )
-            // .align_x(Ho::Center)
             .align_x(Horizontal::Center)
             .width(Length::Fill)
             .style(theme::Container::Custom(Box::new(TableTitleCustomStyle,))),
@@ -789,30 +699,21 @@ pub fn make_one_tympa_table(
     table_columns: &Tympa,
 ) -> Element<'static, Message> {
     let mut table = Column::new();
-    // table = table.push(horizontal_space(Length::Fixed(2.0)));
-
-    // let message_fn = get_message_fn("IdParole", ear_side);
-
-    // let row_title_len = 60.0;
-    // let units_len = 30.0;
     let col1 = row![
         // vertical_space(2.0),
         horizontal_space(2.0),
         container(
             column![
                 text("Volume")
-                    // .style(TABLE_TEXT_COLOR)
                     .size(TABLE_ENTRY_TITLE_SIZE)
                     .horizontal_alignment(Horizontal::Center),
                 text("ml")
-                    // .style(TABLE_TEXT_COLOR)
                     .size(TABLE_ENTRY_TITLE_SIZE * 0.9)
                     .horizontal_alignment(Horizontal::Center)
             ]
             .align_items(Alignment::Center)
         )
         .align_x(Horizontal::Right)
-        // .width(Length::Fixed(row_title_len)),
         .width(Length::Shrink),
         //
         container(
@@ -821,14 +722,6 @@ pub fn make_one_tympa_table(
                 .size(TABLE_ENTRY_SIZE)
                 .width(Length::Fixed(TYMPA_TABLE_COL_WIDTH)),
         ),
-        // horizontal_space(2.0),
-        // container(
-        //     text("ml")
-        //         .style(TABLE_TEXT_COLOR)
-        //         .size(TABLE_ENTRY_TITLE_SIZE) // .horizontal_alignment(Horizontal::Right)
-        // )
-        // .align_x(Horizontal::Left)
-        // .width(Length::Fixed(units_len)),
         horizontal_space(10.0),
         //
         //
@@ -852,7 +745,7 @@ pub fn make_one_tympa_table(
             text_input(
                 "    \u{2014}",
                 &table_columns.pressure,
-                // get_message_fn("TympaPressure", ear_side)
+                
             )
             .on_input(get_message_fn("TympaPressure", ear_side))
             .size(TABLE_ENTRY_SIZE)
@@ -876,14 +769,14 @@ pub fn make_one_tympa_table(
             .align_items(Alignment::Center)
         )
         .align_x(Horizontal::Right)
-        // .width(Length::Fixed(row_title_len)),
+
         .width(Length::Shrink),
         //
         container(
             text_input(
                 "    \u{2014}",
                 &table_columns.compliance,
-                // get_message_fn("TympaCompliance", ear_side)
+
             )
             .on_input(get_message_fn("TympaCompliance", ear_side))
             .size(TABLE_ENTRY_SIZE)
@@ -909,7 +802,7 @@ pub fn make_one_tympa_table(
                 )
                 .padding(3)
             )
-            // .align_x(Ho::Center)
+
             .align_x(Horizontal::Center)
             .width(Length::Fill)
             .style(theme::Container::Custom(Box::new(TableTitleCustomStyle,))),
@@ -950,12 +843,6 @@ pub fn make_one_stap_table(
     table_columns: &Stap,
 ) -> Element<'static, Message> {
     let mut table = Column::new();
-    // table = table.push(horizontal_space(Length::Fixed(2.0)));
-
-    // let message_fn = get_message_fn("IdParole", ear_side);
-
-    // let row_title_len = 60.0;
-    // let units_len = 30.0;
 
     let first_col_width = 85.0;
     let col_width = 60.0;
@@ -998,7 +885,7 @@ pub fn make_one_stap_table(
     .spacing(3)
     .align_items(Alignment::Center);
 
-    // Ipsilatéral (Seuil H.L.)
+
 
     let second_row = row![
         container(
@@ -1013,7 +900,7 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.ipsi.khz_500,
-                // get_message_fn("StapIpsi500", ear_side)
+
             )
             .on_input(get_message_fn("StapIpsi500", ear_side))
             .size(TABLE_ENTRY_SIZE)
@@ -1025,7 +912,7 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.ipsi.khz_1000,
-                // get_message_fn("StapIpsi1000", ear_side)
+
             )
             .on_input(get_message_fn("StapIpsi1000", ear_side))
             .size(TABLE_ENTRY_SIZE)
@@ -1037,7 +924,7 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.ipsi.khz_2000,
-                // get_message_fn("StapIpsi2000", ear_side)
+
             )
             .on_input(get_message_fn("StapIpsi2000", ear_side))
             .size(TABLE_ENTRY_SIZE)
@@ -1062,7 +949,6 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.control.khz_500,
-                // get_message_fn("StapControl500", ear_side)
             )
             .on_input(get_message_fn("StapControl500", ear_side))
             .size(TABLE_ENTRY_SIZE)
@@ -1074,7 +960,7 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.control.khz_1000,
-                // get_message_fn("StapControl1000", ear_side)
+
             )
             .on_input(get_message_fn("StapControl1000", ear_side))
             .size(TABLE_ENTRY_SIZE)
@@ -1086,7 +972,7 @@ pub fn make_one_stap_table(
             text_input(
                 "",
                 &table_columns.control.khz_2000,
-                // get_message_fn("StapControl2000", ear_side)
+
             )
             .on_input(get_message_fn("StapControl2000", ear_side))
             .size(TABLE_ENTRY_SIZE)
@@ -1115,7 +1001,7 @@ pub fn make_one_stap_table(
                 )
                 .padding(3)
             )
-            // .align_x(Ho::Center)
+
             .align_x(Horizontal::Center)
             .width(Length::Fill)
             .style(theme::Container::Custom(Box::new(TableTitleCustomStyle,))),
