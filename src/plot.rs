@@ -199,6 +199,10 @@ impl canvas::Program<Message> for Plot {
     ) -> Vec<canvas::Geometry> {
         let mut frame = canvas::Frame::new(renderer, bounds.size());
 
+
+        self.plot_data(&mut frame, &EarSide::Left);
+
+
         let space = self.space;
 
         let y_offset0 = PLOT_Y_OFFSET_START;
@@ -344,6 +348,7 @@ impl canvas::Program<Message> for Plot {
                     horizontal_alignment: y_tick_h_align,
                     vertical_alignment: Vertical::Center,
                     position: Point::new(y0_tick_x_pos + 0.0, y),
+                    size: 14.0,
                     ..legend_text
                 });
             } else {
@@ -672,6 +677,7 @@ pub fn add_contour(
 
 pub fn plot<'a>(data: Vec<f32>, shape: Shape, ear_side: EarSide) -> Element<'a, Message> {
     let plotter = Plot::new(data, shape, ear_side);
+    // plotter.plot_data()
     // Element::new(Plot::new(data))
     let can = Canvas::new(plotter)
         // .width(Length::Fill)
@@ -945,12 +951,12 @@ impl Shape {
 
             let r = 3.;
             let v = Vector::new(0., -r);
-            p.move_to(pos + Vector::new(r, -r) + v);
-            p.line_to(pos + Vector::new(0., -r) + v);
+            p.move_to(pos + Vector::new(r, -r + r * 0.6) + v);
+            p.line_to(pos + Vector::new(0., -r + r * 0.6) + v);
 
             p.arc(Arc {
-                center: pos + v,
-                radius: r,
+                center: pos + Vector::new(v.x, v.y * 0.7),
+                radius: r * 0.7,
                 start_angle: std::f32::consts::FRAC_PI_2,
                 end_angle: std::f32::consts::FRAC_PI_2 * 3.0,
             });
@@ -960,8 +966,8 @@ impl Shape {
                 start_angle: -std::f32::consts::FRAC_PI_2,
                 end_angle: std::f32::consts::FRAC_PI_2,
             });
-            p.move_to(pos + Vector::new(0., 3. * r) + v);
-            p.line_to(pos + Vector::new(-3., 3. * r) + v);
+            p.move_to(pos + Vector::new(0., 3. * r ) + v);
+            p.line_to(pos + Vector::new(-3., 3. * r ) + v);
         })
     }
 }

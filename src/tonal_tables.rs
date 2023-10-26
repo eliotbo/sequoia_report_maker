@@ -602,6 +602,9 @@ pub fn make_one_id_language_table(
 
     // ("Liste", &audio_rox.vocal_table_right.list),
 
+    let tih_height1 = TEXT_INPUT_HEIGHT * 1.5;
+    let tih_height2 = TEXT_INPUT_HEIGHT * 1.;
+
     let row1 = row![
         container(
             text_input(
@@ -613,7 +616,7 @@ pub fn make_one_id_language_table(
             .size(TABLE_ENTRY_SIZE)
             .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         )
-        .height(Length::Fixed(TEXT_INPUT_HEIGHT))
+        .height(Length::Fixed(tih_height1))
         .width(Length::Fixed(TONAL_TABLE_COL_WIDTH))
         .align_x(Horizontal::Center),
         horizontal_space(2.0),
@@ -623,7 +626,7 @@ pub fn make_one_id_language_table(
                 .size(TABLE_ENTRY_SIZE)
                 .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         )
-        .height(Length::Fixed(TEXT_INPUT_HEIGHT))
+        .height(Length::Fixed(tih_height1))
         .width(Length::Fixed(TONAL_TABLE_COL_WIDTH))
         .align_x(Horizontal::Center),
         horizontal_space(2.0),
@@ -633,11 +636,12 @@ pub fn make_one_id_language_table(
                 .size(TABLE_ENTRY_SIZE)
                 .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         )
-        .height(Length::Fixed(TEXT_INPUT_HEIGHT))
+        .height(Length::Fixed(tih_height1))
         .width(Length::Fixed(TONAL_TABLE_COL_WIDTH))
         .align_x(Horizontal::Center),
-    ];
+    ].height(Length::Shrink);
 
+    
     let row2 = row![
         container(
             text_input(
@@ -647,9 +651,9 @@ pub fn make_one_id_language_table(
             )
             .on_input(get_message_fn("IdParoleLev2", ear_side))
             .size(TABLE_ENTRY_SIZE)
-            .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
+            .width(Length::Fixed(TONAL_TABLE_COL_WIDTH )),
         )
-        .height(Length::Fixed(TEXT_INPUT_HEIGHT)),
+        .height(Length::Fixed(TEXT_INPUT_HEIGHT* tih_height2)),
         horizontal_space(2.0),
         container(
             text_input("", &table_columns.list2,)
@@ -657,7 +661,7 @@ pub fn make_one_id_language_table(
                 .size(TABLE_ENTRY_SIZE)
                 .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         )
-        .height(Length::Fixed(TEXT_INPUT_HEIGHT)),
+        .height(Length::Fixed(TEXT_INPUT_HEIGHT* tih_height2)),
         horizontal_space(2.0),
         container(
             text_input("", &table_columns.result2,)
@@ -665,14 +669,16 @@ pub fn make_one_id_language_table(
                 .size(TABLE_ENTRY_SIZE)
                 .width(Length::Fixed(TONAL_TABLE_COL_WIDTH)),
         )
-        .height(Length::Fixed(TEXT_INPUT_HEIGHT)),
-    ];
+        .height(Length::Fixed(TEXT_INPUT_HEIGHT* tih_height2)),
+    ].height(Length::Shrink);
 
-    let mut table = column![
+    let  table = column![
         vertical_space(2.0),
         row0,
+        // vertical_space(3.0),
+        container(row1).height(Length::Shrink),
         vertical_space(3.0),
-        row1,
+        container(row2).height(Length::Shrink),
         // horizontal_space(6.0),
         // container(row2)
         //     // .align_items(Alignment::Center)
@@ -682,19 +688,20 @@ pub fn make_one_id_language_table(
         //     .padding(3.0),
         // horizontal_space(6.0),
     ]
-    .height(Length::Fixed(93.));
+    // .height(Length::Fixed(140.));
+    .height(Length::Fixed(110.0));
 
-    table = table.push(vertical_space(2.0));
-    table = table.push(row![
-        container(row2),
-        // .align_items(Alignment::Center)
-        // .style(theme::Container::Custom(Box::new(
-        //     ResultContainerCustomStyle,
-        // )))
-        // .padding(3.0),
-        // horizontal_space(6.0),
-        // col_units1
-    ]);
+    // // table = table.push(vertical_space(2.0));
+    // table = table.push(row![
+    //     container(row2),
+    //     // .align_items(Alignment::Center)
+    //     // .style(theme::Container::Custom(Box::new(
+    //     //     ResultContainerCustomStyle,
+    //     // )))
+    //     // .padding(3.0),
+    //     // horizontal_space(6.0),
+    //     // col_units1
+    // ]);
 
     let mut final_table = row![];
 

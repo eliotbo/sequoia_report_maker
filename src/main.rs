@@ -245,6 +245,7 @@ impl Default for Modals {
 #[derive(Default, Serialize, Deserialize)]
 pub struct AudioRox {
     show_partner_choices: bool,
+    #[serde(skip_serializing, skip_deserializing)]
     succursale_overlay_menu: Modals,
     is_playing: bool,
     queued_ticks: usize,
@@ -292,7 +293,9 @@ pub struct AudioRox {
 
     cc: CC,
 
+    #[serde(skip_serializing, skip_deserializing)]
     plot_right: PlotInfo,
+    #[serde(skip_serializing, skip_deserializing)]
     plot_left: PlotInfo,
 }
 
@@ -341,6 +344,8 @@ pub enum Message {
     ShowParnerChoices,
     ShowSuccursaleChoices,
     HideSuccursaleMenu,
+    CancelSuccursaleChoices,
+
 
     CCPatientChanged(bool),
     CCAudioProChanged(bool),
@@ -472,8 +477,8 @@ impl Application for AudioRox {
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
             Message::FontLoaded(_) => (),
-            Message::LegendModifierSelected(value) => {}
-            Message::LegendShapeSelected(value) => {}
+            Message::LegendModifierSelected(_) => {}
+            Message::LegendShapeSelected(_) => {}
 
             Message::LoadFile => {
                 // Perform your save operation here
@@ -517,7 +522,7 @@ impl Application for AudioRox {
             Message::SuccursaleChanged(value) =>  {
                 self.partner = value;
                 println!("succursale changed : {:?}", self.partner );
-                self.succursale_overlay_menu = Modals::Succursale;
+                self.succursale_overlay_menu = Modals::None;
             }
 
             Message::ShowParnerChoices => {
@@ -531,6 +536,9 @@ impl Application for AudioRox {
                 return widget::focus_next();
             }
             Message::HideSuccursaleMenu => {
+                self.succursale_overlay_menu = Modals::None;
+            }
+            Message::CancelSuccursaleChoices => {
                 self.succursale_overlay_menu = Modals::None;
             }
 
@@ -714,7 +722,7 @@ impl Application for AudioRox {
         )
         .spacing(RADIO_SPACING)
         .size(RADIO_SIZE)
-        .text_size(RADIO_TEXT_SIZE);
+        .text_size(13.7);
 
         let cond_play = radio(
             "Jeu",
@@ -782,7 +790,7 @@ impl Application for AudioRox {
         // text_input for audiometer name
         let audiometer_type = row![
             text("Audiomètre: ")
-                .size(16)
+                .size(14)
                 .horizontal_alignment(Horizontal::Left),
             text_input(
                 "AD629",
@@ -797,7 +805,7 @@ impl Application for AudioRox {
 
         let anterior_thresholds_date = row![
             text("Date seuils antérieurs (•) : ")
-                .size(16)
+                .size(14)
                 .horizontal_alignment(Horizontal::Left),
             text_input(
                 "",
@@ -812,13 +820,13 @@ impl Application for AudioRox {
 
         // a checkbox for adequate rest period
         let adequate_rest_period = checkbox(
-            "Repos sonore inadéquat (< 16h)",
+            "Repos sonore inadéquat (<16h)",
             self.adequate_rest_period,
             Message::AdequateRestPeriodChanged,
         )
         .spacing(RADIO_SPACING)
-        .size(12)
-        .text_size(16);
+        .size(14)
+        .text_size(14);
 
         // self.audiometer_name;
         let standard = column![
@@ -1006,9 +1014,7 @@ impl Application for AudioRox {
         //     TableContainerCustomStyle,
         // )));
 
-        // let audio_right_title = text("OREILLE DROITE")
-        //     .size(26)
-        //     .horizontal_alignment(Horizontal::Center);
+
 
         let audio_right = column![
             // audio_right_title,
@@ -1077,7 +1083,7 @@ impl Application for AudioRox {
                 vertical_space(5.0),
                 row![horizontal_space(8.0), method_eval],
                 vertical_space(2.0),
-                text("Normes ANSI S3 en vigueur").size(DEFAULT_TEXT_SIZE),
+                text("Normes ANSI S3 en vigueur").size(RADIO_TEXT_SIZE),
                 vertical_space(2.0),
                 standard_container,
             ])
@@ -1518,7 +1524,7 @@ impl Application for AudioRox {
                     text("Partenaire").size(24),
                     column![
                         get_all_partners(&self.partner),
-                        button(text("OK")).on_press(Message::ShowSuccursaleChoices),
+                        button(text("OK")).on_press(Message::HideSuccursaleMenu),
                     ]
                     .spacing(15)
                 ]
@@ -1539,7 +1545,7 @@ impl Application for AudioRox {
                         // get_all_partners(&self.partner),
                         get_all_succursales(&self.partner).1,
                         // get_all_partners(&self.succursales),
-                        button(text("OK")).on_press(Message::HideSuccursaleMenu),
+                        button(text("OK")).on_press(Message::CancelSuccursaleChoices),
                     ]
                     .spacing(15)
                 ]

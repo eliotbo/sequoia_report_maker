@@ -117,7 +117,7 @@ pub fn get_all_partners(partner: &PartnerAndSuccursale) -> Element<Message> {
     .text_size(size);
 
     let aures = radio(
-        "Aures",
+        "Autres",
         PartnerAndSuccursale::Autres(Autres::None),
         Some(*partner),
         Message::PartnerChanged,

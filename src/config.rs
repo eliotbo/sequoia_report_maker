@@ -109,10 +109,10 @@ pub const AXIS_LABEL_COLOR: Color = Color::from_rgb(0.15, 0.15, 0.157);
 pub const GRID_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 // pub const GRID_COLOR: Color = Color::from_rgb(0., 0., 0.);
 
-pub const RADIO_SIZE: f32 = 16.;
-pub const RADIO_SPACING: f32 = 3.0;
+pub const RADIO_SIZE: f32 = 14.;
+pub const RADIO_SPACING: f32 = 1.5;
 pub const RADIO_TITLE_SIZE: f32 = 14.0;
-pub const RADIO_TEXT_SIZE: f32 = 16.0;
+pub const RADIO_TEXT_SIZE: f32 = 14.0;
 
 pub const LEGEND_HEIGHT: f32 = 275.0;
 pub const LEGEND_WIDTH: f32 = 218.0;

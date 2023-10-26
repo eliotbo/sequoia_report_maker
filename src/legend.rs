@@ -298,7 +298,7 @@ impl canvas::Program<Message> for Legend {
         let droit = Text {
             content: "DROITE".to_string(),
             color: LEGEND_TEXT_COLOR,
-            size: 16.0,
+            size: 14.0,
             position: Point::new(space + 4.0, v),
             horizontal_alignment: Horizontal::Left,
             vertical_alignment: Vertical::Center,
@@ -312,7 +312,7 @@ impl canvas::Program<Message> for Legend {
         let gauche = Text {
             content: "GAUCHE".to_string(),
             color: LEGEND_TEXT_COLOR,
-            size: 16.0,
+            size: 14.0,
             position: Point::new(bounds.width - space - 4.0, v),
             horizontal_alignment: Horizontal::Right,
             vertical_alignment: Vertical::Center,
@@ -326,7 +326,7 @@ impl canvas::Program<Message> for Legend {
         let seuil_aerien = Text {
             content: "SEUIL AÉRIEN".to_string(),
             color: LEGEND_TITLES_COLOR,
-            size: 16.0,
+            size: 14.0,
             position: Point::new(center_h, v),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
@@ -350,7 +350,7 @@ impl canvas::Program<Message> for Legend {
         let legend_text = Text {
             content: "".to_string(),
             color: LEGEND_TEXT_COLOR,
-            size: 16.0,
+            size: 14.0,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             font: config::DEFAULT_FONT,
@@ -428,7 +428,7 @@ impl canvas::Program<Message> for Legend {
         let seuil_osseux = Text {
             content: "SEUIL OSSEUX".to_string(),
             color: LEGEND_TITLES_COLOR,
-            size: 16.0,
+            size: 14.0,
             position: Point::new(center_h, v),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
@@ -557,11 +557,18 @@ impl canvas::Program<Message> for Legend {
         );
 
 
-        v += vs + 5.0;
-        let oy = Vector::new(ss * 0.7, -ss);
+        v += vs + 0.0;
+        let oy = Vector::new(ss * 0.7, -ss * 1.6);
         frame.fill_text(Text {
-            content: "Surassourdissement ou\nmasque insuffisant".to_string(),
+            content: "Surassourdissement".to_string(),
             position: Point::new(center_h, v),
+            horizontal_alignment: Horizontal::Center,
+            ..legend_text
+        });
+        frame.fill_text(Text {
+            content: "ou masque insuffisant".to_string(),
+            position: Point::new(center_h, v + 15.0),
+            horizontal_alignment: Horizontal::Center,
             ..legend_text
         });
         frame.stroke(
